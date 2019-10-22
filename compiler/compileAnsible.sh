@@ -1,0 +1,177 @@
+#!/usr/bin/env bash
+PLAYBOOK_FILE=~/.tp.yaml
+BORG_ARCHIVE=~/ansible-playbook.borg
+BORG_ARCHIVE_QUOTA="5G"
+CREATED=0
+BORG_CREATE_COMPRESSION="lz4"
+BORG_CREATE_COMPRESSION="lzma"
+start_ts="$(date +%s)"
+ANSIBLE_TEST_ENV="ANSIBLE_FORCE_COLOR=1 ANSIBLE_VERBOSITY=0 ANSIBLE_DEBUG=False ANSIBLE_LOCALHOST_WARNING=False ANSIBLE_SYSTEM_WARNINGS=True ANSIBLE_RETRY_FILES_ENABLED=False ANSIBLE_DISPLAY_ARGS_TO_STDOUT=True ANSIBLE_DEPRECATION_WARNINGS=False ANSIBLE_NO_TARGET_SYSLOG=True"
+if [ "$DELETE_ARCHIVE" == "1" ]; then
+    echo "Deleting ${BORG_ARCHIVE}..."
+    rm -rf $BORG_ARCHIVE
+fi
+if [ "$QTY" == "" ]; then
+    QUANTITY_OF_LATEST_ANSIBLE_RELEASES=20
+else
+    QUANTITY_OF_LATEST_ANSIBLE_RELEASES="$QTY"
+fi
+export BORG_PASSPHRASE="123123"
+
+BORG_BINARY="borg-linux64"
+BORG_OPTIONS="--lock-wait 10"
+
+JQ=jq
+set +e; $JQ --version >/dev/null 2>&1 || {
+    mkdir -p ~/.local/bin
+    wget -4 https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -O ~/.local/bin/jq
+    chmod +x ~/.local/bin/jq
+    export JQ=~/.local/bin/jq
+}
+set -e
+
+writeTestPlaybook(){
+    cat > $PLAYBOOK_FILE <<EOF
+---
+- name: test playbook
+  hosts: all
+  gather_facts: no
+  connection: local
+  become: no
+  tasks:
+   - name: id test
+     command: id
+EOF
+echo $PLAYBOOK_FILE
+}
+
+getAnsibleVersions(){
+    curl -s4 https://pypi.org/pypi/ansible/json \
+        | $JQ '.releases' | $JQ keys| grep '"[0-9]\.[0-9]\.[0-9].*"' \
+        | sed 's/"//g'|sed 's/,//g' \
+        | sed 's/[[:space:]]//g'|sort -r \
+        | head -n $QUANTITY_OF_LATEST_ANSIBLE_RELEASES
+}
+export ANSIBLE_VERSIONS="$(getAnsibleVersions|tr '\n' ' ')"
+
+set +e; $BORG_BINARY --version >/dev/null 2>&1 || {
+    mkdir -p ~/.local/bin
+    wget https://github.com/borgbackup/borg/releases/download/1.1.10/borg-linux64 -O ~/.local/bin/borg-linux64
+    chmod +x ~/.local/bin/borg-linux64
+    export BORG_BINARY=~/.local/bin/borg-linux64
+}
+set -e
+
+if [ ! -d $BORG_ARCHIVE ]; then
+    $BORG_BINARY init --encryption repokey --storage-quota $BORG_ARCHIVE_QUOTA --make-parent-dirs $BORG_ARCHIVE 2>/dev/null
+fi
+$BORG_BINARY $BORG_OPTIONS info $BORG_ARCHIVE
+$BORG_BINARY $BORG_OPTIONS list $BORG_ARCHIVE
+
+for ANSIBLE_VERSION in $ANSIBLE_VERSIONS; do
+  for type in onedir onefile; do
+    pb_start_ts="$(date +%s)"
+    cd
+    DIST_PATH="ansible-playbook-$ANSIBLE_VERSION-$type"
+    set +e
+    $BORG_BINARY $BORG_OPTIONS list $BORG_ARCHIVE | grep "^${ANSIBLE_VERSION}-${type}$" >/dev/null && {
+        echo "$ANSIBLE_VERSION ($type) exists in $BORG_ARCHIVE. Skipping.."
+        continue
+    }
+    set -e
+    cd
+	if [ "$type" == "onefile" ]; then
+		PLAYBOOK_BINARY_PATH=$DIST_PATH/ansible-playbook
+	elif [ "$type" == "onedir" ]; then
+		PLAYBOOK_BINARY_PATH=$DIST_PATH/ansible-playbook/ansible-playbook
+	else
+		echo Failure
+		exit 1
+	fi
+
+    if [ -d .venv ]; then
+        rm -rf .venv
+    fi
+	python3 -m venv .venv
+    source .venv/bin/activate
+    pip install pip --upgrade -q
+    pip install pyinstaller --upgrade -q
+    
+    if [ -d $DIST_PATH ]; then rm -rf $DIST_PATH; fi
+    pip uninstall ansible --yes -q 2>/dev/null
+    pip install "ansible==${ANSIBLE_VERSION}" --upgrade --force -q
+    pyinstaller \
+        -n ansible-playbook \
+        --$type -y --clean \
+        --distpath $DIST_PATH \
+           \
+            --add-data .venv/lib/python3.6/site-packages/ansible/module_utils:ansible/module_utils \
+            --add-data .venv/lib/python3.6/site-packages/ansible/modules:ansible/modules \
+            --add-data .venv/lib/python3.6/site-packages/ansible/plugins/inventory:ansible/plugins/inventory \
+            --add-data .venv/lib/python3.6/site-packages/ansible/plugins/cache:ansible/plugins/cache \
+            --add-data .venv/lib/python3.6/site-packages/ansible/config/base.yml:ansible/config \
+            --add-data .venv/lib/python3.6/site-packages/ansible/config/module_defaults.yml:ansible/config \
+            --add-data .venv/lib/python3.6/site-packages/ansible/utils/shlex.py:ansible/utils \
+            --add-data .venv/lib/python3.6/site-packages/ansible/plugins:ansible/plugins \
+           \
+            --hidden-import=configparser \
+            --hidden-import=ansible.cli \
+            --hidden-import=ansible.modules \
+            --hidden-import=ansible.cli.playbook \
+            --hidden-import=ansible.plugins.cache \
+            --hidden-import=ansible.utils.shlex \
+            --hidden-import=distutils.spawn \
+            --hidden-import=xml.etree \
+            --hidden-import=ansible.executor.task_executor \
+            --hidden-import=pty \
+            --hidden-import=distutils.version \
+            --hidden-import=ansible.compat \
+            --hidden-import=xml.etree.ElementTree \
+            --hidden-import=ansible.utils.hashing \
+            --hidden-import=ansible.compat.selectors \
+            --hidden-import=ansible.modules \
+            --hidden-import=csv \
+            --hidden-import=smtplib \
+            --hidden-import=logging.handlers \
+            --hidden-import=ansible.parsing.yaml.dumper \
+            --hidden-import=ansible.utils.unicode \
+            --hidden-import=ansible.executor.action_write_locks \
+            --hidden-import=ansible.executor.process \
+            --hidden-import=ansible.executor.process.worker \
+            --hidden-import=ansible.playbook.included_file \
+            --hidden-import=ansible.executor.module_common \
+            --hidden-import=ansible.parsing.utils.jsonify \
+            --hidden-import=ansible.utils.module_docs_fragments \
+            \
+             .venv/bin/ansible-playbook
+    pb_duration=$(($(date +%s)-$pb_start_ts))
+
+    set -e
+	file $PLAYBOOK_BINARY_PATH | grep '^ansible-playbook' | grep ': ELF 64-bit LSB executable, x86-64' && echo Valid File
+	$PLAYBOOK_BINARY_PATH --version | grep '^ansible-playbook $ANSIBLE_VERSION' && echo Valid Version
+    
+    echo "Configuring Ansible Environment.."
+	source <(echo $ANSIBLE_TEST_ENV |tr ' ' '\n'|xargs -I % echo export %)
+    echo "Executing Test Playbook"
+    $PLAYBOOK_BINARY_PATH -i localhost, -c local $(writeTestPlaybook)
+
+    cd $DIST_PATH
+    COMMENT="ansible-playbook version=${ANSIBLE_VERSION} type=$type buildTime=$pb_duration compression=$BORG_CREATE_COMPRESSION"
+    ls
+    pwd
+    $BORG_BINARY $BORG_OPTIONS create \
+        --compression $BORG_CREATE_COMPRESSION \
+        --progress --comment "$COMMENT" -v --stats $BORG_ARCHIVE::${ANSIBLE_VERSION}-${type} ansible-playbook
+
+    CREATED=$((CREATED+1))
+    cd
+    rm -rf $DIST_PATH
+
+  done
+done
+duration=$(($(date +%s)-$start_ts))
+
+$BORG_BINARY $BORG_OPTIONS info $BORG_ARCHIVE
+$BORG_BINARY $BORG_OPTIONS list $BORG_ARCHIVE
+
+echo "OK- Created $CREATED ansible-playbook binaries in $duration seconds."
