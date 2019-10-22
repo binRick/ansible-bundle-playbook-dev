@@ -1,12 +1,39 @@
 #!/usr/bin/env bash
-PLAYBOOK_FILE=~/.tp.yaml
-BORG_ARCHIVE=~/ansible-playbook.borg
+BORG_ARCHIVE="~/ansible-playbook.borg"
+BORG_SSH_KEY="BORG_KEY"
+BORG_SSH_PORT=22
+BORG_SSH_HOST=web1
+BORG_SSH_USER=BORG
+setupSshAgent(){
+    if [ "$PRIVATE_KEY_ENCODED" == "" ]; then
+        echo
+        echo PRIVATE_KEY_ENCODED environment variable needs to contain private key
+        echo "You can create it using \"PRIVATE_KEY_ENCODED=\$(cat /path/to/key | base64 -w0)\""
+        echo
+        echo
+        exit 1
+    fi
+    set -e
+    export SSH_AUTH_SOCK="$(mktemp -u -p ~ --suffix _sshAgent_socket)"
+    coproc agentProcess { exec ssh-agent -dsa $SSH_AUTH_SOCK; }
+    export K="$(cat BORG_KEY |base64 -w0)"
+    echo $PRIVATE_KEY_ENCODED | base64 -d | ssh-add -
+}
+
+#setupSshAgent
+
+#echo export BORG_RSH="ssh -q -i $BORG_SSH_KEY -oPreferredAuthentications=publickey -oPasswordAuthentication=no -oKbdInteractiveAuthentication=no -oStrictHostKeyChecking=no -F/dev/null -ouserknownhostsfile=/dev/null -oPort=$BORG_SSH_PORT"
+#echo export BORG_REPO="$BORG_SSH_USER@$BORG_SSH_HOST:$BORG_ARCHIVE"
+
 BORG_ARCHIVE_QUOTA="5G"
 CREATED=0
-BORG_CREATE_COMPRESSION="lz4"
-BORG_CREATE_COMPRESSION="lzma"
+BORG_CREATE_COMPRESSION="none"
+BORG_CREATE_COMPRESSION="lzma" # Better Compression
+BORG_CREATE_COMPRESSION="lz4"  # Faster
+BORG_CREATE_COMPRESSION="auto"
+ANSIBLE_TEST_ENV="ANSIBLE_NOCOWS=True ANSIBLE_PYTHON_INTERPRETER=auto_silent ANSIBLE_FORCE_COLOR=1 ANSIBLE_VERBOSITY=0 ANSIBLE_DEBUG=False ANSIBLE_LOCALHOST_WARNING=False ANSIBLE_SYSTEM_WARNINGS=True ANSIBLE_RETRY_FILES_ENABLED=False ANSIBLE_DISPLAY_ARGS_TO_STDOUT=True ANSIBLE_DEPRECATION_WARNINGS=False ANSIBLE_NO_TARGET_SYSLOG=True"
+PLAYBOOK_FILE=~/.tp.yaml
 start_ts="$(date +%s)"
-ANSIBLE_TEST_ENV="ANSIBLE_FORCE_COLOR=1 ANSIBLE_VERBOSITY=0 ANSIBLE_DEBUG=False ANSIBLE_LOCALHOST_WARNING=False ANSIBLE_SYSTEM_WARNINGS=True ANSIBLE_RETRY_FILES_ENABLED=False ANSIBLE_DISPLAY_ARGS_TO_STDOUT=True ANSIBLE_DEPRECATION_WARNINGS=False ANSIBLE_NO_TARGET_SYSLOG=True"
 if [ "$DELETE_ARCHIVE" == "1" ]; then
     echo "Deleting ${BORG_ARCHIVE}..."
     rm -rf $BORG_ARCHIVE
