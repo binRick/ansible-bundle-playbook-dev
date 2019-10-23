@@ -50,7 +50,7 @@ export BORG_PASSPHRASE="123123"
 BORG_BINARY="borg-linux64"
 BORG_OPTIONS="--lock-wait 300"
 
-JQ=jq
+JQ="$(which jq)"
 set +e; $JQ --version >/dev/null 2>&1 || {
     mkdir -p ~/.local/bin
     wget -4 https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -O ~/.local/bin/jq
@@ -108,9 +108,9 @@ findAnsibleModules(){
         find ansible \
                 | grep '\.py$'|grep '/'  | sed 's/\.py//g' | sed 's/\/__init__//g'
 
-        echo find ansible \
+        find ansible \
                 | grep '\.py$'| grep __init__.py$ |grep '/'| grep '/' | sed 's/\/__init__.py$//g'
-   )
+   ) | sort | uniq
 }
 
 mangleModules(){
@@ -119,7 +119,6 @@ mangleModules(){
 
 
 #            --hidden-import=ansible.executor.task_executor \
-
 buildPyInstallerCommand(){
     ANSIBLE_MODULES="$(findAnsibleModules $(getSitePackagesPath) | mangleModules)"
 
@@ -153,6 +152,10 @@ buildPyInstallerCommand(){
 
 }
 
+ansibleReleaseInfo(){
+    curl -s4 https://pypi.org/pypi/ansible/json |jq ".releases[\"$1\"]"
+}
+
 validateAnsible(){
         ls -alhS $DIST_PATH/ansible-playbook
         $DIST_PATH/ansible-playbook --version
@@ -181,7 +184,7 @@ set +e; $BORG_BINARY --version >/dev/null 2>&1 || {
     alias borg-linux64="$BORG_BINARY"
 }
 
-if [ "$LOADER" == "" ]; then
+doMain(){
     set -e
     installJo
 
@@ -246,7 +249,7 @@ if [ "$LOADER" == "" ]; then
         $PLAYBOOK_BINARY_PATH -i localhost, -c local $(writeTestPlaybook)
         cd $DIST_PATH
 
-
+        ansibleReleaseInfo $ANSIBLE_VERSION | $JQ '.[]' > .ANSIBLE-RELEASE.JSON
         jo -p ended_ts=$(date +%s) version=$ANSIBLE_VERSION type=$type buildTime=$pb_duration \
               compression=$BORG_CREATE_COMPRESSION hostname="$(hostname -f)" os="$(uname)" \
               arch="$(uname -m)" kernel="$(uname -r)" distro="$(cat /etc/redhat-release)" \
@@ -261,7 +264,7 @@ if [ "$LOADER" == "" ]; then
         $BORG_BINARY $BORG_OPTIONS create \
             --compression $BORG_CREATE_COMPRESSION \
             --progress --comment "$COMMENT" -v --stats $BORG_ARCHIVE::${ANSIBLE_VERSION}-${type} \
-            ansible-playbook .METADATA.JSON
+            ansible-playbook .METADATA.JSON .ANSIBLE-RELEASE.JSON
 
         CREATED=$((CREATED+1))
         cd
@@ -275,4 +278,6 @@ if [ "$LOADER" == "" ]; then
     $BORG_BINARY $BORG_OPTIONS list $BORG_ARCHIVE
 
     echo "OK- Created $CREATED ansible-playbook binaries in $duration seconds."
-fi
+}
+
+doMain
