@@ -6,6 +6,8 @@ BORG_SSH_KEY="BORG_KEY"
 BORG_SSH_PORT=22
 BORG_SSH_HOST=web1
 BORG_SSH_USER=BORG
+TYPES="onedir onefile"
+TYPES="onedir"
 setupSshAgent(){
     if [ "$PRIVATE_KEY_ENCODED" == "" ]; then
         echo
@@ -101,7 +103,9 @@ installJo(){
 getSitePackagesPath(){
         pip show ansible|grep ^Location:|cut -d' ' -f2| grep "^\/"|head -n 1
 }
-
+limitAnsibleVersions(){
+    egrep "2.8.6"
+}
 findAnsibleModules(){
    (
         cd $1/
@@ -135,6 +139,7 @@ buildPyInstallerCommand(){
             --add-data .venv/lib/python3.6/site-packages/ansible/modules:ansible/modules \
             --add-data .venv/lib/python3.6/site-packages/ansible/plugins/inventory:ansible/plugins/inventory \
             --add-data .venv/lib/python3.6/site-packages/ansible/plugins:ansible/plugins \
+            --add-data .venv/lib/python3.6/site-packages/ansible/executor/discovery/python_target:ansible/executor/discovery \
            \
             --hidden-import=configparser \
             --hidden-import=distutils.spawn \
@@ -171,7 +176,9 @@ getAnsibleVersions(){
         | $JQ '.releases' | $JQ keys| grep '"[0-9]\.[0-9]\.[0-9].*"' \
         | sed 's/"//g'|sed 's/,//g' \
         | sed 's/[[:space:]]//g'|sort -r \
-        | ignoreAnsibleVersions | head -n $QUANTITY_OF_LATEST_ANSIBLE_RELEASES
+        | ignoreAnsibleVersions \
+        | limitAnsibleVersions \
+        | head -n $QUANTITY_OF_LATEST_ANSIBLE_RELEASES
 }
 export ANSIBLE_VERSIONS="$(getAnsibleVersions|tr '\n' ' ')"
 
@@ -195,7 +202,7 @@ doMain(){
     $BORG_BINARY $BORG_OPTIONS list $BORG_ARCHIVE
 
     for ANSIBLE_VERSION in $ANSIBLE_VERSIONS; do
-      for type in onefile onedir; do
+      for type in $TYPES; do
         pb_start_ts="$(date +%s)"
         cd
         DIST_PATH="ansible-playbook-$ANSIBLE_VERSION-$type"
