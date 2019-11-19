@@ -3,6 +3,9 @@ set -e
 set -m
 cd "$( dirname "${BASH_SOURCE[0]}" )"
 INSTALL_BASE=~/.ansible-onedirs
+if [[ "$INSTALL_VERSION" != "" ]]; then
+    1="$INSTALL_VERSION"
+fi
 if [[ ! -d $INSTALL_BASE ]]; then
     command mkdir -p $INSTALL_BASE
 fi
