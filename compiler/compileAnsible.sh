@@ -24,12 +24,6 @@ setupSshAgent(){
     echo $PRIVATE_KEY_ENCODED | base64 -d | ssh-add -
 }
 
-#setupSshAgent
-#       borg extract --rsh "ssh -q" --stdout root@vpn299:~WOW/ansible-playbook.borg::2.9.0rc4-onefile .METADATA.JSON | jq
-#       borg info --rsh "ssh -q" --json root@vpn299:~WOW/ansible-playbook.borg::2.9.0rc4-onefile|jq
-#echo export BORG_RSH="ssh -q -i $BORG_SSH_KEY -oPreferredAuthentications=publickey -oPasswordAuthentication=no -oKbdInteractiveAuthentication=no -oStrictHostKeyChecking=no -F/dev/null -ouserknownhostsfile=/dev/null -oPort=$BORG_SSH_PORT"
-#echo export BORG_REPO="$BORG_SSH_USER@$BORG_SSH_HOST:$BORG_ARCHIVE"
-
 CREATED=0
 BORG_CREATE_COMPRESSION="none"
 BORG_CREATE_COMPRESSION="lzma" # Better Compression
@@ -104,7 +98,7 @@ getSitePackagesPath(){
         pip show ansible|grep ^Location:|cut -d' ' -f2| grep "^\/"|head -n 1
 }
 limitAnsibleVersions(){
-    egrep "2.8.6"
+    egrep "2.8.7"
 }
 findAnsibleModules(){
    (
@@ -122,7 +116,6 @@ mangleModules(){
 }
 
 
-#            --hidden-import=ansible.executor.task_executor \
 buildPyInstallerCommand(){
     ANSIBLE_MODULES="$(findAnsibleModules $(getSitePackagesPath) | mangleModules)"
 
