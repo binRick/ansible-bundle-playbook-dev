@@ -2,10 +2,15 @@
 set -e
 cd "$( dirname "${BASH_SOURCE[0]}" )"
 INSTALL_BASE=~/.ansible-onedirs
+DEFAULT_VERSION="2.8.7"
 if [[ "$INSTALL_VERSION" != "" ]]; then
     _INSTALL_VERSION="$INSTALL_VERSION"
 else
     _INSTALL_VERSION="$1"
+fi
+if [[ "$DEFAULT_VERSION" != "" ]]; then
+    _INSTALL_VERSION="$DEFAULT_VERSION"
+
 fi
 if [[ "$_INSTALL_VERSION" == "" ]]; then
     echo First Argument must be ansible version
