@@ -1,6 +1,5 @@
 #!/bin/bash
 set -e
-set -m
 cd "$( dirname "${BASH_SOURCE[0]}" )"
 INSTALL_BASE=~/.ansible-onedirs
 if [[ "$INSTALL_VERSION" != "" ]]; then
