@@ -132,7 +132,7 @@ buildPyInstallerCommand(){
             --add-data .venv/lib/python3.6/site-packages/ansible/modules:ansible/modules \
             --add-data .venv/lib/python3.6/site-packages/ansible/plugins/inventory:ansible/plugins/inventory \
             --add-data .venv/lib/python3.6/site-packages/ansible/plugins:ansible/plugins \
-            --add-data .venv/lib/python3.6/site-packages/ansible/executor/discovery/python_target:ansible/executor/discovery \
+            --add-data .venv/lib/python3.6/site-packages/ansible/executor/discovery/python_target.py:ansible/executor/discovery \
            \
             --hidden-import=configparser \
             --hidden-import=distutils.spawn \
