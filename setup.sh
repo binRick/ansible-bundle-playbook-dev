@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e
+set -m
 cd "$( dirname "${BASH_SOURCE[0]}" )"
 INSTALL_BASE=~/.ansible-onedirs
 if [[ ! -d $INSTALL_BASE ]]; then
@@ -23,14 +25,28 @@ if [[ ! -d "$INSTALL_BASE/$1" ]]; then
         if [[ "$_DEBUG" == "1" ]]; then
             echo Downloading $1
         fi
+        set +e
         eval bash -c "$_CMD"
         exit_code=$?
+        set -e
         if [[ "$exit_code" != "0" ]]; then
             echo -e "\n\n[FAIL] exit_code=$exit_code"
-            echo -e "[FAIL] _CMD=$CMD\n\n"
+            echo -e "[FAIL] _CMD=$_CMD\n\n"
             exit $exit_code
         fi
     fi
+fi
+
+set +e
+__CMD="$_DIR_BIN --version \
+    | grep \"^ansible-playbook ${1}$\" \
+"
+version_code=$?
+set -e
+if [[ "$version_code" != "0" ]]; then
+            echo -e "\n\n[FAIL] version_code=$version_code"
+            echo -e "[FAIL] __CMD=$__CMD\n\n"
+            exit $version_code
 fi
 
 echo $_DIR_BIN
