@@ -8,7 +8,7 @@ if [[ "$INSTALL_VERSION" != "" ]]; then
 else
     _INSTALL_VERSION="$1"
 fi
-if [[ "$INSTALL_VERSION" == "" ]]; then
+if [[ "$_INSTALL_VERSION" == "" ]]; then
     echo First Argument must be ansible version
     exit 1
 fi
