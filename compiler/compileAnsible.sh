@@ -8,7 +8,7 @@ BORG_SSH_HOST=web1
 BORG_SSH_USER=BORG
 TYPES="onedir onefile"
 TYPES="onedir"
-ADDITIONAL_COMPILED_MODULES="terminaltables"
+ADDITIONAL_COMPILED_MODULES="terminaltables watchdog"
 setupSshAgent(){
     if [ "$PRIVATE_KEY_ENCODED" == "" ]; then
         echo
