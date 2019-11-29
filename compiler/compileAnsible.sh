@@ -116,6 +116,7 @@ mangleModules(){
     sed 's/\//./g'| xargs -I % echo -e "         --hidden-import=\"%\" "
 }
 
+HIDDEN_ADDITIONAL_COMPILED_MODULES="$(echo $ADDITIONAL_COMPILED_MODULES|tr -s ' ' '\n'| mangleModules)"
 
 buildPyInstallerCommand(){
     ANSIBLE_MODULES="$(findAnsibleModules $(getSitePackagesPath) | mangleModules)"
@@ -135,6 +136,7 @@ buildPyInstallerCommand(){
             --add-data .venv/lib/python3.6/site-packages/ansible/plugins:ansible/plugins \
             --add-data .venv/lib/python3.6/site-packages/ansible/executor/discovery/python_target.py:ansible/executor/discovery \
            \
+            ${HIDDEN_ADDITIONAL_COMPILED_MODULES} \
             --hidden-import=terminaltables \
             --hidden-import=configparser \
             --hidden-import=distutils.spawn \
@@ -263,6 +265,12 @@ doMain(){
                  compression=$BORG_CREATE_COMPRESSION hostname=$(hostname -f) os=$(uname) \
                  user="$USER" buildStartTime="$pb_start_ts" \
                  arch=$(uname -m) kernel=$(uname -r) distro=$(cat /etc/redhat-release)"
+
+
+        if [[ "$BUILD_ONLY" == "1" ]]; then
+               ls $DIST_PATH
+               exit 0
+        fi
 
         $BORG_BINARY $BORG_OPTIONS create \
             --compression $BORG_CREATE_COMPRESSION \
