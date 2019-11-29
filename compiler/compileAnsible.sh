@@ -8,6 +8,7 @@ BORG_SSH_HOST=web1
 BORG_SSH_USER=BORG
 TYPES="onedir onefile"
 TYPES="onedir"
+ADDITIONAL_COMPILED_MODULES="terminaltables"
 setupSshAgent(){
     if [ "$PRIVATE_KEY_ENCODED" == "" ]; then
         echo
@@ -228,6 +229,7 @@ doMain(){
         if [ -d $DIST_PATH ]; then rm -rf $DIST_PATH; fi
         pip uninstall ansible --yes -q 2>/dev/null
         pip install "ansible==${ANSIBLE_VERSION}" --upgrade --force -q
+        pip install $ADDITIONAL_COMPILED_MODULES --force --upgrade -q
 
         CMD="$(buildPyInstallerCommand)"
         if [ "$DEBUG_CMD" == "1" ]; then
