@@ -134,6 +134,7 @@ buildPyInstallerCommand(){
             --add-data .venv/lib/python3.6/site-packages/ansible/plugins:ansible/plugins \
             --add-data .venv/lib/python3.6/site-packages/ansible/executor/discovery/python_target.py:ansible/executor/discovery \
            \
+            --hidden-import=terminaltables \
             --hidden-import=configparser \
             --hidden-import=distutils.spawn \
             --hidden-import=xml.etree \
