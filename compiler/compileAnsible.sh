@@ -11,7 +11,7 @@ TYPES="onedir"
 
 
 
-ADDITIONAL_COMPILED_MODULES="terminaltables watchdog psutil paramiko setproctitle mysql-connector-python colorclass loguru requests python-jose pem pyopenssl pyyaml"
+ADDITIONAL_COMPILED_MODULES="terminaltables watchdog psutil paramiko setproctitle mysql-connector-python colorclass loguru requests python-jose pem pyopenssl pyyaml halo"
 EXCLUDED_ANSIBLE_MODULES="ansible.modules.network ansible.modules.cloud"
 ADDITIONAL_ANSIBLE_CALLLBACK_MODULES="https://raw.githubusercontent.com/codekipple/ansible-callback-concise/master/callback_plugins/codekipple_concise.py https://raw.githubusercontent.com/binRick/ansible-beautiful-output/master/callback_plugins/beautiful_output.py"
 ADDITIONAL_ANSIBLE_LIBRARY_MODULES="https://raw.githubusercontent.com/binRick/ansible-mysql-query/master/library/mysql_query.py https://raw.githubusercontent.com/ageis/ansible-module-ping/master/modules/icmp_ping.py https://raw.githubusercontent.com/cleargray/git_commit/master/git_commit.py"
@@ -104,18 +104,18 @@ writeTestPlaybook(){
   - name: icmp_ping module test
     icmp_ping:
       dest: 127.0.0.1
-  - name: mysql_query module test
-    mysql_query:
-      table: mod_vpntech_vpn_clients
-      db: '{{dbCredentials.db_name}}'
-      login_host: '{{dbCredentials.db_host}}'
-      login_port: '{{dbCredentials.db_port|default(3306)}}'
-      login_user: '{{dbCredentials.db_username}}'
-      login_password: '{{dbCredentials.db_password}}'
-      identifiers:
-        '{{dbCol1}}': '{{dbCol1Val}}'
-      values:
-        '{{dbCol2}}': '{{dbCol2Val}}'
+#  - name: mysql_query module test
+#    mysql_query:
+#      table: mod_vpntech_vpn_clients
+#      db: '{{dbCredentials.db_name}}'
+#      login_host: '{{dbCredentials.db_host}}'
+#      login_port: '{{dbCredentials.db_port|default(3306)}}'
+#      login_user: '{{dbCredentials.db_username}}'
+#      login_password: '{{dbCredentials.db_password}}'
+#      identifiers:
+#        '{{dbCol1}}': '{{dbCol1Val}}'
+#      values:
+#        '{{dbCol2}}': '{{dbCol2Val}}'
 ...
 EOF
 echo $PLAYBOOK_FILE
@@ -250,20 +250,26 @@ addAdditionalAnsibleModules(){
     for m in $(echo "$2"|tr ' ' '\n'); do
         mFile="$(basename $m)"
         if [[ $m == http* ]]; then
-            echo url detected $m
+            if [ "$DEBUG_CMD" == "1" ]; then
+              echo url detected $m
+	    fi
             mT=$(mktemp -d)
             (cd $mT && curl -s $m > $mFile)
             _m=$mT/$(basename $m)
-            echo _m=$_m
-            echo m=$m
+            if [ "$DEBUG_CMD" == "1" ]; then
+              echo _m=$_m
+              echo m=$m
+	    fi
             m=$_m  
         fi
         mDir="$(dirname $m)"
         mCmdDir="$(getAnsiblePluginsPath)/${MODULE_TYPE}"
 	if [[ ! -d "$mCmdDir" ]]; then mkdir -p $mCmdDir; fi
         mCmd="cp $mDir/$mFile $mCmdDir/$mFile"
-        echo mCmdDir=$mCmdDir
-        echo mCmd=$mCmd
+        if [ "$DEBUG_CMD" == "1" ]; then
+		echo mCmdDir=$mCmdDir
+		echo mCmd=$mCmd
+	fi
         eval $mCmd
     done
 }
