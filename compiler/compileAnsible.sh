@@ -241,8 +241,14 @@ ignoreAnsibleVersions(){
 getSitePackagesPath(){
     pip show ansible|grep ^Location:|cut -d' ' -f2| grep "^\/"|head -n 1
 }
+getAnsiblePath(){
+    echo $(getSitePackagesPath)/ansible
+}
 getAnsiblePluginsPath(){
-    echo $(getSitePackagesPath)/ansible/plugins
+    echo $(getAnsiblePath)/plugins
+}
+getAnsibleModulesPath(){
+    echo $(getAnsiblePath)/modules
 }
 
 addAdditionalAnsibleModules(){
@@ -264,7 +270,7 @@ addAdditionalAnsibleModules(){
             m=$_m  
         fi
         mDir="$(dirname $m)"
-        mCmdDir="$(getAnsiblePluginsPath)/../../${MODULE_TYPE}/${MODULE_TYPE_DIR}"
+        mCmdDir="$(getAnsiblePath)/${MODULE_TYPE}/${MODULE_TYPE_DIR}"
 	if [[ ! -d "$mCmdDir" ]]; then mkdir -p $mCmdDir; fi
         mCmd="cp $mDir/$mFile $mCmdDir/$mFile"
         if [ "$DEBUG_CMD" == "1" ]; then
