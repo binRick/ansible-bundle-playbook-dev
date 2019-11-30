@@ -11,7 +11,9 @@ TYPES="onedir"
 
 
 
-ADDITIONAL_COMPILED_MODULES="terminaltables watchdog psutil paramiko setproctitle mysql-connector-python colorclass loguru requests python-jose pem pyopenssl pyyaml halo"
+ADDITIONAL_COMPILED_MODULES="terminaltables watchdog psutil paramiko setproctitle mysql-connector-python colorclass loguru requests python-jose pem pyopenssl pyyaml halo pymysql"
+
+
 EXCLUDED_ANSIBLE_MODULES="ansible.modules.network ansible.modules.cloud ansible.modules.remote_management ansible.modules.storage ansible.modules.web_infrastructure ansible.modules.windows ansible.module_utils.network ansible.plugins.doc_fragments ansible.plugins.terminal ansible.modules.net_tools ansible.modules.monitoring.zabbix ansible.modules.messaging ansible.modules.identity ansible.modules.database.postgresql ansible.modules.database.proxysql ansible.modules.database.vertica ansible.modules.database.influxdb ansible.modules.clustering ansible.modules.source_control.bitbucket ansible.module_utils.aws ansible.plugins.cliconf"
 ADDITIONAL_ANSIBLE_CALLLBACK_MODULES="https://raw.githubusercontent.com/codekipple/ansible-callback-concise/master/callback_plugins/codekipple_concise.py https://raw.githubusercontent.com/binRick/ansible-beautiful-output/master/callback_plugins/beautiful_output.py"
 ADDITIONAL_ANSIBLE_LIBRARY_MODULES="https://raw.githubusercontent.com/binRick/ansible-mysql-query/master/library/mysql_query.py https://raw.githubusercontent.com/ageis/ansible-module-ping/master/modules/icmp_ping.py https://raw.githubusercontent.com/cleargray/git_commit/master/git_commit.py"
@@ -151,6 +153,7 @@ limitAnsibleVersions(){
 }
 findModules(){
    (
+	set -e
         cd $2/
         find $1 \
                 | grep '\.py$'|grep '/'  | sed 's/\.py//g' | sed 's/\/__init__//g'
