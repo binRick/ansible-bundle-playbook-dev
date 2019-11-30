@@ -254,7 +254,8 @@ getAnsibleModulesPath(){
 addAdditionalAnsibleModules(){
     MODULE_TYPE=$1
     MODULE_TYPE_DIR=$2
-    for m in $(echo "$2"|tr ' ' '\n'); do
+    MODULES="$3"
+    for m in $(echo "$MODULES"|tr ' ' '\n'); do
         mFile="$(basename $m)"
         if [[ $m == http* ]]; then
             if [ "$DEBUG_CMD" == "1" ]; then
