@@ -264,7 +264,7 @@ addAdditionalAnsibleModules(){
             m=$_m  
         fi
         mDir="$(dirname $m)"
-        mCmdDir="$(getAnsiblePluginsPath)/../${MODULE_TYPE}/${MODULE_TYPE_DIR}"
+        mCmdDir="$(getAnsiblePluginsPath)/../../${MODULE_TYPE}/${MODULE_TYPE_DIR}"
 	if [[ ! -d "$mCmdDir" ]]; then mkdir -p $mCmdDir; fi
         mCmd="cp $mDir/$mFile $mCmdDir/$mFile"
         if [ "$DEBUG_CMD" == "1" ]; then
