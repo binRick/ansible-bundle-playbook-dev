@@ -387,6 +387,11 @@ doMain(){
         ANSIBLE_STDOUT_CALLBACK=yaml \
             testAnsible
 
+        echo "Executing Test Playbook with unixy stdout callback"
+        ANSIBLE_DISPLAY_ARGS_TO_STDOUT=False \
+        ANSIBLE_STDOUT_CALLBACK=unixy \
+            testAnsible
+
         echo "Executing Test Playbook with codekipple_concise stdout callback"
         ANSIBLE_DISPLAY_ARGS_TO_STDOUT=False \
         ANSIBLE_STDOUT_CALLBACK=codekipple_concise \
