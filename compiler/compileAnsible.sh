@@ -104,8 +104,8 @@ installJo(){
 }
 
 limitAnsibleVersions(){
-    #egrep "2.8.7"
-    egrep "2.8.7|2.8.6"
+    egrep "2.8.7"
+    #egrep "2.8.7|2.8.6"
 }
 findModules(){
    (
