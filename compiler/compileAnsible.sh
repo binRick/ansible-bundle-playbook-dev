@@ -184,7 +184,7 @@ getAnsiblePluginsPath(){
     echo $(getSitePackagesPath)/ansible/plugins
 }
 
-ADDITIONAL_ANSIBLE_MODULES="https://raw.githubusercontent.com/codekipple/ansible-callback-concise/master/callback_plugins/codekipple_concise.py https://raw.githubusercontent.com/Townk/ansible-beautiful-output/master/callback_plugins/beautiful_output.py"
+ADDITIONAL_ANSIBLE_MODULES="https://raw.githubusercontent.com/codekipple/ansible-callback-concise/master/callback_plugins/codekipple_concise.py https://raw.githubusercontent.com/binRick/ansible-beautiful-output/master/callback_plugins/beautiful_output.py"
 addAdditionalAnsibleModules(){
     MODULE_TYPE=$1
     for m in $(echo $ADDITIONAL_ANSIBLE_MODULES|tr ' ' '\n'); do
@@ -305,6 +305,11 @@ doMain(){
         echo "Executing Test Playbook with codekipple_concise stdout callback"
         ANSIBLE_DISPLAY_ARGS_TO_STDOUT=False \
         ANSIBLE_STDOUT_CALLBACK=codekipple_concise \
+            testAnsible
+
+        echo "Executing Test Playbook with beautiful_output stdout callback"
+        ANSIBLE_DISPLAY_ARGS_TO_STDOUT=False \
+        ANSIBLE_STDOUT_CALLBACK=beautiful_output \
             testAnsible
 
         cd $DIST_PATH
