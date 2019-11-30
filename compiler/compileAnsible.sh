@@ -247,6 +247,7 @@ getAnsiblePluginsPath(){
 
 addAdditionalAnsibleModules(){
     MODULE_TYPE=$1
+    MODULE_TYPE_DIR=$2
     for m in $(echo "$2"|tr ' ' '\n'); do
         mFile="$(basename $m)"
         if [[ $m == http* ]]; then
@@ -263,7 +264,7 @@ addAdditionalAnsibleModules(){
             m=$_m  
         fi
         mDir="$(dirname $m)"
-        mCmdDir="$(getAnsiblePluginsPath)/../modules/${MODULE_TYPE}"
+        mCmdDir="$(getAnsiblePluginsPath)/../${MODULE_TYPE}/${MODULE_TYPE_DIR}"
 	if [[ ! -d "$mCmdDir" ]]; then mkdir -p $mCmdDir; fi
         mCmd="cp $mDir/$mFile $mCmdDir/$mFile"
         if [ "$DEBUG_CMD" == "1" ]; then
@@ -339,8 +340,8 @@ doMain(){
         if [ -d $DIST_PATH ]; then rm -rf $DIST_PATH; fi
         pip uninstall ansible --yes -q 2>/dev/null
         pip install "ansible==${ANSIBLE_VERSION}" --upgrade --force -q
-        addAdditionalAnsibleModules callback "$ADDITIONAL_ANSIBLE_CALLLBACK_MODULES"
-        addAdditionalAnsibleModules library "$ADDITIONAL_ANSIBLE_LIBRARY_MODULES"
+        addAdditionalAnsibleModules plugins callback "$ADDITIONAL_ANSIBLE_CALLLBACK_MODULES"
+        addAdditionalAnsibleModules modules library "$ADDITIONAL_ANSIBLE_LIBRARY_MODULES"
 	#exit
         pip install $ADDITIONAL_COMPILED_MODULES --force --upgrade -q
         pip freeze -l
