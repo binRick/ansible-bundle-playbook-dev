@@ -11,10 +11,10 @@ TYPES="onedir"
 
 
 
-ADDITIONAL_COMPILED_MODULES="terminaltables watchdog psutil paramiko setproctitle pymysql"
+ADDITIONAL_COMPILED_MODULES="terminaltables watchdog psutil paramiko setproctitle mysqlclient loguru"
 EXCLUDED_ANSIBLE_MODULES="ansible.modules.network ansible.modules.cloud"
 ADDITIONAL_ANSIBLE_CALLLBACK_MODULES="https://raw.githubusercontent.com/codekipple/ansible-callback-concise/master/callback_plugins/codekipple_concise.py https://raw.githubusercontent.com/binRick/ansible-beautiful-output/master/callback_plugins/beautiful_output.py"
-ADDITIONAL_ANSIBLE_LIBRARY_MODULES="https://raw.githubusercontent.com/binRick/ansible-mysql-query/master/library/mysql_query.py https://raw.githubusercontent.com/ageis/ansible-module-ping/master/modules/icmp_ping.py"
+ADDITIONAL_ANSIBLE_LIBRARY_MODULES="https://raw.githubusercontent.com/binRick/ansible-mysql-query/master/library/mysql_query.py https://raw.githubusercontent.com/ageis/ansible-module-ping/master/modules/icmp_ping.py https://raw.githubusercontent.com/cleargray/git_commit/master/git_commit.py"
 
 
 
@@ -172,16 +172,16 @@ mangleModules(){
 
 buildPyInstallerCommand(){
 	ANSIBLE_MODULES="$(findModules ansible $(getSitePackagesPath) | mangleModules)"
-	_ANSIBLE_MODULES="$(echo $ANSIBLE_MODULES | tr ' ' '\n'| excludeAnsibleModules|tr '\n' ' '))"
+	_ANSIBLE_MODULES="$(echo $ANSIBLE_MODULES | tr ' ' '\n'| excludeAnsibleModules|tr '\n' ' ')"
 
 	#echo ANSIBLE_MODULES=$ANSIBLE_MODULES
 	#echo _ANSIBLE_MODULES=$_ANSIBLE_MODULES
 
-	echo -n "ANSIBLE_MODULES chars: ";  echo $ANSIBLE_MODULES  |tr ' ' '\n' | wc -l
-	echo -n "_ANSIBLE_MODULES chars: "; echo $_ANSIBLE_MODULES |tr ' ' '\n' | wc -l
+	#echo -n "ANSIBLE_MODULES chars: ";  echo $ANSIBLE_MODULES  |tr ' ' '\n' | wc -l
+	#echo -n "_ANSIBLE_MODULES chars: "; echo $_ANSIBLE_MODULES |tr ' ' '\n' | wc -l
 
-	echo -n "ANSIBLE_MODULES chars: "; (echo $ANSIBLE_MODULES|wc -c)
-	echo -n "_ANSIBLE_MODULES chars: "; (echo $_ANSIBLE_MODULES|wc -c)
+	#echo -n "ANSIBLE_MODULES chars: "; (echo $ANSIBLE_MODULES|wc -c)
+	#echo -n "_ANSIBLE_MODULES chars: "; (echo $_ANSIBLE_MODULES|wc -c)
 
 #exit
 
@@ -189,8 +189,7 @@ buildPyInstallerCommand(){
 	for m in $(echo $ADDITIONAL_COMPILED_MODULES|tr -s ' ' '\n'); do 
 		HIDDEN_ADDITIONAL_COMPILED_MODULES="$HIDDEN_ADDITIONAL_COMPILED_MODULES $(findModules $m $(getSitePackagesPath) | mangleModules)"
 	done
-	echo HIDDEN_ADDITIONAL_COMPILED_MODULES=$HIDDEN_ADDITIONAL_COMPILED_MODULES
-	exit
+	#echo HIDDEN_ADDITIONAL_COMPILED_MODULES=$HIDDEN_ADDITIONAL_COMPILED_MODULES
 
 
 	echo pyinstaller \
@@ -345,8 +344,9 @@ doMain(){
             echo $CMD
             exit 
         fi
-        ANSIBLE_MODULES_QTY="$(findModules ansible $(getSitePackagesPath) | mangleModules|tr ' ' '\n'|grep '^--hidden-import='|wc -l)"
-        echo "Building binary with $ANSIBLE_MODULES_QTY modules"
+        ANSIBLE_HIDDEN_IMPORTS_QTY="$(echo "$CMD" | tr ' ' '\n'|grep -c hidden-import)"
+	#findModules ansible $(getSitePackagesPath) | mangleModules|tr ' ' '\n'|grep '^--hidden-import='|wc -l)"
+        echo "Building binary with $ANSIBLE_HIDDEN_IMPORTS_QTY hidden modules"
         (eval "$CMD")
         echo "Finished Building binary"
         pb_duration=$(($(date +%s)-$pb_start_ts))
