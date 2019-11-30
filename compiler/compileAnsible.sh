@@ -11,7 +11,7 @@ TYPES="onedir"
 
 
 
-ADDITIONAL_COMPILED_MODULES="terminaltables watchdog psutil paramiko setproctitle mysqlclient loguru"
+ADDITIONAL_COMPILED_MODULES="terminaltables watchdog psutil paramiko setproctitle mysql-connector-python colorclass loguru requests python-jose pem pyopenssl pyyaml"
 EXCLUDED_ANSIBLE_MODULES="ansible.modules.network ansible.modules.cloud"
 ADDITIONAL_ANSIBLE_CALLLBACK_MODULES="https://raw.githubusercontent.com/codekipple/ansible-callback-concise/master/callback_plugins/codekipple_concise.py https://raw.githubusercontent.com/binRick/ansible-beautiful-output/master/callback_plugins/beautiful_output.py"
 ADDITIONAL_ANSIBLE_LIBRARY_MODULES="https://raw.githubusercontent.com/binRick/ansible-mysql-query/master/library/mysql_query.py https://raw.githubusercontent.com/ageis/ansible-module-ping/master/modules/icmp_ping.py https://raw.githubusercontent.com/cleargray/git_commit/master/git_commit.py"
@@ -186,7 +186,7 @@ buildPyInstallerCommand(){
 #exit
 
 	HIDDEN_ADDITIONAL_COMPILED_MODULES=""
-	for m in $(echo $ADDITIONAL_COMPILED_MODULES|tr -s ' ' '\n'); do 
+	for m in $(echo $ADDITIONAL_COMPILED_MODULES|sed 's/-/_/g' | tr -s ' ' '\n'); do 
 		HIDDEN_ADDITIONAL_COMPILED_MODULES="$HIDDEN_ADDITIONAL_COMPILED_MODULES $(findModules $m $(getSitePackagesPath) | mangleModules)"
 	done
 	#echo HIDDEN_ADDITIONAL_COMPILED_MODULES=$HIDDEN_ADDITIONAL_COMPILED_MODULES
