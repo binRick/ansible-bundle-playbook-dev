@@ -8,7 +8,16 @@ BORG_SSH_HOST=web1
 BORG_SSH_USER=BORG
 TYPES="onedir onefile"
 TYPES="onedir"
-ADDITIONAL_COMPILED_MODULES="terminaltables watchdog psutil"
+
+
+
+ADDITIONAL_COMPILED_MODULES="terminaltables watchdog psutil paramiko setproctitle pymysql"
+EXCLUDED_ANSIBLE_MODULES="ansible.modules.network ansible.modules.cloud"
+ADDITIONAL_ANSIBLE_CALLLBACK_MODULES="https://raw.githubusercontent.com/codekipple/ansible-callback-concise/master/callback_plugins/codekipple_concise.py https://raw.githubusercontent.com/binRick/ansible-beautiful-output/master/callback_plugins/beautiful_output.py"
+ADDITIONAL_ANSIBLE_LIBRARY_MODULES="https://raw.githubusercontent.com/binRick/ansible-mysql-query/master/library/mysql_query.py https://raw.githubusercontent.com/ageis/ansible-module-ping/master/modules/icmp_ping.py"
+
+
+
 setupSshAgent(){
     if [ "$PRIVATE_KEY_ENCODED" == "" ]; then
         echo
@@ -33,10 +42,14 @@ BORG_CREATE_COMPRESSION="auto,lzma,6"
 ANSIBLE_TEST_ENV="ANSIBLE_NOCOWS=True ANSIBLE_PYTHON_INTERPRETER=auto_silent ANSIBLE_FORCE_COLOR=1 ANSIBLE_VERBOSITY=0 ANSIBLE_DEBUG=False ANSIBLE_LOCALHOST_WARNING=False ANSIBLE_SYSTEM_WARNINGS=True ANSIBLE_RETRY_FILES_ENABLED=False ANSIBLE_DISPLAY_ARGS_TO_STDOUT=True ANSIBLE_DEPRECATION_WARNINGS=False ANSIBLE_NO_TARGET_SYSLOG=True"
 PLAYBOOK_FILE=~/.tp.yaml
 start_ts="$(date +%s)"
-if [ "$DELETE_ARCHIVE" == "1" ]; then
-    echo "Deleting ${BORG_ARCHIVE}..."
-    rm -rf $BORG_ARCHIVE
+
+if [[ "$BUILD_ONLY" != "1" ]]; then
+	if [ "$DELETE_ARCHIVE" == "1" ]; then
+	    echo "Deleting ${BORG_ARCHIVE}..."
+	    rm -rf $BORG_ARCHIVE
+	fi
 fi
+
 if [ "$QTY" == "" ]; then
     QUANTITY_OF_LATEST_ANSIBLE_RELEASES=10
 else
@@ -61,20 +74,49 @@ writeTestPlaybook(){
 ---
 - name: test playbook
   hosts: all
-  gather_facts: yes
+  gather_facts: true
   connection: local
-  become: no
+  become: false
+  vars:
+    dbCol1: id
+    dbCol1Val: 10
+    dbCol2: testval
+    dbCol2Val: val12345
+    dbCredentials:
+      db_name: testdb
+      db_host: localhost
+      db_port: 3306
+      db_username: testuser
+      db_password: testpass123
   tasks:
-   - name: pwd test
-     command: pwd
-     register: pwd
-   - name: debug pwd
-     debug: var=pwd
-   - name: id test
-     command: id
-     register: id
-   - name: debug id
-     debug: var=id
+  - name: pwd test
+    command: pwd
+    register: pwd
+  - name: debug pwd
+    debug:
+      var: pwd
+  - name: id test
+    command: id
+    register: id
+  - name: debug id
+    debug:
+      var: id
+  - name: icmp_ping module test
+    icmp_ping:
+      dest: 127.0.0.1
+  - name: mysql_query module test
+    mysql_query:
+      table: mod_vpntech_vpn_clients
+      db: '{{dbCredentials.db_name}}'
+      login_host: '{{dbCredentials.db_host}}'
+      login_port: '{{dbCredentials.db_port|default(3306)}}'
+      login_user: '{{dbCredentials.db_username}}'
+      login_password: '{{dbCredentials.db_password}}'
+      identifiers:
+        '{{dbCol1}}': '{{dbCol1Val}}'
+      values:
+        '{{dbCol2}}': '{{dbCol2Val}}'
+...
 EOF
 echo $PLAYBOOK_FILE
 }
@@ -118,6 +160,10 @@ findModules(){
    ) | sort | uniq
 }
 
+excludeAnsibleModules(){
+	egrep -v "$(echo $EXCLUDED_ANSIBLE_MODULES | tr ' ' '|')"
+}
+
 mangleModules(){
     sed 's/\//./g'| xargs -I % echo -e "         --hidden-import=\"%\" "
 }
@@ -125,41 +171,57 @@ mangleModules(){
 
 
 buildPyInstallerCommand(){
-    ANSIBLE_MODULES="$(findModules ansible $(getSitePackagesPath) | mangleModules)"
-    HIDDEN_ADDITIONAL_COMPILED_MODULES=""
-    for m in $(echo $ADDITIONAL_COMPILED_MODULES|tr -s ' ' '\n'); do 
-        HIDDEN_ADDITIONAL_COMPILED_MODULES="$HIDDEN_ADDITIONAL_COMPILED_MODULES $(findModules $m $(getSitePackagesPath) | mangleModules)"
-    done
+	ANSIBLE_MODULES="$(findModules ansible $(getSitePackagesPath) | mangleModules)"
+	_ANSIBLE_MODULES="$(echo $ANSIBLE_MODULES | tr ' ' '\n'| excludeAnsibleModules|tr '\n' ' '))"
 
-    echo pyinstaller \
-        -n ansible-playbook \
-        --$type -y --clean \
-        --distpath $DIST_PATH \
-           \
-            --add-data .venv/lib/python3.6/site-packages/ansible/config/base.yml:ansible/config \
-            --add-data .venv/lib/python3.6/site-packages/ansible/config/module_defaults.yml:ansible/config \
-            --add-data .venv/lib/python3.6/site-packages/ansible/utils/shlex.py:ansible/utils \
-            --add-data .venv/lib/python3.6/site-packages/ansible/plugins/cache:ansible/plugins/cache \
-            --add-data .venv/lib/python3.6/site-packages/ansible/module_utils:ansible/module_utils \
-            --add-data .venv/lib/python3.6/site-packages/ansible/modules:ansible/modules \
-            --add-data .venv/lib/python3.6/site-packages/ansible/plugins/inventory:ansible/plugins/inventory \
-            --add-data .venv/lib/python3.6/site-packages/ansible/plugins:ansible/plugins \
-            --add-data .venv/lib/python3.6/site-packages/ansible/executor/discovery/python_target.py:ansible/executor/discovery \
-           \
-            ${HIDDEN_ADDITIONAL_COMPILED_MODULES} \
-            --hidden-import=configparser \
-            --hidden-import=distutils.spawn \
-            --hidden-import=xml.etree \
-            --hidden-import=pty \
-            --hidden-import=distutils.version \
-            --hidden-import=xml.etree.ElementTree \
-            --hidden-import=csv \
-            --hidden-import=smtplib \
-            --hidden-import=logging.handlers \
-           \
-                ${ANSIBLE_MODULES} \
-            \
-             .venv/bin/ansible-playbook
+	#echo ANSIBLE_MODULES=$ANSIBLE_MODULES
+	#echo _ANSIBLE_MODULES=$_ANSIBLE_MODULES
+
+	echo -n "ANSIBLE_MODULES chars: ";  echo $ANSIBLE_MODULES  |tr ' ' '\n' | wc -l
+	echo -n "_ANSIBLE_MODULES chars: "; echo $_ANSIBLE_MODULES |tr ' ' '\n' | wc -l
+
+	echo -n "ANSIBLE_MODULES chars: "; (echo $ANSIBLE_MODULES|wc -c)
+	echo -n "_ANSIBLE_MODULES chars: "; (echo $_ANSIBLE_MODULES|wc -c)
+
+#exit
+
+	HIDDEN_ADDITIONAL_COMPILED_MODULES=""
+	for m in $(echo $ADDITIONAL_COMPILED_MODULES|tr -s ' ' '\n'); do 
+		HIDDEN_ADDITIONAL_COMPILED_MODULES="$HIDDEN_ADDITIONAL_COMPILED_MODULES $(findModules $m $(getSitePackagesPath) | mangleModules)"
+	done
+	echo HIDDEN_ADDITIONAL_COMPILED_MODULES=$HIDDEN_ADDITIONAL_COMPILED_MODULES
+	exit
+
+
+	echo pyinstaller \
+	-n ansible-playbook \
+	--$type -y --clean \
+	--distpath $DIST_PATH \
+	   \
+	    --add-data .venv/lib/python3.6/site-packages/ansible/config/base.yml:ansible/config \
+	    --add-data .venv/lib/python3.6/site-packages/ansible/config/module_defaults.yml:ansible/config \
+	    --add-data .venv/lib/python3.6/site-packages/ansible/utils/shlex.py:ansible/utils \
+	    --add-data .venv/lib/python3.6/site-packages/ansible/plugins/cache:ansible/plugins/cache \
+	    --add-data .venv/lib/python3.6/site-packages/ansible/module_utils:ansible/module_utils \
+	    --add-data .venv/lib/python3.6/site-packages/ansible/modules:ansible/modules \
+	    --add-data .venv/lib/python3.6/site-packages/ansible/plugins/inventory:ansible/plugins/inventory \
+	    --add-data .venv/lib/python3.6/site-packages/ansible/plugins:ansible/plugins \
+	    --add-data .venv/lib/python3.6/site-packages/ansible/executor/discovery/python_target.py:ansible/executor/discovery \
+	   \
+	    ${HIDDEN_ADDITIONAL_COMPILED_MODULES} \
+	    --hidden-import=configparser \
+	    --hidden-import=distutils.spawn \
+	    --hidden-import=xml.etree \
+	    --hidden-import=pty \
+	    --hidden-import=distutils.version \
+	    --hidden-import=xml.etree.ElementTree \
+	    --hidden-import=csv \
+	    --hidden-import=smtplib \
+	    --hidden-import=logging.handlers \
+	   \
+		${_ANSIBLE_MODULES} \
+	    \
+	     .venv/bin/ansible-playbook
 
 }
 
@@ -184,10 +246,9 @@ getAnsiblePluginsPath(){
     echo $(getSitePackagesPath)/ansible/plugins
 }
 
-ADDITIONAL_ANSIBLE_MODULES="https://raw.githubusercontent.com/codekipple/ansible-callback-concise/master/callback_plugins/codekipple_concise.py https://raw.githubusercontent.com/binRick/ansible-beautiful-output/master/callback_plugins/beautiful_output.py"
 addAdditionalAnsibleModules(){
     MODULE_TYPE=$1
-    for m in $(echo $ADDITIONAL_ANSIBLE_MODULES|tr ' ' '\n'); do
+    for m in $(echo "$2"|tr ' ' '\n'); do
         mFile="$(basename $m)"
         if [[ $m == http* ]]; then
             echo url detected $m
@@ -199,7 +260,10 @@ addAdditionalAnsibleModules(){
             m=$_m  
         fi
         mDir="$(dirname $m)"
-        mCmd="cp $mDir/$mFile $(getAnsiblePluginsPath)/${MODULE_TYPE}/$mFile"
+        mCmdDir="$(getAnsiblePluginsPath)/${MODULE_TYPE}"
+	if [[ ! -d "$mCmdDir" ]]; then mkdir -p $mCmdDir; fi
+        mCmd="cp $mDir/$mFile $mCmdDir/$mFile"
+        echo mCmdDir=$mCmdDir
         echo mCmd=$mCmd
         eval $mCmd
     done
@@ -228,23 +292,25 @@ set +e; $BORG_BINARY --version >/dev/null 2>&1 || {
 doMain(){
     set -e
     installJo
-
-    if [ ! -d $BORG_ARCHIVE ]; then
-        $BORG_BINARY init --encryption repokey --storage-quota $BORG_ARCHIVE_QUOTA --make-parent-dirs $BORG_ARCHIVE 2>/dev/null
+    if [[ "$BUILD_ONLY" != "1" ]]; then
+	    if [ ! -d $BORG_ARCHIVE ]; then
+		$BORG_BINARY init --encryption repokey --storage-quota $BORG_ARCHIVE_QUOTA --make-parent-dirs $BORG_ARCHIVE 2>/dev/null
+	    fi
+	    $BORG_BINARY $BORG_OPTIONS info $BORG_ARCHIVE
+	    $BORG_BINARY $BORG_OPTIONS list $BORG_ARCHIVE
     fi
-    $BORG_BINARY $BORG_OPTIONS info $BORG_ARCHIVE
-    $BORG_BINARY $BORG_OPTIONS list $BORG_ARCHIVE
-
     for ANSIBLE_VERSION in $ANSIBLE_VERSIONS; do
       for type in $TYPES; do
         pb_start_ts="$(date +%s)"
         cd
         DIST_PATH=~/ansible-playbook-$ANSIBLE_VERSION-$type
         set +e
-        $BORG_BINARY $BORG_OPTIONS list $BORG_ARCHIVE | grep "^${ANSIBLE_VERSION}-${type}" >/dev/null && {
-            echo "$ANSIBLE_VERSION ($type) exists in $BORG_ARCHIVE. Skipping.."
-            continue
-        }
+    	if [[ "$BUILD_ONLY" != "1" ]]; then
+		$BORG_BINARY $BORG_OPTIONS list $BORG_ARCHIVE | grep "^${ANSIBLE_VERSION}-${type}" >/dev/null && {
+		    echo "$ANSIBLE_VERSION ($type) exists in $BORG_ARCHIVE. Skipping..";
+		    continue;
+		}
+	fi
         set -e
         echo "Processing $ANSIBLE_VERSION $type"
         cd
@@ -268,8 +334,11 @@ doMain(){
         if [ -d $DIST_PATH ]; then rm -rf $DIST_PATH; fi
         pip uninstall ansible --yes -q 2>/dev/null
         pip install "ansible==${ANSIBLE_VERSION}" --upgrade --force -q
-        addAdditionalAnsibleModules callback
+        addAdditionalAnsibleModules callback "$ADDITIONAL_ANSIBLE_CALLLBACK_MODULES"
+        addAdditionalAnsibleModules library "$ADDITIONAL_ANSIBLE_LIBRARY_MODULES"
+	#exit
         pip install $ADDITIONAL_COMPILED_MODULES --force --upgrade -q
+        pip freeze -l
 
         CMD="$(buildPyInstallerCommand)"
         if [ "$DEBUG_CMD" == "1" ]; then
@@ -290,7 +359,9 @@ doMain(){
         source <(echo $ANSIBLE_TEST_ENV |tr ' ' '\n'|xargs -I % echo export %)
 
         testAnsible(){
-            $PLAYBOOK_BINARY_PATH -i localhost, $(writeTestPlaybook)
+            cmd="$PLAYBOOK_BINARY_PATH -i localhost, $(writeTestPlaybook)"
+	    echo $cmd
+	    eval $cmd
         }
 
         echo "Executing Test Playbook"
@@ -332,10 +403,12 @@ doMain(){
                exit 0
         fi
 
-        $BORG_BINARY $BORG_OPTIONS create \
-            --compression $BORG_CREATE_COMPRESSION \
-            --progress --comment "$COMMENT" -v --stats $BORG_ARCHIVE::${ANSIBLE_VERSION}-${type} \
-            ansible-playbook .METADATA.JSON .ANSIBLE-RELEASE.JSON
+	if [[ "$BUILD_ONLY" != "1" ]]; then
+		$BORG_BINARY $BORG_OPTIONS create \
+		    --compression $BORG_CREATE_COMPRESSION \
+		    --progress --comment "$COMMENT" -v --stats $BORG_ARCHIVE::${ANSIBLE_VERSION}-${type} \
+		    ansible-playbook .METADATA.JSON .ANSIBLE-RELEASE.JSON
+	fi
 
         CREATED=$((CREATED+1))
         cd
@@ -345,8 +418,10 @@ doMain(){
     done
     duration=$(($(date +%s)-$start_ts))
 
-    $BORG_BINARY $BORG_OPTIONS info $BORG_ARCHIVE
-    $BORG_BINARY $BORG_OPTIONS list $BORG_ARCHIVE
+    if [[ "$BUILD_ONLY" != "1" ]]; then
+	    $BORG_BINARY $BORG_OPTIONS info $BORG_ARCHIVE
+	    $BORG_BINARY $BORG_OPTIONS list $BORG_ARCHIVE
+    fi
 
     echo "OK- Created $CREATED ansible-playbook binaries in $duration seconds."
 }
