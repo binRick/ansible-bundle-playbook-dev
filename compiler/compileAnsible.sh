@@ -61,12 +61,20 @@ writeTestPlaybook(){
 ---
 - name: test playbook
   hosts: all
-  gather_facts: no
+  gather_facts: yes
   connection: local
   become: no
   tasks:
+   - name: pwd test
+     command: pwd
+     register: pwd
+   - name: debug pwd
+     debug: var=pwd
    - name: id test
      command: id
+     register: id
+   - name: debug id
+     debug: var=id
 EOF
 echo $PLAYBOOK_FILE
 }
@@ -95,19 +103,17 @@ installJo(){
   }
 }
 
-getSitePackagesPath(){
-        pip show ansible|grep ^Location:|cut -d' ' -f2| grep "^\/"|head -n 1
-}
 limitAnsibleVersions(){
     egrep "2.8.7"
+    #egrep "2.8.7|2.8.6"
 }
-findAnsibleModules(){
+findModules(){
    (
-        cd $1/
-        find ansible \
+        cd $2/
+        find $1 \
                 | grep '\.py$'|grep '/'  | sed 's/\.py//g' | sed 's/\/__init__//g'
 
-        find ansible \
+        find $1 \
                 | grep '\.py$'| grep __init__.py$ |grep '/'| grep '/' | sed 's/\/__init__.py$//g'
    ) | sort | uniq
 }
@@ -116,10 +122,14 @@ mangleModules(){
     sed 's/\//./g'| xargs -I % echo -e "         --hidden-import=\"%\" "
 }
 
-HIDDEN_ADDITIONAL_COMPILED_MODULES="$(echo $ADDITIONAL_COMPILED_MODULES|tr -s ' ' '\n'| mangleModules)"
+
 
 buildPyInstallerCommand(){
-    ANSIBLE_MODULES="$(findAnsibleModules $(getSitePackagesPath) | mangleModules)"
+    ANSIBLE_MODULES="$(findModules ansible $(getSitePackagesPath) | mangleModules)"
+    HIDDEN_ADDITIONAL_COMPILED_MODULES=""
+    for m in $(echo $ADDITIONAL_COMPILED_MODULES|tr -s ' ' '\n'); do 
+        HIDDEN_ADDITIONAL_COMPILED_MODULES="$HIDDEN_ADDITIONAL_COMPILED_MODULES $(findModules $m $(getSitePackagesPath) | mangleModules)"
+    done
 
     echo pyinstaller \
         -n ansible-playbook \
@@ -137,7 +147,6 @@ buildPyInstallerCommand(){
             --add-data .venv/lib/python3.6/site-packages/ansible/executor/discovery/python_target.py:ansible/executor/discovery \
            \
             ${HIDDEN_ADDITIONAL_COMPILED_MODULES} \
-            --hidden-import=terminaltables \
             --hidden-import=configparser \
             --hidden-import=distutils.spawn \
             --hidden-import=xml.etree \
@@ -166,6 +175,34 @@ validateAnsible(){
 ignoreAnsibleVersions(){
     grep -v "^2.7" \
         |grep -v "^2.6"
+}
+
+getSitePackagesPath(){
+    pip show ansible|grep ^Location:|cut -d' ' -f2| grep "^\/"|head -n 1
+}
+getAnsiblePluginsPath(){
+    echo $(getSitePackagesPath)/ansible/plugins
+}
+
+ADDITIONAL_ANSIBLE_MODULES="https://raw.githubusercontent.com/codekipple/ansible-callback-concise/master/callback_plugins/codekipple_concise.py https://raw.githubusercontent.com/Townk/ansible-beautiful-output/master/callback_plugins/beautiful_output.py"
+addAdditionalAnsibleModules(){
+    MODULE_TYPE=$1
+    for m in $(echo $ADDITIONAL_ANSIBLE_MODULES|tr ' ' '\n'); do
+        mFile="$(basename $m)"
+        if [[ $m == http* ]]; then
+            echo url detected $m
+            mT=$(mktemp -d)
+            (cd $mT && curl -s $m > $mFile)
+            _m=$mT/$(basename $m)
+            echo _m=$_m
+            echo m=$m
+            m=$_m  
+        fi
+        mDir="$(dirname $m)"
+        mCmd="cp $mDir/$mFile $(getAnsiblePluginsPath)/${MODULE_TYPE}/$mFile"
+        echo mCmd=$mCmd
+        eval $mCmd
+    done
 }
 
 getAnsibleVersions(){
@@ -202,7 +239,7 @@ doMain(){
       for type in $TYPES; do
         pb_start_ts="$(date +%s)"
         cd
-        DIST_PATH="ansible-playbook-$ANSIBLE_VERSION-$type"
+        DIST_PATH=~/ansible-playbook-$ANSIBLE_VERSION-$type
         set +e
         $BORG_BINARY $BORG_OPTIONS list $BORG_ARCHIVE | grep "^${ANSIBLE_VERSION}-${type}" >/dev/null && {
             echo "$ANSIBLE_VERSION ($type) exists in $BORG_ARCHIVE. Skipping.."
@@ -231,6 +268,7 @@ doMain(){
         if [ -d $DIST_PATH ]; then rm -rf $DIST_PATH; fi
         pip uninstall ansible --yes -q 2>/dev/null
         pip install "ansible==${ANSIBLE_VERSION}" --upgrade --force -q
+        addAdditionalAnsibleModules callback
         pip install $ADDITIONAL_COMPILED_MODULES --force --upgrade -q
 
         CMD="$(buildPyInstallerCommand)"
@@ -238,7 +276,7 @@ doMain(){
             echo $CMD
             exit 
         fi
-        ANSIBLE_MODULES_QTY="$(findAnsibleModules $(getSitePackagesPath) | mangleModules|tr ' ' '\n'|grep '^--hidden-import='|wc -l)"
+        ANSIBLE_MODULES_QTY="$(findModules ansible $(getSitePackagesPath) | mangleModules|tr ' ' '\n'|grep '^--hidden-import='|wc -l)"
         echo "Building binary with $ANSIBLE_MODULES_QTY modules"
         (eval "$CMD")
         echo "Finished Building binary"
@@ -248,10 +286,27 @@ doMain(){
         file $PLAYBOOK_BINARY_PATH | grep '^ansible-playbook' | grep ': ELF 64-bit LSB executable, x86-64' && echo Valid File
         $PLAYBOOK_BINARY_PATH --version | grep '^ansible-playbook $ANSIBLE_VERSION' && echo Valid Version
         
-        echo "Configuring Ansible Environment.."
+        echo "Configuring Ansible Base Environment.."
         source <(echo $ANSIBLE_TEST_ENV |tr ' ' '\n'|xargs -I % echo export %)
+
+        testAnsible(){
+            $PLAYBOOK_BINARY_PATH -i localhost, $(writeTestPlaybook)
+        }
+
         echo "Executing Test Playbook"
-        $PLAYBOOK_BINARY_PATH -i localhost, -c local $(writeTestPlaybook)
+        ANSIBLE_DISPLAY_ARGS_TO_STDOUT=False \
+            testAnsible
+
+        echo "Executing Test Playbook with yaml stdout callback"
+        ANSIBLE_DISPLAY_ARGS_TO_STDOUT=False \
+        ANSIBLE_STDOUT_CALLBACK=yaml \
+            testAnsible
+
+        echo "Executing Test Playbook with codekipple_concise stdout callback"
+        ANSIBLE_DISPLAY_ARGS_TO_STDOUT=False \
+        ANSIBLE_STDOUT_CALLBACK=codekipple_concise \
+            testAnsible
+
         cd $DIST_PATH
 
         ansibleReleaseInfo $ANSIBLE_VERSION | $JQ '.[]' > .ANSIBLE-RELEASE.JSON
