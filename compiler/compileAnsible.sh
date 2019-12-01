@@ -156,7 +156,7 @@ replaceModuleName(){
 		if [[ "$s1" == "$_M" ]]; then
 			__M="$_M"
 			_M=$(echo $_M|sed "s/^$s1\$/$s2/g")
-			>&2 echo  changed Module name from =$__M $_M based on r=$r, s1=$s1, s2=$s2
+			>&2 echo  changed Module name from \"$__M\" -> \"$_M\" based on r=$r, s1=$s1, s2=$s2
 		else
 			[[ "0" == "1" ]] && >&2 echo -e "       module \"$_M\" does not match s1 \"$s1\" "
 		fi
