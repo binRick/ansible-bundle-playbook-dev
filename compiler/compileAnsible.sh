@@ -45,7 +45,7 @@ getBinModulesFile(){
     done
 
     echo -e "\nif \"_EXEC_BIN_list\" in os.environ.keys():" >> $modulesFile
-    echo -e '  print(_EXEC_BIN_MODULES)' >> $modulesFile
+    echo -e '  print(_EXEC_BIN_MODULES.keys())' >> $modulesFile
     echo -e "  sys.exit(0)\n" >> $modulesFile
 
     for m in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
