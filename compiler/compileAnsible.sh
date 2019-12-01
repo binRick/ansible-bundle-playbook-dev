@@ -10,7 +10,7 @@ TYPES="onedir onefile"
 TYPES="onedir"
 
 
-ADDITIONAL_COMPILED_MODULES="terminaltables psutil loguru"
+ADDITIONAL_COMPILED_MODULES="terminaltables psutil loguru linode-cli"
 # setproctitle linode-cli"
 # watchdog psutil paramiko mysql-connector-python colorclass loguru requests python-jose pem pyopenssl pyyaml halo pymysql"
 # setproctitle linode-cli"
