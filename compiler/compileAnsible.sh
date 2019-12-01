@@ -527,8 +527,8 @@ doMain(){
     echo "Manging Main Binary......"
     NEW_MAIN_BINARY=$(mangleMainBinary)
     ls -al $MAIN_BINARY $NEW_MAIN_BINARY
-    mv $MAIN_BINARY ${MAIN_BINARY}.orig
-    mv $NEW_MAIN_BINARY $MAIN_BINARY
+    #mv $MAIN_BINARY ${MAIN_BINARY}.orig
+    #mv $NEW_MAIN_BINARY $MAIN_BINARY
     chmod 755 $MAIN_BINARY
 
 
