@@ -29,8 +29,6 @@ getBinModulesFile(){
     modulesFile=$MODULE_BIN_INCLUDES_FILE
     echo "import os, sys, base64" > $modulesFile
     echo "_EXEC_BIN_MODULES = {}" >> $modulesFile
-
-
     for m in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
         b64="$(cat  ~/.venv/bin/$m |base64 -w0)"
         echo "_EXEC_BIN_MODULES[\"$m\"] = \"$b64\"" >> $modulesFile
@@ -41,7 +39,7 @@ getBinModulesFile(){
         echo "if \"${MODULE_STRING_NAME}\" in os.environ.keys():" >> $modulesFile
         echo -e "  sys.exit(exec(base64.b64decode(${MODULE_STRING_NAME}).decode()))" >> $modulesFile
     done
-    ls $modulesFile
+    echo $modulesFile
     #cat $modulesFile
 }
 #exit
@@ -50,24 +48,23 @@ getBinModulesFile(){
 
 
 mangleMainBinary(){
-    SCRIPT="$1"
     PATCHED_MAIN_BINARY=$(mktemp)
     TF=$(getBinModulesFile)
-    _LINES=$(wc -l ~/.venv/bin/ansible-playbook|cut -d' ' -f1)
+    _LINES=$(wc -l $MAIN_BINARY |cut -d' ' -f1)
     _FUTURE_LINE_NUMBER=$(grep -n 'from __future__ import' ansible-playbook|cut -d':' -f1)
     _LAST_LINES=$(($_LINES-$_FUTURE_LINE_NUMBER))
 
     echo _LINES=$_LINES
     echo _FUTURE_LINE_NUMBER=$_FUTURE_LINE_NUMBER
     echo _LAST_LINES=$_LAST_LINES
+    echo PATCHED_MAIN_BINARY=$PATCHED_MAIN_BINARY
 
-
-    head -n $_FUTURE_LINE_NUMBER ~/.venv/bin/ansible-playbook > $PATCHED_MAIN_BINARY
+    head -n $_FUTURE_LINE_NUMBER $MAIN_BINARY > $PATCHED_MAIN_BINARY
     echo -e "\n\n" >> $PATCHED_MAIN_BINARY
     cat $TF >> $PATCHED_MAIN_BINARY
     echo -e "\n\n" >> $PATCHED_MAIN_BINARY
-    tail -n $_LAST_LINES ~/.venv/bin/ansible-playbook >> $PATCHED_MAIN_BINARY
-    wc -l $PATCHED_MAIN_BINARY ~/.venv/bin/ansible-playbook $TF
+    tail -n $_LAST_LINES $MAIN_BINARY >> $PATCHED_MAIN_BINARY
+    wc -l $PATCHED_MAIN_BINARY $MAIN_BINARY $TF
 }
 
 
