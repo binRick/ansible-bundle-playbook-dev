@@ -12,6 +12,7 @@ TYPES="onedir"
 
 
 ADDITIONAL_COMPILED_MODULES="terminaltables watchdog psutil paramiko setproctitle mysql-connector-python colorclass loguru requests python-jose pem pyopenssl pyyaml halo pymysql"
+ADDITIONAL_COMPILED_MODULES_REPLACEMENTS="pyyaml|yaml python-jose|jose"
 
 EXCLUDED_ADDITIONAL_MODULES="watchdog.utils.win32stat"
 EXCLUDED_ANSIBLE_MODULES="$EXCLUDED_ADDITIONAL_MODULES ansible.modules.network ansible.modules.cloud ansible.modules.remote_management ansible.modules.storage ansible.modules.web_infrastructure ansible.modules.windows ansible.module_utils.network ansible.plugins.doc_fragments ansible.plugins.terminal ansible.modules.net_tools ansible.modules.monitoring.zabbix ansible.modules.messaging ansible.modules.identity ansible.modules.database.postgresql ansible.modules.database.proxysql ansible.modules.database.vertica ansible.modules.database.influxdb ansible.modules.clustering ansible.modules.source_control.bitbucket ansible.module_utils.aws ansible.plugins.cliconf"
@@ -147,21 +148,37 @@ installJo(){
   }
 }
 
+replaceModuleName(){
+	_M="$1"
+	for r in $(echo "$ADDITIONAL_COMPILED_MODULES_REPLACEMENTS"|tr ' ' '\n'); do
+		s1="$(echo $r|cut -d'|' -f1)"
+		s2="$(echo $r|cut -d'|' -f2)"
+		if [[ "$1" == "$_M" ]]; then
+			echo  changing _M=$_M based on r=$r, s1=$s1, s2=$s2
+			_M=$(echo $_M|sed sed -i "s/$s1/$s2/g")
+			echo _M changed to $_M
+			exit
+		fi
+	done
+	echo "$_M"
+}
 limitAnsibleVersions(){
     egrep "2.8.7"
     #egrep "2.8.7|2.8.6"
 }
 findModules(){
+	_M="$1"
+	_M="$(replaceModuleName $_M)"
    (
 	set -e
         cd $2/
-	if [[ ! -d "$1" ]]; then
-		>&2  echo -e "\n\n    Module \"$1\" Find Failed ->    Directory \"$1\" Does not exist in $(pwd) !\n\n"
+	if [[ ! -d "$_M" ]]; then
+		>&2  echo -e "\n\n    Module \"$_M\" Find Failed ->    Directory \"$_M\" Does not exist in $(pwd) !\n\n"
 	fi
-        find $1 \
+        find $_M \
                 | grep '\.py$'|grep '/'  | sed 's/\.py//g' | sed 's/\/__init__//g'
 
-        find $1 \
+        find $_M \
                 | grep '\.py$'| grep __init__.py$ |grep '/'| grep '/' | sed 's/\/__init__.py$//g'
    ) | sort | uniq
 }
@@ -183,11 +200,11 @@ buildPyInstallerCommand(){
 	#echo ANSIBLE_MODULES=$ANSIBLE_MODULES
 	#echo _ANSIBLE_MODULES=$_ANSIBLE_MODULES
 
-	#echo -n "ANSIBLE_MODULES chars: ";  echo $ANSIBLE_MODULES  |tr ' ' '\n' | wc -l
-	#echo -n "_ANSIBLE_MODULES chars: "; echo $_ANSIBLE_MODULES |tr ' ' '\n' | wc -l
+	>&2 echo -n "ANSIBLE_MODULES chars: ";  echo $ANSIBLE_MODULES  |tr ' ' '\n' | wc -l
+	>&2 echo -n "_ANSIBLE_MODULES chars: "; echo $_ANSIBLE_MODULES |tr ' ' '\n' | wc -l
 
-	#echo -n "ANSIBLE_MODULES chars: "; (echo $ANSIBLE_MODULES|wc -c)
-	#echo -n "_ANSIBLE_MODULES chars: "; (echo $_ANSIBLE_MODULES|wc -c)
+	>&2 echo -n "ANSIBLE_MODULES chars: "; (echo $ANSIBLE_MODULES|wc -c)
+	>&2 echo -n "_ANSIBLE_MODULES chars: "; (echo $_ANSIBLE_MODULES|wc -c)
 
 #exit
 
@@ -195,38 +212,38 @@ buildPyInstallerCommand(){
 	for m in $(echo $ADDITIONAL_COMPILED_MODULES|sed 's/-/_/g' | tr -s ' ' '\n'); do 
 		HIDDEN_ADDITIONAL_COMPILED_MODULES="$HIDDEN_ADDITIONAL_COMPILED_MODULES $(findModules $m $(getSitePackagesPath) | mangleModules)"
 	done
-	#echo HIDDEN_ADDITIONAL_COMPILED_MODULES=$HIDDEN_ADDITIONAL_COMPILED_MODULES
+	>&2 echo HIDDEN_ADDITIONAL_COMPILED_MODULES=$HIDDEN_ADDITIONAL_COMPILED_MODULES
 
 
 	echo pyinstaller \
-	-n ansible-playbook \
-	--$type -y --clean \
-	--distpath $DIST_PATH \
-	   \
-	    --add-data .venv/lib/python3.6/site-packages/ansible/config/base.yml:ansible/config \
-	    --add-data .venv/lib/python3.6/site-packages/ansible/config/module_defaults.yml:ansible/config \
-	    --add-data .venv/lib/python3.6/site-packages/ansible/utils/shlex.py:ansible/utils \
-	    --add-data .venv/lib/python3.6/site-packages/ansible/plugins/cache:ansible/plugins/cache \
-	    --add-data .venv/lib/python3.6/site-packages/ansible/module_utils:ansible/module_utils \
-	    --add-data .venv/lib/python3.6/site-packages/ansible/modules:ansible/modules \
-	    --add-data .venv/lib/python3.6/site-packages/ansible/plugins/inventory:ansible/plugins/inventory \
-	    --add-data .venv/lib/python3.6/site-packages/ansible/plugins:ansible/plugins \
-	    --add-data .venv/lib/python3.6/site-packages/ansible/executor/discovery/python_target.py:ansible/executor/discovery \
-	   \
-	    ${HIDDEN_ADDITIONAL_COMPILED_MODULES} \
-	    --hidden-import=configparser \
-	    --hidden-import=distutils.spawn \
-	    --hidden-import=xml.etree \
-	    --hidden-import=pty \
-	    --hidden-import=distutils.version \
-	    --hidden-import=xml.etree.ElementTree \
-	    --hidden-import=csv \
-	    --hidden-import=smtplib \
-	    --hidden-import=logging.handlers \
-	   \
-		${_ANSIBLE_MODULES} \
-	    \
-	     .venv/bin/ansible-playbook
+		-n ansible-playbook \
+		--$type -y --clean \
+		--distpath $DIST_PATH \
+		   \
+		    --add-data .venv/lib/python3.6/site-packages/ansible/config/base.yml:ansible/config \
+		    --add-data .venv/lib/python3.6/site-packages/ansible/config/module_defaults.yml:ansible/config \
+		    --add-data .venv/lib/python3.6/site-packages/ansible/utils/shlex.py:ansible/utils \
+		    --add-data .venv/lib/python3.6/site-packages/ansible/plugins/cache:ansible/plugins/cache \
+		    --add-data .venv/lib/python3.6/site-packages/ansible/module_utils:ansible/module_utils \
+		    --add-data .venv/lib/python3.6/site-packages/ansible/modules:ansible/modules \
+		    --add-data .venv/lib/python3.6/site-packages/ansible/plugins/inventory:ansible/plugins/inventory \
+		    --add-data .venv/lib/python3.6/site-packages/ansible/plugins:ansible/plugins \
+		    --add-data .venv/lib/python3.6/site-packages/ansible/executor/discovery/python_target.py:ansible/executor/discovery \
+		   \
+		    ${HIDDEN_ADDITIONAL_COMPILED_MODULES} \
+		    --hidden-import=configparser \
+		    --hidden-import=distutils.spawn \
+		    --hidden-import=xml.etree \
+		    --hidden-import=pty \
+		    --hidden-import=distutils.version \
+		    --hidden-import=xml.etree.ElementTree \
+		    --hidden-import=csv \
+		    --hidden-import=smtplib \
+		    --hidden-import=logging.handlers \
+		   \
+			${_ANSIBLE_MODULES} \
+		    \
+		     .venv/bin/ansible-playbook
 
 }
 
