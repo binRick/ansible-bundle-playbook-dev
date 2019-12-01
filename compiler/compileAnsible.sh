@@ -44,9 +44,18 @@ getBinModulesFile(){
     done
     echo -e "_EXEC_BIN_MODULES = {}" >> $modulesFile
     for m in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
-        b64="$(cat  ~/.venv/bin/$m |base64 -w0)"
+        mF="~/.venv/bin/$m"
+        b64="$(cat  $mF |base64 -w0)"
+        _LINES=$(wc -l $MAIN_BINARY |cut -d' ' -f1)
+        dat="$(cat  $mF |base64 -w0)"
+        _FUTURE_LINE_NUMBER=$(grep -n 'from __future__ import' $MAIN_BINARY | cut -d':' -f1)
+        _LAST_LINES=$(($_LINES-1))
         m="$(echo $m|tr '-' '_')"
         echo -e "_EXEC_BIN_MODULES[\"$m\"] = \"$b64\"" >> $modulesFile
+    
+        echo -e "    Module :: [$m]  :: \n \
+                         _LINES=$_LINES _FUTURE_LINE_NUMBER=$_FUTURE_LINE_NUMBER _LAST_LINES=$_LAST_LINES"
+
     done
 
     echo -e "\nif \"_EXEC_BIN_list\" in os.environ.keys():" >> $modulesFile
