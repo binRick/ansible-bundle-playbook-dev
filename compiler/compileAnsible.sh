@@ -39,7 +39,7 @@ getBinModulesFile(){
     modulesFile=$MODULE_BIN_INCLUDES_FILE
     echo -e "import os, sys, base64, setproctitle" > $modulesFile
     echo -e "_EXEC_BIN_MODULES = {}" >> $modulesFile
-    for m in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
+    for m in $(echo $MODULE_BIN_INCLUDES|tr '-' '_'|tr ' ' '\n'); do
         b64="$(cat  ~/.venv/bin/$m |base64 -w0)"
         echo -e "_EXEC_BIN_MODULES[\"$m\"] = \"$b64\"" >> $modulesFile
     done
@@ -48,9 +48,9 @@ getBinModulesFile(){
     echo -e "  print(\"\\\\n\".join(_EXEC_BIN_MODULES.keys()))" >> $modulesFile
     echo -e "  sys.exit(0)\n" >> $modulesFile
 
-    for m in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
+    for m in $(echo $MODULE_BIN_INCLUDES|tr '-' '_'|tr ' ' '\n'); do
         MODULE_STRING_NAME="_EXEC_BIN_$(echo $m |tr '-' '_')"
-        echo -e "\nif \"${MODULE_STRING_NAME}\".replace('-','_') in os.environ.keys():" >> $modulesFile
+        echo -e "\nif \"${MODULE_STRING_NAME}\" in os.environ.keys():" >> $modulesFile
         echo -e "  setproctitle.setproctitle(\"$m\")" >> $modulesFile
         echo -e "  sys.argv[0] = \"$m\"" >> $modulesFile
         echo -e "  sys.exit(exec(base64.b64decode(_EXEC_BIN_MODULES[\"$m\"]).decode()))\n" >> $modulesFile
