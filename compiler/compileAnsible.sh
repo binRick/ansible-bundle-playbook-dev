@@ -16,10 +16,11 @@ ADDITIONAL_COMPILED_MODULES_REPLACEMENTS="pyyaml|yaml python-jose|jose python_jo
 
 
 
-MODULE_BIN_INCLUDES="linode-cli"
+MODULE_BIN_INCLUDES="linode-cli ansible"
+MODULE_BIN_INCLUDES_FILE=~/.MODULE_BIN_INCLUDES.txt
 
 getBinModulesFile(){
-    modulesFile=$(mktemp)
+    modulesFile=$MODULE_BIN_INCLUDES_FILE
     echo "import os, sys, base64" > $modulesFile
     echo "_EXEC_BIN_MODULES = {}" >> $modulesFile
 
