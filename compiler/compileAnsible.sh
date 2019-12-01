@@ -34,16 +34,16 @@ getBinModulesFile(){
         echo -e "  sys.exit(exec(base64.b64decode(${MODULE_STRING_NAME}).decode()))" >> $modulesFile
     done
     ls $modulesFile
-    cat $modulesFile
+    #cat $modulesFile
 }
 #exit
 
-getBinModulesFile
+#getBinModulesFile
 
 
 mangleMainBinary(){
     SCRIPT="$1"
-    TF=/tmp/tmp.nGnjPjCWYK
+    TF=$(getBinModulesFile)
     _LINES=$(wc -l ansible-playbook|cut -d' ' -f1)
     _FUTURE_LINE_NUMBER=$(grep -n 'from __future__ import' ansible-playbook|cut -d':' -f1)
     _LAST_LINES=$(($_LINES-$_FUTURE_LINE_NUMBER))
@@ -63,7 +63,7 @@ mangleMainBinary(){
 
 
 
-getBinModulesFile
+#getBinModulesFile
 
 
 
@@ -435,6 +435,9 @@ doMain(){
         addAdditionalAnsibleModules modules library "$ADDITIONAL_ANSIBLE_LIBRARY_MODULES"
 	#exit
 
+    
+
+
         CMD="$(buildPyInstallerCommand)"
         if [ "$DEBUG_CMD" == "1" ]; then
             echo $CMD
@@ -443,6 +446,11 @@ doMain(){
         ANSIBLE_HIDDEN_IMPORTS_QTY="$(echo "$CMD" | tr ' ' '\n'|grep -c hidden-import)"
 	#findModules ansible $(getSitePackagesPath) | mangleModules|tr ' ' '\n'|grep '^--hidden-import='|wc -l)"
         echo "Building binary with $ANSIBLE_HIDDEN_IMPORTS_QTY hidden modules"
+
+    #echo "Manging Main Binary......"
+    #mangleMainBinary
+
+
 	set +e
         eval $CMD
 	exit_code=$?
