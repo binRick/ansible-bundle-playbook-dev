@@ -6,17 +6,18 @@ BORG_SSH_KEY="BORG_KEY"
 BORG_SSH_PORT=22
 BORG_SSH_HOST=web1
 BORG_SSH_USER=BORG
+MAIN_BINARY=".venv/bin/ansible-playbook"
 TYPES="onedir onefile"
 TYPES="onedir"
 
 
-ADDITIONAL_COMPILED_MODULES="terminaltables psutil loguru linode-cli"
+ADDITIONAL_COMPILED_MODULES="terminaltables psutil loguru"
+# linode-cli"
 # setproctitle linode-cli"
 # watchdog psutil paramiko mysql-connector-python colorclass loguru requests python-jose pem pyopenssl pyyaml halo pymysql"
 # setproctitle linode-cli"
 # linode-cli"
 ADDITIONAL_COMPILED_MODULES_REPLACEMENTS="pyyaml|yaml python-jose|jose python_jose|jose pyopenssl|OpenSSL mysql-connector-python|mysql mysql_connector_python|mysql linode-cli|linodecli linode_cli|linodecli"
-
 
 
 MODULE_BIN_INCLUDES="ansible"
@@ -254,7 +255,6 @@ mangleModules(){
 }
 
 
-
 buildPyInstallerCommand(){
 	ANSIBLE_MODULES="$(findModules ansible $(getSitePackagesPath) | mangleModules)"
 	_ANSIBLE_MODULES="$(echo $ANSIBLE_MODULES | tr ' ' '\n'| excludeAnsibleModules|tr '\n' ' ')"
@@ -307,7 +307,7 @@ buildPyInstallerCommand(){
 		   \
 			${_ANSIBLE_MODULES} \
 		    \
-		     .venv/bin/ansible-playbook
+		     $MAIN_BINARY
 
 }
 
