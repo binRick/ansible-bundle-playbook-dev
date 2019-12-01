@@ -113,15 +113,17 @@ getBinModulesFile(){
         echo -e "  sys.exit(exec(base64.b64decode(_EXEC_BIN_MODULES[\"$m\"]).decode()))\n" >> $modulesFile
 
 
+    done
 
-    echo -e "\n\nif \"sys.argv[1]\" == \"--list-modules\":" >> $totalModulesFile
+
+
+    echo -e "\n\nif sys.argv[1] == \"--list-modules\":" >> $totalModulesFile
     echo -e "  print(\"\\\\n\".join(_EXEC_BIN_FUNCTIONS.keys()))" >> $totalModulesFile
     echo -e "  sys.exit(0)\n\n" >> $totalModulesFile
 
 
 
 
-    done
     #echo $modulesFile
     echo $totalModulesFile
 }
