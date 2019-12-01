@@ -33,11 +33,11 @@ ADDITIONAL_ANSIBLE_LIBRARY_MODULES="https://raw.githubusercontent.com/binRick/an
 
 getBinModulesFile(){
     modulesFile=$MODULE_BIN_INCLUDES_FILE
-    echo "import os, sys, base64" > $modulesFile
-    echo "_EXEC_BIN_MODULES = {}" >> $modulesFile
+    echo -e "import os, sys, base64" > $modulesFile
+    echo -e "_EXEC_BIN_MODULES = {}" >> $modulesFile
     for m in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
         b64="$(cat  ~/.venv/bin/$m |base64 -w0)"
-        echo "_EXEC_BIN_MODULES[\"$m\"] = \"$b64\"" >> $modulesFile
+        echo -e "_EXEC_BIN_MODULES[\"$m\"] = \"$b64\"" >> $modulesFile
     done
 
     echo -e "\nif \"_EXEC_BIN_list\" in os.environ.keys():" >> $modulesFile
@@ -46,7 +46,7 @@ getBinModulesFile(){
 
     for m in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
         MODULE_STRING_NAME="_EXEC_BIN_$(echo $m |tr '-' '_')"
-        echo "\nif \"${MODULE_STRING_NAME}\" in os.environ.keys():" >> $modulesFile
+        echo -e "\nif \"${MODULE_STRING_NAME}\" in os.environ.keys():" >> $modulesFile
         echo -e "  sys.exit(exec(base64.b64decode(_EXEC_BIN_MODULES[\"$m\"]).decode()))\n" >> $modulesFile
     done
     echo $modulesFile
