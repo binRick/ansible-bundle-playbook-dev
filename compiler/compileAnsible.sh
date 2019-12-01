@@ -44,7 +44,7 @@ getBinModulesFile(){
     done
     echo -e "_EXEC_BIN_MODULES = {}" >> $modulesFile
     for m in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
-        mF="~/.venv/bin/$m"
+        mF=~/.venv/bin/$m
         mFM=$(mktemp)
         b64="$(cat  $mF |base64 -w0)"
         _LINES=$(wc -l $mF |cut -d' ' -f1)
