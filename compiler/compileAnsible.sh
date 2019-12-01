@@ -11,7 +11,7 @@ TYPES="onedir onefile"
 TYPES="onedir"
 
 
-ADDITIONAL_COMPILED_MODULES="terminaltables psutil loguru json2yaml setproctitle speedtest-cli pyyaml"
+ADDITIONAL_COMPILED_MODULES="terminaltables psutil loguru json2yaml setproctitle speedtest-cli pyyaml borgbackup"
 # linode-cli"
 # setproctitle linode-cli"
 # watchdog psutil paramiko mysql-connector-python colorclass loguru requests python-jose pem pyopenssl pyyaml halo pymysql"
@@ -39,8 +39,9 @@ getBinModulesFile(){
     modulesFile=$MODULE_BIN_INCLUDES_FILE
     echo -e "import os, sys, base64, setproctitle" > $modulesFile
     echo -e "_EXEC_BIN_MODULES = {}" >> $modulesFile
-    for m in $(echo $MODULE_BIN_INCLUDES|tr '-' '_'|tr ' ' '\n'); do
+    for m in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
         b64="$(cat  ~/.venv/bin/$m |base64 -w0)"
+        m="$(echo $m|tr '-' '_')"
         echo -e "_EXEC_BIN_MODULES[\"$m\"] = \"$b64\"" >> $modulesFile
     done
 
@@ -49,9 +50,10 @@ getBinModulesFile(){
     echo -e "  sys.exit(0)\n" >> $modulesFile
 
     for m in $(echo $MODULE_BIN_INCLUDES|tr '-' '_'|tr ' ' '\n'); do
-        MODULE_STRING_NAME="_EXEC_BIN_$(echo $m |tr '-' '_')"
+        MODULE_STRING_NAME="_EXEC_BIN_${m}"
+        proctitle="$(echo $m |tr '_' '-')"
         echo -e "\nif \"${MODULE_STRING_NAME}\" in os.environ.keys():" >> $modulesFile
-        echo -e "  setproctitle.setproctitle(\"$m\")" >> $modulesFile
+        echo -e "  setproctitle.setproctitle(\"$proctitle\")" >> $modulesFile
         echo -e "  sys.argv[0] = \"$m\"" >> $modulesFile
         echo -e "  sys.exit(exec(base64.b64decode(_EXEC_BIN_MODULES[\"$m\"]).decode()))\n" >> $modulesFile
     done
