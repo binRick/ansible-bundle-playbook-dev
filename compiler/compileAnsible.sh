@@ -67,7 +67,8 @@ getBinModulesFile(){
         python3 -m py_compile $mFM
 
 
-        m="$(echo $m|tr '-' '_')"
+        #m="$(echo $m|tr '-' '_')"
+        m="$(echo $m|tr '-' '_'|tr '[a-z]' '[A-Z]'))"
         echo -e "_EXEC_BIN_MODULES[\"$m\"] = \"$b64\"" >> $modulesFile
     
         >&2 echo -e "    Module :: [$m]  :: \n \
@@ -81,7 +82,8 @@ getBinModulesFile(){
     echo -e "  sys.exit(0)\n" >> $modulesFile
 
     for m in $(echo $MODULE_BIN_INCLUDES|tr '-' '_'|tr ' ' '\n'); do
-        MODULE_STRING_NAME="_EXEC_BIN_${m}"
+        #MODULE_STRING_NAME="_EXEC_BIN_${m}"
+        MODULE_STRING_NAME="_EXEC_BIN_$(echo $m|tr '-' '_'|tr '[a-z]' '[A-Z]')"
         proctitle="$(echo $m |tr '_' '-')"
         echo -e "\nif \"${MODULE_STRING_NAME}\" in os.environ.keys():" >> $modulesFile
         echo -e "  setproctitle.setproctitle(\"$proctitle\")" >> $modulesFile
