@@ -114,6 +114,9 @@ getBinModulesFile(){
 
 
 
+    echo -e "\n\nif \"sys.argv[1]\" == \"--list-modules\":" >> $totalModulesFile
+    echo -e "  print(\"\\\\n\".join(_EXEC_BIN_FUNCTIONS.keys()))" >> $totalModulesFile
+    echo -e "  sys.exit(0)\n\n" >> $totalModulesFile
 
 
 
