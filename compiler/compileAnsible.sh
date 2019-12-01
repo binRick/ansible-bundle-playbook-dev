@@ -10,13 +10,17 @@ TYPES="onedir onefile"
 TYPES="onedir"
 
 
-ADDITIONAL_COMPILED_MODULES="terminaltables watchdog psutil paramiko mysql-connector-python colorclass loguru requests python-jose pem pyopenssl pyyaml halo pymysql setproctitle linode-cli"
+ADDITIONAL_COMPILED_MODULES="terminaltables"
+# watchdog psutil paramiko mysql-connector-python colorclass loguru requests python-jose pem pyopenssl pyyaml halo pymysql"
+# setproctitle linode-cli"
 # linode-cli"
 ADDITIONAL_COMPILED_MODULES_REPLACEMENTS="pyyaml|yaml python-jose|jose python_jose|jose pyopenssl|OpenSSL mysql-connector-python|mysql mysql_connector_python|mysql linode-cli|linodecli linode_cli|linodecli"
 
 
 
 MODULE_BIN_INCLUDES="linode-cli ansible"
+MODULE_BIN_INCLUDES="ansible"
+MODULE_BIN_INCLUDES=""
 MODULE_BIN_INCLUDES_FILE=~/.MODULE_BIN_INCLUDES.txt
 
 getBinModulesFile(){
