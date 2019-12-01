@@ -30,6 +30,9 @@ EXCLUDED_ANSIBLE_MODULES="$EXCLUDED_ADDITIONAL_MODULES ansible.modules.network a
 ADDITIONAL_ANSIBLE_CALLLBACK_MODULES="https://raw.githubusercontent.com/codekipple/ansible-callback-concise/master/callback_plugins/codekipple_concise.py https://raw.githubusercontent.com/binRick/ansible-beautiful-output/master/callback_plugins/beautiful_output.py"
 ADDITIONAL_ANSIBLE_LIBRARY_MODULES="https://raw.githubusercontent.com/binRick/ansible-mysql-query/master/library/mysql_query.py https://raw.githubusercontent.com/ageis/ansible-module-ping/master/modules/icmp_ping.py https://raw.githubusercontent.com/cleargray/git_commit/master/git_commit.py"
 
+findFileImports(){
+    ./findimports/findimports.py -n ~/.venv/bin/ansible-playbook  -l 1 2>/dev/null|grep -v ':$'|sed 's/^[[:space:]]//g'
+}
 
 getBinModulesFile(){
     set -e
@@ -42,7 +45,7 @@ getBinModulesFile(){
     done
 
     echo -e "\nif \"_EXEC_BIN_list\" in os.environ.keys():" >> $modulesFile
-    echo -e '  print("\\\n".join(_EXEC_BIN_MODULES.keys()))' >> $modulesFile
+    echo -e '  print(_EXEC_BIN_MODULES)' >> $modulesFile
     echo -e "  sys.exit(0)\n" >> $modulesFile
 
     for m in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
