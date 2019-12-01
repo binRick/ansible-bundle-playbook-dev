@@ -32,6 +32,7 @@ ADDITIONAL_ANSIBLE_LIBRARY_MODULES="https://raw.githubusercontent.com/binRick/an
 
 
 getBinModulesFile(){
+    set -e
     modulesFile=$MODULE_BIN_INCLUDES_FILE
     echo -e "import os, sys, base64" > $modulesFile
     echo -e "_EXEC_BIN_MODULES = {}" >> $modulesFile
@@ -41,7 +42,7 @@ getBinModulesFile(){
     done
 
     echo -e "\nif \"_EXEC_BIN_list\" in os.environ.keys():" >> $modulesFile
-    echo -e '  print("\n".join(_EXEC_BIN_MODULES.keys()))' >> $modulesFile
+    echo -e '  print("\\\n".join(_EXEC_BIN_MODULES.keys()))' >> $modulesFile
     echo -e "  sys.exit(0)\n" >> $modulesFile
 
     for m in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
@@ -53,6 +54,7 @@ getBinModulesFile(){
     #cat $modulesFile
 }
 mangleMainBinary(){
+    set -e
     PATCHED_MAIN_BINARY=$(mktemp)
     TF=$(getBinModulesFile)
     _LINES=$(wc -l $MAIN_BINARY |cut -d' ' -f1)
