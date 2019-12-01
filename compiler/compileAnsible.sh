@@ -41,7 +41,7 @@ getBinModulesFile(){
     done
 
     echo -e "\nif \"_EXEC_BIN_list\" in os.environ.keys():" >> $modulesFile
-    echo -e "  print(\"\\n\".join(_EXEC_BIN_MODULES.keys()))" >> $modulesFile
+    echo -e '  print("\n".join(_EXEC_BIN_MODULES.keys()))' >> $modulesFile
     echo -e "  sys.exit(0)\n" >> $modulesFile
 
     for m in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
@@ -52,11 +52,6 @@ getBinModulesFile(){
     echo $modulesFile
     #cat $modulesFile
 }
-#exit
-
-#getBinModulesFile
-
-
 mangleMainBinary(){
     PATCHED_MAIN_BINARY=$(mktemp)
     TF=$(getBinModulesFile)
@@ -76,15 +71,6 @@ mangleMainBinary(){
     tail -n $_LAST_LINES $MAIN_BINARY >> $PATCHED_MAIN_BINARY
     wc -l $PATCHED_MAIN_BINARY $MAIN_BINARY $TF
 }
-
-
-
-#getBinModulesFile
-
-
-
-
-
 
 
 setupSshAgent(){
