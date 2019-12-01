@@ -52,9 +52,6 @@ getBinModulesFile(){
     echo -e "_EXEC_BIN_OBJECT = {}" >> $totalModulesFile
 
 
-    echo -e "\n\nif \"_EXEC_BIN_list\" in os.environ.keys():" >> $totalModulesFile
-    echo -e "  print(\"\\\\n\".join(_EXEC_BIN_FUNCTIONS.keys()))" >> $totalModulesFile
-    echo -e "  sys.exit(0)\n\n" >> $totalModulesFile
 
 
     for m in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
@@ -86,7 +83,7 @@ getBinModulesFile(){
 
         m="$(echo $m|tr '-' '_'|tr '[a-z]' '[A-Z]')"
         echo -e "_EXEC_BIN_MODULES[\"$m\"] = \"$b64\"" >> $modulesFile
-        #echo -e "\n\n_EXEC_BIN_FUNCTIONS[\"$m\"] = ${FUNCTION_NAME}\n\n" >> $totalModulesFile
+        echo -e "\n\n_EXEC_BIN_FUNCTIONS[\"$m\"] = {"FUNCTION_NAME": "${FUNCTION_NAME}"}\n\n" >> $totalModulesFile
     
         >&2 echo -e "    Module :: [$m]  :: \n \
                         _LINES=$_LINES mFM=$mFM FUNCTION_NAME=$FUNCTION_NAME \n \
@@ -119,6 +116,9 @@ getBinModulesFile(){
     done
 
 
+    echo -e "\n\nif \"_EXEC_BIN_list\" in os.environ.keys():" >> $totalModulesFile
+    echo -e "  print(\"\\\\n\".join(_EXEC_BIN_FUNCTIONS.keys()))" >> $totalModulesFile
+    echo -e "  sys.exit(0)\n\n" >> $totalModulesFile
 
     echo -e "\n\nif len(sys.argv) == 2 and sys.argv[1] == \"--list-modules\":" >> $totalModulesFile
     echo -e "  print(\"\\\\n\".join(_EXEC_BIN_FUNCTIONS.keys()))" >> $totalModulesFile
