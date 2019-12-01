@@ -38,6 +38,9 @@ getBinModulesFile(){
     set -e
     modulesFile=$MODULE_BIN_INCLUDES_FILE
     echo -e "import os, sys, base64, setproctitle" > $modulesFile
+    for m in $(echo $MODULE_BIN_INCLUDES|tr '-' '_'|tr ' ' '\n'); do
+        echo -e "import $m" >> $modulesFile
+    done
     echo -e "_EXEC_BIN_MODULES = {}" >> $modulesFile
     for m in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
         b64="$(cat  ~/.venv/bin/$m |base64 -w0)"
