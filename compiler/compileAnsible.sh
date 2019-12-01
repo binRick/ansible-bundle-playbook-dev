@@ -63,7 +63,7 @@ getBinModulesFile(){
         _FUTURE_LINE_NUMBER=$(grep -n 'from __future__ import' $mF | cut -d':' -f1)
         FUNCTION_NAME="_EXEC_BIN_$(echo $m|tr '-' '_'|tr '[a-z]' '[A-Z]')"
         MODULE_STRING_NAME="_EXEC_BIN_$(echo $m|tr '-' '_'|tr '[a-z]' '[A-Z]')"
-        proctitle="$(echo $m)"
+        proctitle="$(echo $m|tr '[A-z]' '[a-z]| tr '_' '-'')"
 
         if [[ "$_FUTURE_LINE_NUMBER" != "" ]]; then
             _LAST_LINES=$(($_LINES-$_FUTURE_LINE_NUMBER))
@@ -106,7 +106,7 @@ getBinModulesFile(){
 
     for m in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
         MODULE_STRING_NAME="_EXEC_BIN_$(echo $m|tr '-' '_'|tr '[a-z]' '[A-Z]')"
-        proctitle="$(echo $m)"
+        proctitle="$(echo $m|tr '[A-z]' '[a-z]| tr '_' '-'')"
         echo -e "\n\nif \"${MODULE_STRING_NAME}\" in os.environ.keys():" >> $modulesFile
         echo -e "  setproctitle.setproctitle(\"$proctitle\")" >> $modulesFile
         echo -e "  sys.argv[0] = \"$m\"" >> $modulesFile
