@@ -93,8 +93,8 @@ getBinModulesFile(){
 
         echo -e "\n\nif \"${MODULE_STRING_NAME}\" in os.environ.keys():" >> $totalModulesFile
         echo -e "  setproctitle.setproctitle(\"$proctitle\")" >> $totalModulesFile
-        echo -e "  sys.argv[0] = \"$m\"" >> $totalModulesFile
-        echo -e "  eval($FUNCTION_NAME())\n\n" >> $totalModulesFile
+        echo -e "  sys.argv[0] = \"${m}\"" >> $totalModulesFile
+        echo -e "  eval(${FUNCTION_NAME}())\n\n" >> $totalModulesFile
         echo -e "#  getattr(sys.modules[__name__], "clean_%s" % ${FUNCTION_NAME})()\n\n" >> $totalModulesFile
 
 
@@ -498,10 +498,9 @@ doMain(){
             exit 1
         fi
 
-        if [ -d .venv ]; then
-            rm -rf .venv
+        if [ ! -d .venv ]; then
+            python3 -m venv .venv
         fi
-        python3 -m venv .venv
         source .venv/bin/activate
         pip install pip --upgrade -q
         pip install pyinstaller --upgrade -q
