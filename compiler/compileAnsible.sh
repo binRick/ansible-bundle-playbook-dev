@@ -66,17 +66,24 @@ mangleMainBinary(){
     _FUTURE_LINE_NUMBER=$(grep -n 'from __future__ import' $MAIN_BINARY | cut -d':' -f1)
     _LAST_LINES=$(($_LINES-$_FUTURE_LINE_NUMBER))
 
+(
     echo _LINES=$_LINES
     echo _FUTURE_LINE_NUMBER=$_FUTURE_LINE_NUMBER
     echo _LAST_LINES=$_LAST_LINES
     echo PATCHED_MAIN_BINARY=$PATCHED_MAIN_BINARY
+) >&2
+
 
     head -n $_FUTURE_LINE_NUMBER $MAIN_BINARY > $PATCHED_MAIN_BINARY
     echo -e "\n\n" >> $PATCHED_MAIN_BINARY
     cat $TF >> $PATCHED_MAIN_BINARY
     echo -e "\n\n" >> $PATCHED_MAIN_BINARY
     tail -n $_LAST_LINES $MAIN_BINARY >> $PATCHED_MAIN_BINARY
-    wc -l $PATCHED_MAIN_BINARY $MAIN_BINARY $TF
+
+
+    echo $PATCHED_MAIN_BINARY
+
+    #wc -l $PATCHED_MAIN_BINARY $MAIN_BINARY $TF
 }
 
 
@@ -253,6 +260,7 @@ mangleModules(){
 
 
 buildPyInstallerCommand(){
+    _MAIN_BINARY="$1"
 	ANSIBLE_MODULES="$(findModules ansible $(getSitePackagesPath) | mangleModules)"
 	_ANSIBLE_MODULES="$(echo $ANSIBLE_MODULES | tr ' ' '\n'| excludeAnsibleModules|tr '\n' ' ')"
 
@@ -304,7 +312,7 @@ buildPyInstallerCommand(){
 		   \
 			${_ANSIBLE_MODULES} \
 		    \
-		     $MAIN_BINARY
+		     $_MAIN_BINARY
 
 }
 
@@ -439,10 +447,15 @@ doMain(){
         addAdditionalAnsibleModules modules library "$ADDITIONAL_ANSIBLE_LIBRARY_MODULES"
 	#exit
 
-    
+    echo "Manging Main Binary......"
+    NEW_MAIN_BINARY=$(mangleMainBinary)
+    ls -al $MAIN_BINARY $NEW_MAIN_BINARY
+    mv $MAIN_BINARY ${MAIN_BINARY}.orig
+    mv $NEW_MAIN_BINARY $MAIN_BINARY
+    chmod 755 $MAIN_BINARY
 
 
-        CMD="$(buildPyInstallerCommand)"
+        CMD="$(buildPyInstallerCommand $MAIN_BINARY)"
         if [ "$DEBUG_CMD" == "1" ]; then
             echo $CMD
             exit 
@@ -451,12 +464,11 @@ doMain(){
 	#findModules ansible $(getSitePackagesPath) | mangleModules|tr ' ' '\n'|grep '^--hidden-import='|wc -l)"
         echo "Building binary with $ANSIBLE_HIDDEN_IMPORTS_QTY hidden modules"
 
-    echo "Manging Main Binary......"
-    mangleMainBinary
+
 
 
 	set +e
-        eval $CMD
+    eval $CMD
 	exit_code=$?
 	if [[ "$exit_code" != "0" ]]; then
 		rF=$(mktemp)
