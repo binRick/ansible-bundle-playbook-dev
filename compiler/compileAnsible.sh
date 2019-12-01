@@ -168,7 +168,7 @@ limitAnsibleVersions(){
 }
 findModules(){
 	_M="$1"
-	_M="$(replaceModuleName $_M)"
+#	_M="$(replaceModuleName $_M)"
    (
 	set -e
         cd $2/
