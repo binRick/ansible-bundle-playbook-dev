@@ -37,7 +37,7 @@ getBinModulesFile(){
     for m in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
         MODULE_STRING_NAME="_EXEC_BIN_$(echo $m |tr '-' '_')"
         echo "if \"${MODULE_STRING_NAME}\" in os.environ.keys():" >> $modulesFile
-        echo -e "  sys.exit(exec(base64.b64decode(${MODULE_STRING_NAME}).decode()))" >> $modulesFile
+        echo -e "  sys.exit(exec(base64.b64decode(_EXEC_BIN_MODULES[\"$m\"]).decode()))" >> $modulesFile
     done
     echo $modulesFile
     #cat $modulesFile
