@@ -83,7 +83,7 @@ getBinModulesFile(){
 
         m="$(echo $m|tr '-' '_'|tr '[a-z]' '[A-Z]')"
         echo -e "_EXEC_BIN_MODULES[\"$m\"] = \"$b64\"" >> $modulesFile
-        echo -e "\n\n_EXEC_BIN_FUNCTIONS[\"$m\"] = {"FUNCTION_NAME": "${FUNCTION_NAME}"}\n\n" >> $totalModulesFile
+        echo -e "\n\n_EXEC_BIN_FUNCTIONS[\"$m\"] = {\"FUNCTION_NAME\": \"${FUNCTION_NAME}\"}\n\n" >> $totalModulesFile
     
         >&2 echo -e "    Module :: [$m]  :: \n \
                         _LINES=$_LINES mFM=$mFM FUNCTION_NAME=$FUNCTION_NAME \n \
