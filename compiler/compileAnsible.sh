@@ -51,6 +51,7 @@ getBinModulesFile(){
 
 mangleMainBinary(){
     SCRIPT="$1"
+    PATCHED_MAIN_BINARY=$(mktemp)
     TF=$(getBinModulesFile)
     _LINES=$(wc -l ~/.venv/bin/ansible-playbook|cut -d' ' -f1)
     _FUTURE_LINE_NUMBER=$(grep -n 'from __future__ import' ansible-playbook|cut -d':' -f1)
@@ -61,12 +62,12 @@ mangleMainBinary(){
     echo _LAST_LINES=$_LAST_LINES
 
 
-    head -n $_FUTURE_LINE_NUMBER ~/.venv/bin/ansible-playbook > .test
-    echo -e "\n\n" >> .test 
-    cat $TF >> .test
-    echo -e "\n\n" >> .test 
-    tail -n $_LAST_LINES ~/.venv/bin/ansible-playbook >> .test
-    wc -l .test ~/.venv/bin/ansible-playbook $TF
+    head -n $_FUTURE_LINE_NUMBER ~/.venv/bin/ansible-playbook > $PATCHED_MAIN_BINARY
+    echo -e "\n\n" >> $PATCHED_MAIN_BINARY
+    cat $TF >> $PATCHED_MAIN_BINARY
+    echo -e "\n\n" >> $PATCHED_MAIN_BINARY
+    tail -n $_LAST_LINES ~/.venv/bin/ansible-playbook >> $PATCHED_MAIN_BINARY
+    wc -l $PATCHED_MAIN_BINARY ~/.venv/bin/ansible-playbook $TF
 }
 
 
