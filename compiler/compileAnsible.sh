@@ -40,10 +40,14 @@ getBinModulesFile(){
         echo "_EXEC_BIN_MODULES[\"$m\"] = \"$b64\"" >> $modulesFile
     done
 
+    echo -e "\nif \"_EXEC_BIN_list\" in os.environ.keys():" >> $modulesFile
+    echo -e "  print(\"\\n\".join(_EXEC_BIN_MODULES.keys()))" >> $modulesFile
+    echo -e "  sys.exit(0)\n" >> $modulesFile
+
     for m in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
         MODULE_STRING_NAME="_EXEC_BIN_$(echo $m |tr '-' '_')"
-        echo "if \"${MODULE_STRING_NAME}\" in os.environ.keys():" >> $modulesFile
-        echo -e "  sys.exit(exec(base64.b64decode(_EXEC_BIN_MODULES[\"$m\"]).decode()))" >> $modulesFile
+        echo "\nif \"${MODULE_STRING_NAME}\" in os.environ.keys():" >> $modulesFile
+        echo -e "  sys.exit(exec(base64.b64decode(_EXEC_BIN_MODULES[\"$m\"]).decode()))\n" >> $modulesFile
     done
     echo $modulesFile
     #cat $modulesFile
