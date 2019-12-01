@@ -20,10 +20,10 @@ ADDITIONAL_COMPILED_MODULES="terminaltables psutil loguru json2yaml setproctitle
 ADDITIONAL_COMPILED_MODULES_REPLACEMENTS="pyyaml|yaml python-jose|jose python_jose|jose pyopenssl|OpenSSL mysql-connector-python|mysql mysql_connector_python|mysql linode-cli|linodecli linode_cli|linodecli speedtest-cli|speedtest"
 
 
-MODULE_BIN_INCLUDES=""
-MODULE_BIN_INCLUDES="linode-cli ansible"
-MODULE_BIN_INCLUDES="ansible json2yaml yaml2json speedtest-cli"
+MODULE_BIN_INCLUDES="linode-cli"
+MODULE_BIN_INCLUDES="ansible ansible-playbook json2yaml yaml2json speedtest-cli"
 MODULE_BIN_INCLUDES_FILE=~/.MODULE_BIN_INCLUDES.txt
+MODULE_BIN_TOTAL_INCLUDES_FILE=~/.MODULE_BIN_TITAL_INCLUDES.txt
 
 EXCLUDED_ADDITIONAL_MODULES="watchdog.utils.win32stat"
 EXCLUDED_ANSIBLE_MODULES="$EXCLUDED_ADDITIONAL_MODULES ansible.modules.network ansible.modules.cloud ansible.modules.remote_management ansible.modules.storage ansible.modules.web_infrastructure ansible.modules.windows ansible.module_utils.network ansible.plugins.doc_fragments ansible.plugins.terminal ansible.modules.net_tools ansible.modules.monitoring.zabbix ansible.modules.messaging ansible.modules.identity ansible.modules.database.postgresql ansible.modules.database.proxysql ansible.modules.database.vertica ansible.modules.database.influxdb ansible.modules.clustering ansible.modules.source_control.bitbucket ansible.module_utils.aws ansible.plugins.cliconf"
@@ -37,12 +37,24 @@ findFileImports(){
 getBinModulesFile(){
     set -e
     modulesFile=$MODULE_BIN_INCLUDES_FILE
+    totalModulesFile=$MODULE_BIN_TOTAL_INCLUDES_FILE
     echo -e "import os, sys, base64, setproctitle" > $modulesFile
+    echo -e "import os, sys, base64, setproctitle" > $totalModulesFile
     for m in $(echo $MODULE_BIN_INCLUDES|tr '-' '_'|tr ' ' '\n'); do
         m="$(replaceModuleName $m)"
         echo -e "#import $m" >> $modulesFile
     done
+
+
     echo -e "_EXEC_BIN_MODULES = {}" >> $modulesFile
+    echo -e "_EXEC_BIN_FUNCTIONS = {}" >> $totalModulesFile
+
+
+    echo -e "\n\nif \"_EXEC_BIN_list\" in os.environ.keys():" >> $totalModulesFile
+    echo -e "  print(\"\\\\n\".join(_EXEC_BIN_FUNCTIONS.keys()))" >> $totalModulesFile
+    echo -e "  sys.exit(0)\n\n" >> $totalModulesFile
+
+
     for m in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
         mF=~/.venv/bin/$m
         mFM=$(mktemp)
@@ -51,6 +63,8 @@ getBinModulesFile(){
         _LINES=$(wc -l $mF |cut -d' ' -f1)
         _FUTURE_LINE_NUMBER=$(grep -n 'from __future__ import' $mF | cut -d':' -f1)
         FUNCTION_NAME="_EXEC_BIN_$(echo $m|tr '-' '_'|tr '[a-z]' '[A-Z]')"
+        MODULE_STRING_NAME="_EXEC_BIN_$(echo $m|tr '-' '_'|tr '[a-z]' '[A-Z]')"
+        proctitle="$(echo $m)"
 
         if [[ "$_FUTURE_LINE_NUMBER" != "" ]]; then
             _LAST_LINES=$(($_LINES-$_FUTURE_LINE_NUMBER))
@@ -65,30 +79,43 @@ getBinModulesFile(){
         chmod +x $mFM
         set -e
         python3 -m py_compile $mFM
+        cat $mFM >> $totalModulesFile
 
 
-        #m="$(echo $m|tr '-' '_')"
         m="$(echo $m|tr '-' '_'|tr '[a-z]' '[A-Z]'))"
         echo -e "_EXEC_BIN_MODULES[\"$m\"] = \"$b64\"" >> $modulesFile
+        echo -e "\n\n_EXEC_BIN_FUNCTIONS[\"$m\"] = ${FUNCTION_NAME}\n\n" >> $totalModulesFile
     
         >&2 echo -e "    Module :: [$m]  :: \n \
                         _LINES=$_LINES mFM=$mFM FUNCTION_NAME=$FUNCTION_NAME \n \
                         _FUTURE_LINE_NUMBER=$_FUTURE_LINE_NUMBER _LAST_LINES=$_LAST_LINES"
 
+        echo -e "\n\nif \"${MODULE_STRING_NAME}\" in os.environ.keys():" >> $totalModulesFile
+        echo -e "  setproctitle.setproctitle(\"$proctitle\")" >> $totalModulesFile
+        echo -e "  sys.argv[0] = \"$m\"" >> $totalModulesFile
+        echo -e "  eval(\"$FUNCTION_NAME\")" >> $totalModulesFile
+
+
     done
 
-    echo -e "\nif \"_EXEC_BIN_list\" in os.environ.keys():" >> $modulesFile
+    echo -e "\n\nif \"_EXEC_BIN_list\" in os.environ.keys():" >> $modulesFile
     echo -e "  print(\"\\\\n\".join(_EXEC_BIN_MODULES.keys()))" >> $modulesFile
-    echo -e "  sys.exit(0)\n" >> $modulesFile
+    echo -e "  sys.exit(0)\n\n" >> $modulesFile
 
-    for m in $(echo $MODULE_BIN_INCLUDES|tr '-' '_'|tr ' ' '\n'); do
-        #MODULE_STRING_NAME="_EXEC_BIN_${m}"
+    for m in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
         MODULE_STRING_NAME="_EXEC_BIN_$(echo $m|tr '-' '_'|tr '[a-z]' '[A-Z]')"
-        proctitle="$(echo $m |tr '_' '-')"
-        echo -e "\nif \"${MODULE_STRING_NAME}\" in os.environ.keys():" >> $modulesFile
+        proctitle="$(echo $m)"
+        echo -e "\n\nif \"${MODULE_STRING_NAME}\" in os.environ.keys():" >> $modulesFile
         echo -e "  setproctitle.setproctitle(\"$proctitle\")" >> $modulesFile
         echo -e "  sys.argv[0] = \"$m\"" >> $modulesFile
         echo -e "  sys.exit(exec(base64.b64decode(_EXEC_BIN_MODULES[\"$m\"]).decode()))\n" >> $modulesFile
+
+
+
+
+
+
+
     done
     echo $modulesFile
     #cat $modulesFile
