@@ -453,8 +453,8 @@ doMain(){
 	#findModules ansible $(getSitePackagesPath) | mangleModules|tr ' ' '\n'|grep '^--hidden-import='|wc -l)"
         echo "Building binary with $ANSIBLE_HIDDEN_IMPORTS_QTY hidden modules"
 
-    #echo "Manging Main Binary......"
-    #mangleMainBinary
+    echo "Manging Main Binary......"
+    mangleMainBinary
 
 
 	set +e
