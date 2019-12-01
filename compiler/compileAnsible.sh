@@ -154,10 +154,10 @@ replaceModuleName(){
 		s1="$(echo $r|cut -d'|' -f1)"
 		s2="$(echo $r|cut -d'|' -f2)"
 		if [[ "$s1" == "$_M" ]]; then
-			echo  changing _M=$_M based on r=$r, s1=$s1, s2=$s2
-			_M=$(echo $_M|sed sed -i "s/$s1/$s2/g")
-			echo _M changed to $_M
-			exit
+			>&2 echo  changing _M=$_M based on r=$r, s1=$s1, s2=$s2
+			_M=$(echo $_M|sed -i "s/$s1/$s2/g")
+			>&2 echo _M changed to $_M
+			#exit
 		fi
 	done
 	echo "$_M"
