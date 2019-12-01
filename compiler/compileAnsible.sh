@@ -48,16 +48,20 @@ getBinModulesFile(){
         mFM=$(mktemp)
         b64="$(cat  $mF |base64 -w0)"
         _LINES=$(wc -l $mF |cut -d' ' -f1)
+        _FUTURE_LINE_NUMBER=$(grep -n 'from __future__ import' $mF | cut -d':' -f1)
+        _LAST_LINES=$(($_LINES-1))
+
+
         echo -e "def XXXXXXXXXX_XXXXX():" > $mFM
         command cp -f $mF $mFM
         sed -i 's/^/    /g' $mFM
         chmod +x $mFM
-        _FUTURE_LINE_NUMBER=$(grep -n 'from __future__ import' $mF | cut -d':' -f1)
-        _LAST_LINES=$(($_LINES-1))
+
+
         m="$(echo $m|tr '-' '_')"
         echo -e "_EXEC_BIN_MODULES[\"$m\"] = \"$b64\"" >> $modulesFile
     
-        echo -e "    Module :: [$m]  :: \n \
+        >&2 echo -e "    Module :: [$m]  :: \n \
                         _LINES=$_LINES mFM=$mFM \n \
                         _FUTURE_LINE_NUMBER=$_FUTURE_LINE_NUMBER _LAST_LINES=$_LAST_LINES"
 
