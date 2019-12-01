@@ -22,7 +22,7 @@ ADDITIONAL_COMPILED_MODULES_REPLACEMENTS="pyyaml|yaml python-jose|jose python_jo
 
 MODULE_BIN_INCLUDES=""
 MODULE_BIN_INCLUDES="linode-cli ansible"
-MODULE_BIN_INCLUDES="ansible json2yaml"
+MODULE_BIN_INCLUDES="ansible json2yaml yaml2json"
 MODULE_BIN_INCLUDES_FILE=~/.MODULE_BIN_INCLUDES.txt
 
 EXCLUDED_ADDITIONAL_MODULES="watchdog.utils.win32stat"
