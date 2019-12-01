@@ -159,7 +159,7 @@ replaceModuleName(){
 			>&2 echo _M changed to $_M
 			#exit
 		else
-			>&2 echo "  module $_M  does not match s1 \"$s1\" "
+			[[ "0" == "1" ]] && >&2 echo "       module \"$_M\" does not match s1 \"$s1\" "
 		fi
 	done
 	echo "$_M"
