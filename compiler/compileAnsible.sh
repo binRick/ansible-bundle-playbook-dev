@@ -125,7 +125,7 @@ getBinModulesFile(){
     echo -e "  sys.exit(0)\n\n" >> $totalModulesFile
 
     echo -e "#getattr(sys.modules[__name__], "_EXEC_BIN_%s" % $(echo $MODULE_BIN_INCLUDES_DEFAULT|tr '-' '_'|tr '[a-z]' '[A-Z]'))()\n\n" >> $totalModulesFile
-    echo -e "eval($(echo $MODULE_BIN_INCLUDES_DEFAULT|tr '-' '_'|tr '[a-z]' '[A-Z]')())" >> $totalModulesFile
+    echo -e "eval(_EXEC_BIN_$(echo $MODULE_BIN_INCLUDES_DEFAULT|tr '-' '_'|tr '[a-z]' '[A-Z]')())" >> $totalModulesFile
 
 
     #echo $modulesFile
