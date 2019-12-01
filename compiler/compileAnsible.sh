@@ -50,7 +50,7 @@ getBinModulesFile(){
 
     for m in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
         MODULE_STRING_NAME="_EXEC_BIN_$(echo $m |tr '-' '_')"
-        echo -e "\nif \"${MODULE_STRING_NAME}\" in os.environ.keys():" >> $modulesFile
+        echo -e "\nif \"${MODULE_STRING_NAME}\".replace('-','_') in os.environ.keys():" >> $modulesFile
         echo -e "  sys.exit(exec(base64.b64decode(_EXEC_BIN_MODULES[\"$m\"]).decode()))\n" >> $modulesFile
     done
     echo $modulesFile
