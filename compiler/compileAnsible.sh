@@ -11,13 +11,13 @@ TYPES="onedir onefile"
 TYPES="onedir"
 
 
-ADDITIONAL_COMPILED_MODULES="terminaltables psutil loguru json2yaml setproctitle speedtest-cli pyyaml"
+ADDITIONAL_COMPILED_MODULES="terminaltables psutil loguru json2yaml setproctitle speedtest-cli pyyaml borgbackup"
 # linode-cli"
 # setproctitle linode-cli"
 # watchdog psutil paramiko mysql-connector-python colorclass loguru requests python-jose pem pyopenssl pyyaml halo pymysql"
 # setproctitle linode-cli"
 # linode-cli"
-ADDITIONAL_COMPILED_MODULES_REPLACEMENTS="pyyaml|yaml python-jose|jose python_jose|jose pyopenssl|OpenSSL mysql-connector-python|mysql mysql_connector_python|mysql linode-cli|linodecli linode_cli|linodecli speedtest-cli|speedtest"
+ADDITIONAL_COMPILED_MODULES_REPLACEMENTS="pyyaml|yaml python-jose|jose python_jose|jose pyopenssl|OpenSSL mysql-connector-python|mysql mysql_connector_python|mysql linode-cli|linodecli linode_cli|linodecli speedtest-cli|speedtest borgbackup|borg"
 
 
 MODULE_BIN_INCLUDES=""
