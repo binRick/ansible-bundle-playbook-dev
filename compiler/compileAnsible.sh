@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-cd $( cd "$( dirname "${BASH_SOURCE[0]}" )
 umask 002
 BORG_ARCHIVE_QUOTA="5G"  # Max Disk Space borg repo can use
 BORG_ARCHIVE=~/ansible-playbook.borg
@@ -13,30 +12,31 @@ TYPES="onedir"
 
 ADDITIONAL_COMPILED_MODULES="terminaltables watchdog psutil paramiko mysql-connector-python colorclass loguru requests python-jose pem pyopenssl pyyaml halo pymysql linode-cli"
 ADDITIONAL_COMPILED_MODULES_REPLACEMENTS="pyyaml|yaml python-jose|jose python_jose|jose pyopenssl|OpenSSL mysql-connector-python|mysql mysql_connector_python|mysql linode-cli|linodecli linode_cli|linodecli"
+
+
+
 MODULE_BIN_INCLUDES="linode-cli"
 
-modulesFile=$(mktemp)
-echo "import os, sys, base64" > $modulesFile
-echo "_EXEC_BIN_MODULES = {}" >> $modulesFile
+getBinModulesFile(){
+    modulesFile=$(mktemp)
+    echo "import os, sys, base64" > $modulesFile
+    echo "_EXEC_BIN_MODULES = {}" >> $modulesFile
 
 
-for m in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
-    b64="$(cat  ~/.venv/bin/linode-cli |base64 -w0)"
-    echo "_EXEC_BIN_MODULES[\"$m\"] = \"$b64\"" >> $modulesFile
-done
+    for m in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
+        b64="$(cat  ~/.venv/bin/$m |base64 -w0)"
+        echo "_EXEC_BIN_MODULES[\"$m\"] = \"$b64\"" >> $modulesFile
+    done
 
-for m in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
-    MODULE_STRING_NAME="_EXEC_BIN_$(echo $m |tr '-' '_')"
-    echo "if \"${MODULE_STRING_NAME}\" in os.environ.keys():" >> $modulesFile
-    echo -e "  sys.exit(exec(base64.b64decode(${MODULE_STRING_NAME}).decode()))" >> $modulesFile
-done
-
-
-ls $modulesFile
-
-cat $modulesFile
-
-exit
+    for m in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
+        MODULE_STRING_NAME="_EXEC_BIN_$(echo $m |tr '-' '_')"
+        echo "if \"${MODULE_STRING_NAME}\" in os.environ.keys():" >> $modulesFile
+        echo -e "  sys.exit(exec(base64.b64decode(${MODULE_STRING_NAME}).decode()))" >> $modulesFile
+    done
+    #ls $modulesFile
+    cat $modulesFile
+}
+#exit
 
 
 
@@ -441,8 +441,8 @@ doMain(){
 
         testAnsible(){
             cmd="$PLAYBOOK_BINARY_PATH -i localhost, $(writeTestPlaybook)"
-	    echo $cmd
-	    eval $cmd
+       	    echo $cmd;
+	        eval $cmd;
         }
 
         echo "Executing Test Playbook"
@@ -471,7 +471,8 @@ doMain(){
 
         cd $DIST_PATH
 
-        ansibleReleaseInfo $ANSIBLE_VERSION | $JQ '.[]' > .ANSIBLE-RELEASE.JSON
+        ansibleReleaseInfo $ANSIBLE_VERSION | $JQ '.[]' > .ANSIBLE-RELEASE.JSON;
+
         jo -p ended_ts=$(date +%s) version=$ANSIBLE_VERSION type=$type buildTime=$pb_duration \
               compression=$BORG_CREATE_COMPRESSION hostname="$(hostname -f)" os="$(uname)" \
               arch="$(uname -m)" kernel="$(uname -r)" distro="$(cat /etc/redhat-release)" \
