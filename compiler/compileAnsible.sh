@@ -128,8 +128,8 @@ getBinModulesFile(){
     echo -e "eval(_EXEC_BIN_$(echo $MODULE_BIN_INCLUDES_DEFAULT|tr '-' '_'|tr '[a-z]' '[A-Z]')())" >> $totalModulesFile
 
 
-    #echo $modulesFile
-    echo $totalModulesFile
+    echo $modulesFile
+    #echo $totalModulesFile
 }
 mangleMainBinary(){
     set -e
