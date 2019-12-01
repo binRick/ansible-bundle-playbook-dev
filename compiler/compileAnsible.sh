@@ -200,19 +200,21 @@ buildPyInstallerCommand(){
 	#echo ANSIBLE_MODULES=$ANSIBLE_MODULES
 	#echo _ANSIBLE_MODULES=$_ANSIBLE_MODULES
 
-	>&2 echo -n "ANSIBLE_MODULES chars: ";  echo $ANSIBLE_MODULES  |tr ' ' '\n' | wc -l
-	>&2 echo -n "_ANSIBLE_MODULES chars: "; echo $_ANSIBLE_MODULES |tr ' ' '\n' | wc -l
+	(
+		echo -n "ANSIBLE_MODULES chars: ";  echo $ANSIBLE_MODULES  |tr ' ' '\n' | wc -l
+		echo -n "_ANSIBLE_MODULES chars: "; echo $_ANSIBLE_MODULES |tr ' ' '\n' | wc -l
 
-	>&2 echo -n "ANSIBLE_MODULES chars: "; (echo $ANSIBLE_MODULES|wc -c)
-	>&2 echo -n "_ANSIBLE_MODULES chars: "; (echo $_ANSIBLE_MODULES|wc -c)
-
-#exit
+		echo -n "ANSIBLE_MODULES chars: "; (echo $ANSIBLE_MODULES|wc -c)
+		echo -n "_ANSIBLE_MODULES chars: "; (echo $_ANSIBLE_MODULES|wc -c)
+	) >&2
 
 	HIDDEN_ADDITIONAL_COMPILED_MODULES=""
 	for m in $(echo $ADDITIONAL_COMPILED_MODULES|sed 's/-/_/g' | tr -s ' ' '\n'); do 
 		HIDDEN_ADDITIONAL_COMPILED_MODULES="$HIDDEN_ADDITIONAL_COMPILED_MODULES $(findModules $m $(getSitePackagesPath) | mangleModules)"
 	done
-	>&2 echo HIDDEN_ADDITIONAL_COMPILED_MODULES=$HIDDEN_ADDITIONAL_COMPILED_MODULES
+	(
+	 	echo HIDDEN_ADDITIONAL_COMPILED_MODULES=$HIDDEN_ADDITIONAL_COMPILED_MODULES
+	) >&2
 
 
 	echo pyinstaller \
@@ -384,7 +386,16 @@ doMain(){
         ANSIBLE_HIDDEN_IMPORTS_QTY="$(echo "$CMD" | tr ' ' '\n'|grep -c hidden-import)"
 	#findModules ansible $(getSitePackagesPath) | mangleModules|tr ' ' '\n'|grep '^--hidden-import='|wc -l)"
         echo "Building binary with $ANSIBLE_HIDDEN_IMPORTS_QTY hidden modules"
-        (eval "$CMD")
+	set +e
+        eval $CMD
+	exit_code=$?
+	if [[ "$exit_code" != "0" ]]; then
+		rF=$(mktemp)
+		echo "$CMD" >> $rF
+		echo -e "\n\nBuild Failed\n\nBuild Command saved to file $rF\n\n"
+		exit 1
+	fi
+	set -e
         echo "Finished Building binary"
         pb_duration=$(($(date +%s)-$pb_start_ts))
 
