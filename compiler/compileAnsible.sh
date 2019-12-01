@@ -51,7 +51,7 @@ mangleMainBinary(){
     PATCHED_MAIN_BINARY=$(mktemp)
     TF=$(getBinModulesFile)
     _LINES=$(wc -l $MAIN_BINARY |cut -d' ' -f1)
-    _FUTURE_LINE_NUMBER=$(grep -n 'from __future__ import' ansible-playbook|cut -d':' -f1)
+    _FUTURE_LINE_NUMBER=$(grep -n 'from __future__ import' $MAIN_BINARY | cut -d':' -f1)
     _LAST_LINES=$(($_LINES-$_FUTURE_LINE_NUMBER))
 
     echo _LINES=$_LINES
