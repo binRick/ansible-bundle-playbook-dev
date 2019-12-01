@@ -47,12 +47,12 @@ getBinModulesFile(){
         mF="~/.venv/bin/$m"
         mFM=$(mktemp)
         b64="$(cat  $mF |base64 -w0)"
-        _LINES=$(wc -l $MAIN_BINARY |cut -d' ' -f1)
+        _LINES=$(wc -l $mF |cut -d' ' -f1)
         echo -e "def XXXXXXXXXX_XXXXX():" > $mFM
         command cp -f $mF $mFM
         sed -i 's/^/    /g' $mFM
         chmod +x $mFM
-        _FUTURE_LINE_NUMBER=$(grep -n 'from __future__ import' $MAIN_BINARY | cut -d':' -f1)
+        _FUTURE_LINE_NUMBER=$(grep -n 'from __future__ import' $mF | cut -d':' -f1)
         _LAST_LINES=$(($_LINES-1))
         m="$(echo $m|tr '-' '_')"
         echo -e "_EXEC_BIN_MODULES[\"$m\"] = \"$b64\"" >> $modulesFile
