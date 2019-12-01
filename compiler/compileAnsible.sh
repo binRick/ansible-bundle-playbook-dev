@@ -11,7 +11,7 @@ TYPES="onedir"
 
 
 
-ADDITIONAL_COMPILED_MODULES="terminaltables watchdog psutil paramiko setproctitle mysql-connector-python colorclass loguru requests python-jose pem pyopenssl pyyaml halo pymysql"
+ADDITIONAL_COMPILED_MODULES="terminaltables watchdog psutil paramiko mysql-connector-python colorclass loguru requests python-jose pem pyopenssl pyyaml halo pymysql"
 ADDITIONAL_COMPILED_MODULES_REPLACEMENTS="pyyaml|yaml python-jose|jose"
 
 EXCLUDED_ADDITIONAL_MODULES="watchdog.utils.win32stat"
@@ -153,7 +153,7 @@ replaceModuleName(){
 	for r in $(echo "$ADDITIONAL_COMPILED_MODULES_REPLACEMENTS"|tr ' ' '\n'); do
 		s1="$(echo $r|cut -d'|' -f1)"
 		s2="$(echo $r|cut -d'|' -f2)"
-		if [[ "$1" == "$_M" ]]; then
+		if [[ "$s1" == "$_M" ]]; then
 			echo  changing _M=$_M based on r=$r, s1=$s1, s2=$s2
 			_M=$(echo $_M|sed sed -i "s/$s1/$s2/g")
 			echo _M changed to $_M
