@@ -63,6 +63,8 @@ getBinModulesFile(){
         echo -e "def ${FUNCTION_NAME}():" > $mFM
         cat $mFM2 >> $mFM
         chmod +x $mFM
+        set -e
+        python3 -m py_compile $mFM
 
 
         m="$(echo $m|tr '-' '_')"
