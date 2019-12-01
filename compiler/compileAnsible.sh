@@ -50,6 +50,7 @@ getBinModulesFile(){
         b64="$(cat  $mF |base64 -w0)"
         _LINES=$(wc -l $mF |cut -d' ' -f1)
         _FUTURE_LINE_NUMBER=$(grep -n 'from __future__ import' $mF | cut -d':' -f1)
+        FUNCTION_NAME="_EXEC_BIN_$(echo $m|tr '-' '_'|tr '[a-z]' '[A-Z]')"
 
         if [[ "$_FUTURE_LINE_NUMBER" != "" ]]; then
             _LAST_LINES=$(($_LINES-$_FUTURE_LINE_NUMBER))
@@ -59,7 +60,7 @@ getBinModulesFile(){
 
         tail -n $_LAST_LINES $mF > $mFM2
         sed -i 's/^/    /g' $mFM2
-        echo -e "def XXXXXXXXXX_XXXXX():" > $mFM
+        echo -e "def ${FUNCTION_NAME}():" > $mFM
         cat $mFM2 >> $mFM
         chmod +x $mFM
 
@@ -68,7 +69,7 @@ getBinModulesFile(){
         echo -e "_EXEC_BIN_MODULES[\"$m\"] = \"$b64\"" >> $modulesFile
     
         >&2 echo -e "    Module :: [$m]  :: \n \
-                        _LINES=$_LINES mFM=$mFM \n \
+                        _LINES=$_LINES mFM=$mFM FUNCTION_NAME=$FUNCTION_NAME \n \
                         _FUTURE_LINE_NUMBER=$_FUTURE_LINE_NUMBER _LAST_LINES=$_LAST_LINES"
 
     done
