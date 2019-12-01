@@ -11,7 +11,7 @@ TYPES="onedir onefile"
 TYPES="onedir"
 
 
-ADDITIONAL_COMPILED_MODULES="terminaltables psutil loguru json2yaml setproctitle speedtest-cli pyyaml docopt"
+ADDITIONAL_COMPILED_MODULES="terminaltables psutil loguru json2yaml setproctitle speedtest-cli pyyaml"
 # linode-cli"
 # setproctitle linode-cli"
 # watchdog psutil paramiko mysql-connector-python colorclass loguru requests python-jose pem pyopenssl pyyaml halo pymysql"
@@ -39,6 +39,7 @@ getBinModulesFile(){
     modulesFile=$MODULE_BIN_INCLUDES_FILE
     echo -e "import os, sys, base64, setproctitle" > $modulesFile
     for m in $(echo $MODULE_BIN_INCLUDES|tr '-' '_'|tr ' ' '\n'); do
+        m="$(replaceModuleName $m)"
         echo -e "#import $m" >> $modulesFile
     done
     echo -e "_EXEC_BIN_MODULES = {}" >> $modulesFile
