@@ -46,15 +46,17 @@ getBinModulesFile(){
     for m in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
         mF=~/.venv/bin/$m
         mFM=$(mktemp)
+        mFM2=$(mktemp)
         b64="$(cat  $mF |base64 -w0)"
         _LINES=$(wc -l $mF |cut -d' ' -f1)
         _FUTURE_LINE_NUMBER=$(grep -n 'from __future__ import' $mF | cut -d':' -f1)
         _LAST_LINES=$(($_LINES-1))
 
 
+        cat $mF > $mFM2
+        sed -i 's/^/    /g' $mFM2
         echo -e "def XXXXXXXXXX_XXXXX():" > $mFM
-        command cp -f $mF $mFM
-        sed -i 's/^/    /g' $mFM
+        cat $mFM2 >> $mFM
         chmod +x $mFM
 
 
