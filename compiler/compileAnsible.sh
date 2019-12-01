@@ -123,7 +123,7 @@ getBinModulesFile(){
     echo -e "  print(\"\\\\n\".join(_EXEC_BIN_FUNCTIONS.keys()))" >> $totalModulesFile
     echo -e "  sys.exit(0)\n\n" >> $totalModulesFile
 
-    echo -e "getattr(sys.modules[__name__], "clean_%s" % _EXEC_BIN_$(echo $MODULE_BIN_INCLUDES_DEFAULT|tr '-' '_'|tr '[a-z]' '[A-Z]')))()\n\n" >> $totalModulesFile
+    echo -e "getattr(sys.modules[__name__], "clean_%s" % _EXEC_BIN_$(echo $MODULE_BIN_INCLUDES_DEFAULT|tr '-' '_'|tr '[a-z]' '[A-Z]'))()\n\n" >> $totalModulesFile
 
 
     #echo $modulesFile
