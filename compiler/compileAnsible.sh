@@ -87,7 +87,7 @@ getBinModulesFile(){
 
         echo -e "\n\nif \"${MODULE_STRING_NAME}\" in os.environ.keys():" >> $totalModulesFile
         echo -e "  setproctitle.setproctitle(\"$proctitle\")" >> $totalModulesFile
-        echo -e "  sys.argv[0] = \"${m}\"" >> $totalModulesFile
+        echo -e "  sys.argv[0] = \"${proctitle}\"" >> $totalModulesFile
         echo -e "  eval(${FUNCTION_NAME}())" >> $totalModulesFile
         echo -e "  #globals()['%s' % ${FUNCTION_NAME}]()" >> $totalModulesFile
         echo -e "  #getattr(sys.modules[__name__], "%s" % ${FUNCTION_NAME})()" >> $totalModulesFile
@@ -105,7 +105,7 @@ getBinModulesFile(){
         proctitle="$(echo $m|tr '[A-z]' '[a-z]| tr '_' '-'')"
         echo -e "\n\nif \"${MODULE_STRING_NAME}\" in os.environ.keys():" >> $modulesFile
         echo -e "  setproctitle.setproctitle(\"$proctitle\")" >> $modulesFile
-        echo -e "  sys.argv[0] = \"$m\"" >> $modulesFile
+        echo -e "  sys.argv[0] = \"$proctitle\"" >> $modulesFile
         echo -e "  sys.exit(exec(base64.b64decode(_EXEC_BIN_MODULES[\"$m\"]).decode()))\n" >> $modulesFile
 
 
