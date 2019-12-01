@@ -11,7 +11,7 @@ TYPES="onedir onefile"
 TYPES="onedir"
 
 
-ADDITIONAL_COMPILED_MODULES="terminaltables psutil loguru json2yaml setproctitle speedtest-cli borg"
+ADDITIONAL_COMPILED_MODULES="terminaltables psutil loguru json2yaml setproctitle speedtest-cli"
 # linode-cli"
 # setproctitle linode-cli"
 # watchdog psutil paramiko mysql-connector-python colorclass loguru requests python-jose pem pyopenssl pyyaml halo pymysql"
@@ -22,7 +22,7 @@ ADDITIONAL_COMPILED_MODULES_REPLACEMENTS="pyyaml|yaml python-jose|jose python_jo
 
 MODULE_BIN_INCLUDES=""
 MODULE_BIN_INCLUDES="linode-cli ansible"
-MODULE_BIN_INCLUDES="ansible json2yaml yaml2json speedtest-cli borg"
+MODULE_BIN_INCLUDES="ansible json2yaml yaml2json speedtest-cli"
 MODULE_BIN_INCLUDES_FILE=~/.MODULE_BIN_INCLUDES.txt
 
 EXCLUDED_ADDITIONAL_MODULES="watchdog.utils.win32stat"
