@@ -11,7 +11,7 @@ TYPES="onedir onefile"
 TYPES="onedir"
 
 
-ADDITIONAL_COMPILED_MODULES="terminaltables psutil loguru json2yaml setproctitle speedtest-cli"
+ADDITIONAL_COMPILED_MODULES="terminaltables psutil loguru json2yaml setproctitle speedtest-cli pyyaml"
 # linode-cli"
 # setproctitle linode-cli"
 # watchdog psutil paramiko mysql-connector-python colorclass loguru requests python-jose pem pyopenssl pyyaml halo pymysql"
