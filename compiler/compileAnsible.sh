@@ -84,7 +84,7 @@ getBinModulesFile(){
         cat $mFM >> $totalModulesFile
 
 
-        m="$(echo $m|tr '-' '_'|tr '[a-z]' '[A-Z]'))"
+        m="$(echo $m|tr '-' '_'|tr '[a-z]' '[A-Z]')"
         echo -e "_EXEC_BIN_MODULES[\"$m\"] = \"$b64\"" >> $modulesFile
         #echo -e "\n\n_EXEC_BIN_FUNCTIONS[\"$m\"] = ${FUNCTION_NAME}\n\n" >> $totalModulesFile
     
@@ -95,9 +95,10 @@ getBinModulesFile(){
         echo -e "\n\nif \"${MODULE_STRING_NAME}\" in os.environ.keys():" >> $totalModulesFile
         echo -e "  setproctitle.setproctitle(\"$proctitle\")" >> $totalModulesFile
         echo -e "  sys.argv[0] = \"${m}\"" >> $totalModulesFile
-        echo -e "  eval(${FUNCTION_NAME}())\n\n" >> $totalModulesFile
+        echo -e "  eval(${FUNCTION_NAME}())" >> $totalModulesFile
         echo -e "  #globals()['%s' % ${FUNCTION_NAME}]()" >> $totalModulesFile
-        echo -e "  #getattr(sys.modules[__name__], "%s" % ${FUNCTION_NAME})()\n\n" >> $totalModulesFile
+        echo -e "  #getattr(sys.modules[__name__], "%s" % ${FUNCTION_NAME})()" >> $totalModulesFile
+        echo -e "\n\n" >> $totalModulesFile
 
 
     done
