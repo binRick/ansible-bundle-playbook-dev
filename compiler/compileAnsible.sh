@@ -94,7 +94,7 @@ getBinModulesFile(){
         echo -e "\n\nif \"${MODULE_STRING_NAME}\" in os.environ.keys():" >> $totalModulesFile
         echo -e "  setproctitle.setproctitle(\"$proctitle\")" >> $totalModulesFile
         echo -e "  sys.argv[0] = \"$m\"" >> $totalModulesFile
-        echo -e "#  getattr(sys.modules[__name__], "clean_%s" % fieldname)()" >> $totalModulesFile
+        echo -e "#  getattr(sys.modules[__name__], "clean_%s" % ${FUNCTION_NAME})()" >> $totalModulesFile
         echo -e "  eval($FUNCTION_NAME())\n\n" >> $totalModulesFile
 
 
