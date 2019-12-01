@@ -247,12 +247,14 @@ findModules(){
         cd $2/
 	if [[ ! -d "$_M" ]]; then
 		>&2  echo -e "\n\n    Module \"$_M\" Find Failed ->    Directory \"$_M\" Does not exist in $(pwd) !\n\n"
-	fi
+        echo $_M
+	else
         find $_M \
                 | grep '\.py$'|grep '/'  | sed 's/\.py//g' | sed 's/\/__init__//g'
 
         find $_M \
                 | grep '\.py$'| grep __init__.py$ |grep '/'| grep '/' | sed 's/\/__init__.py$//g'
+    fi
    ) | sort | uniq
 }
 
