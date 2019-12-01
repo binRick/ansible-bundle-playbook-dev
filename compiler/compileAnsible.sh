@@ -22,6 +22,7 @@ ADDITIONAL_COMPILED_MODULES_REPLACEMENTS="pyyaml|yaml python-jose|jose python_jo
 
 MODULE_BIN_INCLUDES="linode-cli"
 MODULE_BIN_INCLUDES="ansible ansible-playbook json2yaml yaml2json speedtest-cli"
+MODULE_BIN_INCLUDES_DEFAULT="ansible-playbook"
 MODULE_BIN_INCLUDES_FILE=~/.MODULE_BIN_INCLUDES.txt
 MODULE_BIN_TOTAL_INCLUDES_FILE=~/.MODULE_BIN_TITAL_INCLUDES.txt
 
@@ -121,7 +122,7 @@ getBinModulesFile(){
     echo -e "  print(\"\\\\n\".join(_EXEC_BIN_FUNCTIONS.keys()))" >> $totalModulesFile
     echo -e "  sys.exit(0)\n\n" >> $totalModulesFile
 
-
+    echo -e "getattr(sys.modules[__name__], "clean_%s" % _EXEC_BIN_$(echo $MODULE_BIN_INCLUDES_DEFAULT|tr '-' '_'|tr '[a-z]' '[A-Z]')))()\n\n" >> $totalModulesFile
 
 
     #echo $modulesFile
