@@ -33,10 +33,20 @@ getBinModulesFile(){
         echo "if \"${MODULE_STRING_NAME}\" in os.environ.keys():" >> $modulesFile
         echo -e "  sys.exit(exec(base64.b64decode(${MODULE_STRING_NAME}).decode()))" >> $modulesFile
     done
-    #ls $modulesFile
+    ls $modulesFile
     cat $modulesFile
 }
 #exit
+
+getBinModulesFile
+
+exit
+
+mangleMainBinary(){
+    SCRIPT="$1"
+    
+}
+
 
 
 
