@@ -40,16 +40,30 @@ getBinModulesFile(){
 
 getBinModulesFile
 
-exit
 
 mangleMainBinary(){
     SCRIPT="$1"
-    
+    TF=/tmp/tmp.nGnjPjCWYK
+    _LINES=$(wc -l ansible-playbook|cut -d' ' -f1)
+    _FUTURE_LINE_NUMBER=$(grep -n 'from __future__ import' ansible-playbook|cut -d':' -f1)
+    _LAST_LINES=$(($_LINES-$_FUTURE_LINE_NUMBER))
+
+    echo _LINES=$_LINES
+    echo _FUTURE_LINE_NUMBER=$_FUTURE_LINE_NUMBER
+    echo _LAST_LINES=$_LAST_LINES
+
+
+    head -n $_FUTURE_LINE_NUMBER ansible-playbook > .test
+    echo -e "\n\n" >> .test 
+    cat $TF >> .test
+    echo -e "\n\n" >> .test 
+    tail -n $_LAST_LINES ansible-playbook >> .test
+    wc -l .test ansible-playbook $TF
 }
 
 
 
-
+getBinModulesFile
 
 
 
