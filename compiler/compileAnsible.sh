@@ -126,9 +126,12 @@ mangleMainBinary(){
     set -e
     PATCHED_MAIN_BINARY=$(mktemp)
     TF=$(getBinModulesFile)
-echo TF=$TF
-exit 1
+    command cp -f $TF $PATCHED_MAIN_BINARY
+    #echo TF=$TF
+    #exit 1
 
+
+if [[ "1" == "" ]]; then
     _LINES=$(wc -l $MAIN_BINARY |cut -d' ' -f1)
     _FUTURE_LINE_NUMBER=$(grep -n 'from __future__ import' $MAIN_BINARY | cut -d':' -f1)
     _LAST_LINES=$(($_LINES-$_FUTURE_LINE_NUMBER))
@@ -147,7 +150,7 @@ exit 1
     cat $TF >> $PATCHED_MAIN_BINARY
     echo -e "\n\n" >> $PATCHED_MAIN_BINARY
     tail -n $_LAST_LINES $MAIN_BINARY >> $PATCHED_MAIN_BINARY
-
+fi
 
     echo $PATCHED_MAIN_BINARY
 
