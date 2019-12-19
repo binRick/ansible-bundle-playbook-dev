@@ -616,7 +616,7 @@ doMain(){
 
 
         if [[ "$BUILD_ONLY" == "1" ]]; then
-               ls $DIST_PATH
+               echo $DIST_PATH
                exit 0
         fi
 
