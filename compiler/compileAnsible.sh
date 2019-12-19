@@ -307,7 +307,11 @@ replaceModuleName(){
 	echo "$_M"
 }
 limitAnsibleVersions(){
-    egrep "2.8.7"
+    if [[ "$LIMIT_ANSIBLE_VERSIONS" == "" ]]; then
+        egrep "2.8.7"
+    else
+        egrep "$LIMIT_ANSIBLE_VERSIONS"
+    fi
     #egrep "2.8.7|2.8.6"
 }
 findModules(){
