@@ -595,10 +595,10 @@ doMain(){
         ANSIBLE_STDOUT_CALLBACK=codekipple_concise \
             testAnsible
 
-        >&2 echo "Executing Test Playbook with beautiful_output stdout callback"
-        ANSIBLE_DISPLAY_ARGS_TO_STDOUT=False \
-        ANSIBLE_STDOUT_CALLBACK=beautiful_output \
-            testAnsible
+#        >&2 echo "Executing Test Playbook with beautiful_output stdout callback"
+#        ANSIBLE_DISPLAY_ARGS_TO_STDOUT=False \
+#        ANSIBLE_STDOUT_CALLBACK=beautiful_output \
+#            testAnsible
 
         cd $DIST_PATH
 
