@@ -500,7 +500,7 @@ doMain(){
 		}
 	fi
         set -e
-        echo "Processing $ANSIBLE_VERSION $type"
+        >&2 echo "Processing $ANSIBLE_VERSION $type"
         cd
         if [ "$type" == "onefile" ]; then
             PLAYBOOK_BINARY_PATH=$DIST_PATH/ansible-playbook
@@ -529,7 +529,7 @@ doMain(){
         addAdditionalAnsibleModules modules library "$ADDITIONAL_ANSIBLE_LIBRARY_MODULES"
 	#exit
 
-    echo "Manging Main Binary......"
+    >&2 echo "Manging Main Binary......"
     NEW_MAIN_BINARY=$(mangleMainBinary)
     ls -al $MAIN_BINARY $NEW_MAIN_BINARY
     #mv $MAIN_BINARY ${MAIN_BINARY}.orig
@@ -544,7 +544,7 @@ doMain(){
         fi
         ANSIBLE_HIDDEN_IMPORTS_QTY="$(echo "$CMD" | tr ' ' '\n'|grep -c hidden-import)"
 	#findModules ansible $(getSitePackagesPath) | mangleModules|tr ' ' '\n'|grep '^--hidden-import='|wc -l)"
-        echo "Building binary with $ANSIBLE_HIDDEN_IMPORTS_QTY hidden modules"
+        >&2 echo "Building binary with $ANSIBLE_HIDDEN_IMPORTS_QTY hidden modules"
 
 
 
@@ -559,14 +559,14 @@ doMain(){
 		exit 1
 	fi
 	set -e
-        echo "Finished Building binary"
+        >&2 echo "Finished Building binary"
         pb_duration=$(($(date +%s)-$pb_start_ts))
 
         set -e
-        file $PLAYBOOK_BINARY_PATH | grep '^ansible-playbook' | grep ': ELF 64-bit LSB executable, x86-64' && echo Valid File
-        $PLAYBOOK_BINARY_PATH --version | grep '^ansible-playbook $ANSIBLE_VERSION' && echo Valid Version
+        file $PLAYBOOK_BINARY_PATH | grep '^ansible-playbook' | grep ': ELF 64-bit LSB executable, x86-64' && >&2 echo Valid File
+        $PLAYBOOK_BINARY_PATH --version | grep '^ansible-playbook $ANSIBLE_VERSION' && >&2 echo Valid Version
         
-        echo "Configuring Ansible Base Environment.."
+        >&2 echo "Configuring Ansible Base Environment.."
         source <(echo $ANSIBLE_TEST_ENV |tr ' ' '\n'|xargs -I % echo export %)
 
         testAnsible(){
@@ -575,26 +575,26 @@ doMain(){
 	        eval $cmd;
         }
 
-        echo "Executing Test Playbook"
+        >&2 echo "Executing Test Playbook"
         ANSIBLE_DISPLAY_ARGS_TO_STDOUT=False \
             testAnsible
 
-        echo "Executing Test Playbook with yaml stdout callback"
+        >&2 echo "Executing Test Playbook with yaml stdout callback"
         ANSIBLE_DISPLAY_ARGS_TO_STDOUT=False \
         ANSIBLE_STDOUT_CALLBACK=yaml \
             testAnsible
 
-        echo "Executing Test Playbook with unixy stdout callback"
+        >&2 echo "Executing Test Playbook with unixy stdout callback"
         ANSIBLE_DISPLAY_ARGS_TO_STDOUT=False \
         ANSIBLE_STDOUT_CALLBACK=unixy \
             testAnsible
 
-        echo "Executing Test Playbook with codekipple_concise stdout callback"
+        >&2 echo "Executing Test Playbook with codekipple_concise stdout callback"
         ANSIBLE_DISPLAY_ARGS_TO_STDOUT=False \
         ANSIBLE_STDOUT_CALLBACK=codekipple_concise \
             testAnsible
 
-        echo "Executing Test Playbook with beautiful_output stdout callback"
+        >&2 echo "Executing Test Playbook with beautiful_output stdout callback"
         ANSIBLE_DISPLAY_ARGS_TO_STDOUT=False \
         ANSIBLE_STDOUT_CALLBACK=beautiful_output \
             testAnsible
