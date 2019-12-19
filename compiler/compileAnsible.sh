@@ -520,7 +520,7 @@ doMain(){
         pip install pyinstaller --upgrade -q >/dev/null
         
         if [ -d $DIST_PATH ]; then rm -rf $DIST_PATH; fi
-        pip uninstall ansible --yes -q 2>/dev/null /dev/null
+        pip uninstall ansible --yes -q 2>/dev/null > /dev/null
         pip install "ansible==${ANSIBLE_VERSION}" --upgrade --force -q >/dev/null
         pip install $ADDITIONAL_COMPILED_MODULES --force --upgrade -q >/dev/null
         pip freeze -l >/dev/null
