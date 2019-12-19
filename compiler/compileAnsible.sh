@@ -515,14 +515,15 @@ doMain(){
             python3 -m venv .venv
         fi
         source .venv/bin/activate
-        pip install pip --upgrade -q
-        pip install pyinstaller --upgrade -q
+        
+        pip install pip --upgrade -q >/dev/null
+        pip install pyinstaller --upgrade -q >/dev/null
         
         if [ -d $DIST_PATH ]; then rm -rf $DIST_PATH; fi
-        pip uninstall ansible --yes -q 2>/dev/null
-        pip install "ansible==${ANSIBLE_VERSION}" --upgrade --force -q
-        pip install $ADDITIONAL_COMPILED_MODULES --force --upgrade -q
-        pip freeze -l
+        pip uninstall ansible --yes -q 2>/dev/null /dev/null
+        pip install "ansible==${ANSIBLE_VERSION}" --upgrade --force -q >/dev/null
+        pip install $ADDITIONAL_COMPILED_MODULES --force --upgrade -q >/dev/null
+        pip freeze -l >/dev/null
 
 
         addAdditionalAnsibleModules plugins callback "$ADDITIONAL_ANSIBLE_CALLLBACK_MODULES"
