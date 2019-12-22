@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
+cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 umask 002
+ANSIBLE_CONFIG_FILE="$(pwd)/files/ansible.cfg"
 BORG_ARCHIVE_QUOTA="5G"  # Max Disk Space borg repo can use
 BORG_ARCHIVE=~/ansible-playbook.borg
 BORG_SSH_KEY="BORG_KEY"
@@ -17,7 +19,6 @@ ADDITIONAL_COMPILED_MODULES="terminaltables psutil loguru json2yaml setproctitle
 ADDITIONAL_COMPILED_MODULES_REPLACEMENTS="pyyaml|yaml python-jose|jose python_jose|jose pyopenssl|OpenSSL mysql-connector-python|mysql mysql_connector_python|mysql linode-cli|linodecli linode_cli|linodecli speedtest-cli|speedtest"
 
 
-MODULE_BIN_INCLUDES="linode-cli"
 MODULE_BIN_INCLUDES="ansible ansible-playbook json2yaml yaml2json speedtest-cli"
 MODULE_BIN_INCLUDES_DEFAULT="ansible-playbook"
 MODULE_BIN_INCLUDES_FILE=~/.MODULE_BIN_INCLUDES.txt
@@ -108,8 +109,6 @@ getBinModulesFile(){
         echo -e "  setproctitle.setproctitle(\"$proctitle\")" >> $modulesFile
         echo -e "  sys.argv[0] = \"$proctitle\"" >> $modulesFile
         echo -e "  sys.exit(exec(base64.b64decode(_EXEC_BIN_MODULES[\"$m\"]).decode()))\n" >> $modulesFile
-
-
     done
 
 
@@ -617,15 +616,19 @@ doMain(){
 
 
         if [[ "$BUILD_ONLY" == "1" ]]; then
+               cp $ANSIBLE_CONFIG_FILE $DIST_PATH/ansible-playbook/.
                echo "DIST_PATH=$DIST_PATH"
                exit 0
         fi
+    ANSIBLE_CONFIG_FILENAME="$(basename $ANSIBLE_CONFIG_FILE)"
+    [[ -f "$ANSIBLE_CONFIG_FILENAME" ]] && unlink $ANSIBLE_CONFIG_FILENAME
+    cp $ANSIBLE_CONFIG_FILE ./$ANSIBLE_CONFIG_FILENAME
 
 	if [[ "$BUILD_ONLY" != "1" ]]; then
 		$BORG_BINARY $BORG_OPTIONS create \
 		    --compression $BORG_CREATE_COMPRESSION \
 		    --progress --comment "$COMMENT" -v --stats $BORG_ARCHIVE::${ANSIBLE_VERSION}-${type} \
-		    ansible-playbook .METADATA.JSON .ANSIBLE-RELEASE.JSON
+		    ansible-playbook .METADATA.JSON .ANSIBLE-RELEASE.JSON $ANSIBLE_CONFIG_FILENAME
 	fi
 
         CREATED=$((CREATED+1))
