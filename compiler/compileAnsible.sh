@@ -10,8 +10,8 @@ BORG_SSH_HOST=web1
 BORG_SSH_USER=BORG
 MAIN_BINARY=".venv/bin/ansible-playbook"
 DEBUG_MAIN_BINARY_BUILD="0"
-MANGLE_MAIN_BINARY="1"
-CLEAN_BUILD="0"
+MANGLE_MAIN_BINARY="0"
+CLEAN_BUILD="1"
 TYPES="onedir"
 
 
@@ -534,7 +534,7 @@ fi
 
     ### Mangle binary
     if [[ "$MANGLE_MAIN_BINARY" == "1" ]]; then
-        >&2 echo "Manging Main Binary......"
+        >&2 echo "Mangling Main Binary......"
         NEW_MAIN_BINARY=$(mangleMainBinary)
         ls -al $MAIN_BINARY $NEW_MAIN_BINARY
         mv $MAIN_BINARY ${MAIN_BINARY}.orig
