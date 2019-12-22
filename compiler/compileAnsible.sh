@@ -595,7 +595,7 @@ fi
             exit 1
         fi
 
-        if [[ "$DEBUG_MAIN_BINARY_BUILD" ]]; then
+        if [[ "$DEBUG_MAIN_BINARY_BUILD" == "1" ]]; then
             echo "[DEBUG_MAIN_BINARY_BUILD] :: Seems OK with $TEST_MANGLED_MODES_QTY modes and we requsted $MODULE_BIN_INCLUDES_QTY modes!"
             exit
         fi
