@@ -9,7 +9,9 @@ BORG_SSH_PORT=22
 BORG_SSH_HOST=web1
 BORG_SSH_USER=BORG
 MAIN_BINARY=".venv/bin/ansible-playbook"
-TYPES="onedir onefile"
+DEBUG_MAIN_BINARY_BUILD="0"
+MANGLE_MAIN_BINARY="1"
+CLEAN_BUILD="0"
 TYPES="onedir"
 
 
@@ -517,24 +519,28 @@ doMain(){
         
         pip install pip --upgrade -q >/dev/null
         pip install pyinstaller --upgrade -q >/dev/null
-        
+if [[ "$CLEAN_BUILD" == "1" ]]; then        
         if [ -d $DIST_PATH ]; then rm -rf $DIST_PATH; fi
         pip uninstall ansible --yes -q 2>/dev/null > /dev/null
-        pip install "ansible==${ANSIBLE_VERSION}" --upgrade --force -q >/dev/null
-        pip install $ADDITIONAL_COMPILED_MODULES --force --upgrade -q >/dev/null
-        pip freeze -l >/dev/null
-
+fi
+        pip install "ansible==${ANSIBLE_VERSION}" -q >/dev/null
+        pip install $ADDITIONAL_COMPILED_MODULES -q >/dev/null
 
         addAdditionalAnsibleModules plugins callback "$ADDITIONAL_ANSIBLE_CALLLBACK_MODULES"
         addAdditionalAnsibleModules modules library "$ADDITIONAL_ANSIBLE_LIBRARY_MODULES"
-	#exit
 
-    >&2 echo "Manging Main Binary......"
-    NEW_MAIN_BINARY=$(mangleMainBinary)
-    ls -al $MAIN_BINARY $NEW_MAIN_BINARY
-    #mv $MAIN_BINARY ${MAIN_BINARY}.orig
-    #mv $NEW_MAIN_BINARY $MAIN_BINARY
-    chmod 755 $MAIN_BINARY
+
+
+
+    ### Mangle binary
+    if [[ "$MANGLE_MAIN_BINARY" == "1" ]]; then
+        >&2 echo "Manging Main Binary......"
+        NEW_MAIN_BINARY=$(mangleMainBinary)
+        ls -al $MAIN_BINARY $NEW_MAIN_BINARY
+        mv $MAIN_BINARY ${MAIN_BINARY}.orig
+        mv $NEW_MAIN_BINARY $MAIN_BINARY
+        chmod 755 $MAIN_BINARY
+    fi
 
 
         CMD="$(buildPyInstallerCommand $MAIN_BINARY)"
@@ -563,8 +569,38 @@ doMain(){
         pb_duration=$(($(date +%s)-$pb_start_ts))
 
         set -e
+
         file $PLAYBOOK_BINARY_PATH | grep '^ansible-playbook' | grep ': ELF 64-bit LSB executable, x86-64' && >&2 echo Valid File
         $PLAYBOOK_BINARY_PATH --version | grep '^ansible-playbook $ANSIBLE_VERSION' && >&2 echo Valid Version
+
+    if [[ "$MANGLE_MAIN_BINARY" == "1" ]]; then
+
+        >&2 echo "Testing mangled binary"
+        TEST_MANGLED_CMD="_EXEC_BIN_list=1 sh -c \"$PLAYBOOK_BINARY_PATH\""
+        TEST_MANGLED_OUTPUT_FILE=$(mktemp)
+
+        eval $TEST_MANGLED_CMD > $TEST_MANGLED_OUTPUT_FILE
+        exit_code=$?
+	    if [[ "$exit_code" != "0" ]]; then
+            echo "Mangled Binary Failed test Command: \"$TEST_MANGLED_CMD\" with exit code $exit_code"
+            exit $exit_code
+        else
+            >&2 echo "Mangled binary passed tests"
+            TEST_MANGLED_MODES="$(cat $TEST_MANGLED_OUTPUT_FILE)"
+            TEST_MANGLED_MODES_QTY="$(echo $TEST_MANGLED_MODES|tr ' ' '\n' |wc -l)"
+        fi
+        MODULE_BIN_INCLUDES_QTY="$(echo $MODULE_BIN_INCLUDES|tr ' ' '\n' |wc -l)"
+        if [[ "$MODULE_BIN_INCLUDES_QTY" != "$TEST_MANGLED_MODES_QTY" ]]; then
+            echo "We requested $MODULE_BIN_INCLUDES_QTY modes but mangled binary only provided $TEST_MANGLED_MODES_QTY modes"
+            exit 1
+        fi
+
+        if [[ "$DEBUG_MAIN_BINARY_BUILD" ]]; then
+            echo "[DEBUG_MAIN_BINARY_BUILD] :: Seems OK with $TEST_MANGLED_MODES_QTY modes and we requsted $MODULE_BIN_INCLUDES_QTY modes!"
+            exit
+        fi
+    fi
+
         
         >&2 echo "Configuring Ansible Base Environment.."
         source <(echo $ANSIBLE_TEST_ENV |tr ' ' '\n'|xargs -I % echo export %)
