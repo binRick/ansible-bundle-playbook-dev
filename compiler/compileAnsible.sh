@@ -8,7 +8,8 @@ BORG_SSH_KEY="BORG_KEY"
 BORG_SSH_PORT=22
 BORG_SSH_HOST=web1
 BORG_SSH_USER=BORG
-MAIN_BINARY=".venv/bin/ansible-playbook"
+VENV_PATH=~/.venv-ansible-bundler
+MAIN_BINARY="$VENV_PATH/bin/ansible-playbook"
 [[ "$DEBUG_MAIN_BINARY_BUILD" == "" ]] && export DEBUG_MAIN_BINARY_BUILD="0"
 [[ "$MANGLE_MAIN_BINARY" == "" ]] && export MANGLE_MAIN_BINARY="0"
 CLEAN_BUILD="1"
@@ -35,7 +36,7 @@ ADDITIONAL_ANSIBLE_CALLLBACK_MODULES="https://raw.githubusercontent.com/codekipp
 ADDITIONAL_ANSIBLE_LIBRARY_MODULES="https://raw.githubusercontent.com/binRick/ansible-mysql-query/master/library/mysql_query.py https://raw.githubusercontent.com/ageis/ansible-module-ping/master/modules/icmp_ping.py https://raw.githubusercontent.com/cleargray/git_commit/master/git_commit.py"
 
 findFileImports(){
-    ./findimports/findimports.py -n ~/.venv/bin/ansible-playbook  -l 1 2>/dev/null|grep -v ':$'|sed 's/^[[:space:]]//g'
+    ./findimports/findimports.py -n $VENV_PATH/bin/ansible-playbook  -l 1 2>/dev/null|grep -v ':$'|sed 's/^[[:space:]]//g'
 }
 
 getBinModulesFile(){
@@ -58,7 +59,7 @@ getBinModulesFile(){
 
 
     for m in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
-        mF=~/.venv/bin/$m
+        mF=$VENV_PATH/bin/$m
         mFM=$(mktemp)
         mFM2=$(mktemp)
         b64="$(cat  $mF |base64 -w0)"
@@ -369,6 +370,7 @@ buildPyInstallerCommand(){
 	(
 	 	echo HIDDEN_ADDITIONAL_COMPILED_MODULES=$HIDDEN_ADDITIONAL_COMPILED_MODULES
 	) >&2
+	HIDDEN_ADDITIONAL_COMPILED_MODULES=""
 
 
 	echo pyinstaller \
@@ -376,15 +378,15 @@ buildPyInstallerCommand(){
 		--$type -y --clean \
 		--distpath $DIST_PATH \
 		   \
-		    --add-data .venv/lib/python3.6/site-packages/ansible/config/base.yml:ansible/config \
-		    --add-data .venv/lib/python3.6/site-packages/ansible/config/module_defaults.yml:ansible/config \
-		    --add-data .venv/lib/python3.6/site-packages/ansible/utils/shlex.py:ansible/utils \
-		    --add-data .venv/lib/python3.6/site-packages/ansible/plugins/cache:ansible/plugins/cache \
-		    --add-data .venv/lib/python3.6/site-packages/ansible/module_utils:ansible/module_utils \
-		    --add-data .venv/lib/python3.6/site-packages/ansible/modules:ansible/modules \
-		    --add-data .venv/lib/python3.6/site-packages/ansible/plugins/inventory:ansible/plugins/inventory \
-		    --add-data .venv/lib/python3.6/site-packages/ansible/plugins:ansible/plugins \
-		    --add-data .venv/lib/python3.6/site-packages/ansible/executor/discovery/python_target.py:ansible/executor/discovery \
+		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/config/base.yml:ansible/config \
+		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/config/module_defaults.yml:ansible/config \
+		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/utils/shlex.py:ansible/utils \
+		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/plugins/cache:ansible/plugins/cache \
+		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/module_utils:ansible/module_utils \
+		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/plugins/inventory:ansible/plugins/inventory \
+		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/plugins:ansible/plugins \
+		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/modules:ansible/modules \
+		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/executor/discovery/python_target.py:ansible/executor/discovery \
 		   \
 		    ${HIDDEN_ADDITIONAL_COMPILED_MODULES} \
 		    --hidden-import=configparser \
@@ -437,26 +439,26 @@ addAdditionalAnsibleModules(){
     for m in $(echo "$MODULES"|tr ' ' '\n'); do
         mFile="$(basename $m)"
         if [[ $m == http* ]]; then
-            if [ "$DEBUG_CMD" == "1" ]; then
-              echo url detected $m
-	    fi
+#            if [ "$DEBUG_CMD" == "1" ]; then
+#              echo url detected $m
+#	    fi
             mT=$(mktemp -d)
             (cd $mT && curl -s $m > $mFile)
             _m=$mT/$(basename $m)
-            if [ "$DEBUG_CMD" == "1" ]; then
-              echo _m=$_m
-              echo m=$m
-	    fi
+#            if [ "$DEBUG_CMD" == "1" ]; then
+#              echo _m=$_m
+#              echo m=$m
+#	    fi
             m=$_m  
         fi
         mDir="$(dirname $m)"
         mCmdDir="$(getAnsiblePath)/${MODULE_TYPE}/${MODULE_TYPE_DIR}"
-	if [[ ! -d "$mCmdDir" ]]; then mkdir -p $mCmdDir; fi
+   	    if [[ ! -d "$mCmdDir" ]]; then mkdir -p $mCmdDir; fi
         mCmd="cp $mDir/$mFile $mCmdDir/$mFile"
-        if [ "$DEBUG_CMD" == "1" ]; then
-		echo mCmdDir=$mCmdDir
-		echo mCmd=$mCmd
-	fi
+#       if [ "$DEBUG_CMD" == "1" ]; then
+#    		echo mCmdDir=$mCmdDir
+#    		echo mCmd=$mCmd
+#    	fi
         eval $mCmd
     done
 }
@@ -515,26 +517,26 @@ doMain(){
             exit 1
         fi
 
-        if [ ! -d .venv ]; then
-            python3 -m venv .venv
+        echo venv=$VENV_PATH
+        if [ ! -f $VENV_PATH/bin/activate ]; then
+            python3 -m venv $VENV_PATH
         fi
-        source .venv/bin/activate
+        source $VENV_PATH/bin/activate
         
         pip install pip --upgrade -q >/dev/null
         pip install pyinstaller --upgrade -q >/dev/null
-if [[ "$CLEAN_BUILD" == "1" ]]; then        
-        if [ -d $DIST_PATH ]; then rm -rf $DIST_PATH; fi
-        pip uninstall ansible --yes -q 2>/dev/null > /dev/null
-fi
+        if [[ "$CLEAN_BUILD" == "1" ]]; then        
+            if [ -d $DIST_PATH ]; then rm -rf $DIST_PATH; fi
+#            pip uninstall ansible --yes -q 2>/dev/null > /dev/null
+        fi
+
         pip install "ansible==${ANSIBLE_VERSION}" -q >/dev/null
         pip install $ADDITIONAL_COMPILED_MODULES -q >/dev/null
 
-        addAdditionalAnsibleModules plugins callback "$ADDITIONAL_ANSIBLE_CALLLBACK_MODULES"
+#        addAdditionalAnsibleModules plugins callback "$ADDITIONAL_ANSIBLE_CALLLBACK_MODULES"
         addAdditionalAnsibleModules modules library "$ADDITIONAL_ANSIBLE_LIBRARY_MODULES"
 
 
-    find $DIST_PATH -type d|grep __pycache__$|xargs -I % rm -rf %
-    find $DIST_PATH -type f -name detailed.py|xargs -I %  unlink %
 
 
     ### Mangle binary
@@ -551,7 +553,9 @@ fi
 
         CMD="$(buildPyInstallerCommand $MAIN_BINARY)"
         if [ "$DEBUG_CMD" == "1" ]; then
-            echo $CMD
+            cmd_file=$(mktemp)
+            echo $CMD > $cmd_file
+            echo "cmd_file=$cmd_file"
             exit 
         fi
         ANSIBLE_HIDDEN_IMPORTS_QTY="$(echo "$CMD" | tr ' ' '\n'|grep -c hidden-import)"
@@ -570,29 +574,21 @@ fi
 		echo -e "\n\nBuild Failed\n\nBuild Command saved to file $rF\n\n"
 		exit 1
 	fi
+
 	set -e
-        >&2 echo "Finished Building binary"
-        pb_duration=$(($(date +%s)-$pb_start_ts))
+    >&2 echo "Finished Building binary"
+    pb_duration=$(($(date +%s)-$pb_start_ts))
 
-        set -e
+    set -e
+    find $DIST_PATH -type d|grep __pycache__$|xargs -I % rm -rf %
+    find $DIST_PATH -type f -name detailed.py|xargs -I %  unlink %
 
-        file $PLAYBOOK_BINARY_PATH | grep '^ansible-playbook' | grep ': ELF 64-bit LSB executable, x86-64' && >&2 echo Valid File
-        $PLAYBOOK_BINARY_PATH --version | grep '^ansible-playbook $ANSIBLE_VERSION' && >&2 echo Valid Version
-
-
-
-
-
-
-
-
-
-
+    file $PLAYBOOK_BINARY_PATH | grep '^ansible-playbook' | grep ': ELF 64-bit LSB executable, x86-64' && >&2 echo Valid File
+    $PLAYBOOK_BINARY_PATH --version | grep '^ansible-playbook $ANSIBLE_VERSION' && >&2 echo Valid Version
 
 
 
     if [[ "$MANGLE_MAIN_BINARY" == "1" ]]; then
-
         >&2 echo "Testing mangled binary"
         TEST_MANGLED_CMD="_EXEC_BIN_list=1 sh -c \"$PLAYBOOK_BINARY_PATH\""
         TEST_MANGLED_OUTPUT_FILE=$(mktemp)
