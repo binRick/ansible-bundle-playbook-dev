@@ -641,8 +641,13 @@ fi
         
         >&2 echo "Configuring Ansible Base Environment.."
         source <(echo $ANSIBLE_TEST_ENV |tr ' ' '\n'|xargs -I % echo export %)
-
         export ANSIBLE_CALLBACK_WHITELIST=""
+
+        >&2 echo "Creating Ansible Configuration File.."
+        ANSIBLE_CONFIG_FILENAME="$(basename $ANSIBLE_CONFIG_FILE)"
+        [[ -f "$ANSIBLE_CONFIG_FILENAME" ]] && unlink $ANSIBLE_CONFIG_FILENAME
+        cp $ANSIBLE_CONFIG_FILE ./$ANSIBLE_CONFIG_FILENAME
+
 
         testAnsible(){
             cmd="$PLAYBOOK_BINARY_PATH -i localhost, $(writeTestPlaybook)"
@@ -708,13 +713,9 @@ fi
 
 
         if [[ "$BUILD_ONLY" == "1" ]]; then
-               cp $ANSIBLE_CONFIG_FILE $DIST_PATH/ansible-playbook/.
                echo "DIST_PATH=$DIST_PATH"
                exit 0
         fi
-    ANSIBLE_CONFIG_FILENAME="$(basename $ANSIBLE_CONFIG_FILE)"
-    [[ -f "$ANSIBLE_CONFIG_FILENAME" ]] && unlink $ANSIBLE_CONFIG_FILENAME
-    cp $ANSIBLE_CONFIG_FILE ./$ANSIBLE_CONFIG_FILENAME
 
 	if [[ "$BUILD_ONLY" != "1" ]]; then
 		$BORG_BINARY $BORG_OPTIONS create \
