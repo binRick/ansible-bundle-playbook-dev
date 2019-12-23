@@ -15,11 +15,34 @@ MAIN_BINARY="$VENV_PATH/bin/ansible-playbook"
 CLEAN_BUILD="1"
 TYPES="onedir"
 
+
+PYARMOR_CMD_FILE="/tmp/PYARMOR_CMD.txt"
+PYARMOR_OUTPUT_PATH="/tmp/pyarmor.out"
+
 [[ "$DEBUG_CMD" == "" ]] && export DEBUG_CMD=0
 
+_ADD_DATAS="--add-data $VENV_PATH/lib/python3.6/site-packages/ansible/config/base.yml:ansible/config \
+		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/config/module_defaults.yml:ansible/config \
+		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/utils/shlex.py:ansible/utils \
+		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/plugins/cache:ansible/plugins/cache \
+		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/module_utils:ansible/module_utils \
+		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/plugins/inventory:ansible/plugins/inventory \
+		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/plugins:ansible/plugins \
+		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/modules:ansible/modules \
+		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/executor/discovery/python_target.py:ansible/executor/discovery \
+"
+MANUAL_HIDDEN_IMPORTS="--hidden-import=\"configparser\" \
+		    --hidden-import=\"distutils.spawn\" \
+		    --hidden-import=\"xml.etree\" \
+		    --hidden-import=\"pty\" \
+		    --hidden-import=\"distutils.version\" \
+		    --hidden-import=\"xml.etree.ElementTree\" \
+		    --hidden-import=\"csv\" \
+		    --hidden-import=\"smtplib\" \
+		    --hidden-import=\"logging.handlers\" \
+"
 
-ADDITIONAL_COMPILED_MODULES="terminaltables psutil loguru json2yaml setproctitle speedtest-cli pyyaml netaddr"
-# watchdog psutil paramiko mysql-connector-python colorclass loguru requests python-jose pem pyopenssl pyyaml halo pymysql linode-cli
+ADDITIONAL_COMPILED_MODULES="terminaltables psutil loguru json2yaml setproctitle speedtest-cli pyyaml netaddr configparser"
 ADDITIONAL_COMPILED_MODULES_REPLACEMENTS="pyyaml|yaml python-jose|jose python_jose|jose pyopenssl|OpenSSL mysql-connector-python|mysql mysql_connector_python|mysql linode-cli|linodecli linode_cli|linodecli speedtest-cli|speedtest"
 
 
@@ -370,34 +393,20 @@ buildPyInstallerCommand(){
 	(
 	 	echo HIDDEN_ADDITIONAL_COMPILED_MODULES=$HIDDEN_ADDITIONAL_COMPILED_MODULES
 	) >&2
-	HIDDEN_ADDITIONAL_COMPILED_MODULES=""
 
+    PYARMOR_CMD_E="-p ~/.venv-ansible-bundler/lib/python3.6/site-packages $(echo $HIDDEN_ADDITIONAL_COMPILED_MODULES $_ANSIBLE_MODULES $_ADD_DATAS $MANUAL_HIDDEN_IMPORTS|tr '\n' ' '|sed 's/"//g')"
+    PYARMOR_CMD="cp $_MAIN_BINARY ${_MAIN_BINARY}.py && pyarmor pack --debug -t PyInstaller --clean -O $PYARMOR_OUTPUT_PATH -e \" $PYARMOR_CMD_E \" ${_MAIN_BINARY}.py"
+    echo $PYARMOR_CMD > $PYARMOR_CMD_FILE
 
 	echo pyinstaller \
 		-n ansible-playbook \
 		--$type -y --clean \
 		--distpath $DIST_PATH \
 		   \
-		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/config/base.yml:ansible/config \
-		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/config/module_defaults.yml:ansible/config \
-		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/utils/shlex.py:ansible/utils \
-		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/plugins/cache:ansible/plugins/cache \
-		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/module_utils:ansible/module_utils \
-		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/plugins/inventory:ansible/plugins/inventory \
-		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/plugins:ansible/plugins \
-		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/modules:ansible/modules \
-		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/executor/discovery/python_target.py:ansible/executor/discovery \
+            $_ADD_DATAS \
 		   \
 		    ${HIDDEN_ADDITIONAL_COMPILED_MODULES} \
-		    --hidden-import=configparser \
-		    --hidden-import=distutils.spawn \
-		    --hidden-import=xml.etree \
-		    --hidden-import=pty \
-		    --hidden-import=distutils.version \
-		    --hidden-import=xml.etree.ElementTree \
-		    --hidden-import=csv \
-		    --hidden-import=smtplib \
-		    --hidden-import=logging.handlers \
+		    ${MANUAL_HIDDEN_IMPORTS} \
 		   \
 			${_ANSIBLE_MODULES} \
 		    \
@@ -564,7 +573,6 @@ doMain(){
 
 
 
-
 	set +e
     eval $CMD
 	exit_code=$?
@@ -581,11 +589,26 @@ doMain(){
 
     set -e
     find $DIST_PATH -type d|grep __pycache__$|xargs -I % rm -rf %
-    find $DIST_PATH -type f -name detailed.py|xargs -I %  unlink %
-
-    file $PLAYBOOK_BINARY_PATH | grep '^ansible-playbook' | grep ': ELF 64-bit LSB executable, x86-64' && >&2 echo Valid File
+#    find $DIST_PATH -type f -name detailed.py|xargs -I %  unlink %
     $PLAYBOOK_BINARY_PATH --version | grep '^ansible-playbook $ANSIBLE_VERSION' && >&2 echo Valid Version
+    file $PLAYBOOK_BINARY_PATH | grep '^ansible-playbook' | grep ': ELF 64-bit LSB executable, x86-64' && >&2 echo Valid File
 
+
+
+    set -e
+
+if [[ "1" == "0" ]]; then
+    echo "Compiling with pyarmor :: $PYARMOR_CMD_FILE"
+    bash $PYARMOR_CMD_FILE
+
+    find $PYARMOR_OUTPUT_PATH -type d|grep __pycache__$|xargs -I % rm -rf %
+
+    echo "Compiled $(find $PYARMOR_OUTPUT_PATH|wc -l) files to $PYARMOR_OUTPUT_PATH"
+
+
+
+    exit 
+fi
 
 
     if [[ "$MANGLE_MAIN_BINARY" == "1" ]]; then
