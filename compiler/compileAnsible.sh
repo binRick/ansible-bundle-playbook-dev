@@ -14,6 +14,7 @@ MAIN_BINARY=".venv/bin/ansible-playbook"
 CLEAN_BUILD="1"
 TYPES="onedir"
 
+[[ "$DEBUG_CMD" == "" ]] && export DEBUG_CMD=0
 
 
 ADDITIONAL_COMPILED_MODULES="terminaltables psutil loguru json2yaml setproctitle speedtest-cli pyyaml netaddr"
@@ -532,8 +533,8 @@ fi
         addAdditionalAnsibleModules modules library "$ADDITIONAL_ANSIBLE_LIBRARY_MODULES"
 
 
-    find $DIST_PATH/ansible-playbook -type d|grep __pycache__$|xargs -I % rm -rf %
-    find $DIST_PATH/ansible-playbook -type f -name detailed.py|xargs -I %  unlink %
+    find $DIST_PATH -type d|grep __pycache__$|xargs -I % rm -rf %
+    find $DIST_PATH -type f -name detailed.py|xargs -I %  unlink %
 
 
     ### Mangle binary
@@ -622,6 +623,8 @@ fi
         >&2 echo "Configuring Ansible Base Environment.."
         source <(echo $ANSIBLE_TEST_ENV |tr ' ' '\n'|xargs -I % echo export %)
 
+        export ANSIBLE_CALLBACK_WHITELIST=""
+
         testAnsible(){
             cmd="$PLAYBOOK_BINARY_PATH -i localhost, $(writeTestPlaybook)"
        	    echo $cmd;
@@ -654,8 +657,8 @@ fi
 
         ls -al $ANSIBLE_JSON_AUDIT_LOG_FILE
         wc -l $ANSIBLE_JSON_AUDIT_LOG_FILE | grep -v "^0 "
-        grep -c '^{' /tmp/tmp.8FzjKQkWPd|grep -v '^0$'
-        grep '^{' /tmp/tmp.8FzjKQkWPd|head -n 5
+        grep -c '^{' $ANSIBLE_JSON_AUDIT_LOG_FILE|grep -v '^0$'
+        grep '^{' $ANSIBLE_JSON_AUDIT_LOG_FILE|head -n 5
 
         >&2 echo "Executing Test Playbook with codekipple_concise stdout callback"
         ANSIBLE_DISPLAY_ARGS_TO_STDOUT=False \
