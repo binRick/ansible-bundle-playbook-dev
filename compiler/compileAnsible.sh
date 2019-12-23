@@ -533,7 +533,7 @@ doMain(){
         pip install "ansible==${ANSIBLE_VERSION}" -q >/dev/null
         pip install $ADDITIONAL_COMPILED_MODULES -q >/dev/null
 
-#        addAdditionalAnsibleModules plugins callback "$ADDITIONAL_ANSIBLE_CALLLBACK_MODULES"
+        addAdditionalAnsibleModules plugins callback "$ADDITIONAL_ANSIBLE_CALLLBACK_MODULES"
         addAdditionalAnsibleModules modules library "$ADDITIONAL_ANSIBLE_LIBRARY_MODULES"
 
 
@@ -641,20 +641,20 @@ doMain(){
         ANSIBLE_STDOUT_CALLBACK=unixy \
             testAnsible
 
-        >&2 echo "Executing Test Playbook with json_audit stdout callback"
-        ANSIBLE_JSON_AUDIT_LOG_FILE=$(mktemp)
+#        >&2 echo "Executing Test Playbook with json_audit stdout callback"
+#        ANSIBLE_JSON_AUDIT_LOG_FILE=$(mktemp)
 
-        ANSIBLE_ENVIRONMENT_NAME="test environment 123" \
-        ANSIBLE_JSON_LOG_PATH=$ANSIBLE_JSON_AUDIT_LOG_FILE \
-        ANSIBLE_DISPLAY_ARGS_TO_STDOUT=False \
-        ANSIBLE_STDOUT_CALLBACK=unixy \
-        ANSIBLE_CALLBACK_WHITELIST=json_audit \
-            testAnsible
+#        ANSIBLE_ENVIRONMENT_NAME="test environment 123" \
+#        ANSIBLE_JSON_LOG_PATH=$ANSIBLE_JSON_AUDIT_LOG_FILE \
+#        ANSIBLE_DISPLAY_ARGS_TO_STDOUT=False \
+#        ANSIBLE_STDOUT_CALLBACK=unixy \
+#        ANSIBLE_CALLBACK_WHITELIST=json_audit \
+#            testAnsible
 
-        ls -al $ANSIBLE_JSON_AUDIT_LOG_FILE
-        wc -l $ANSIBLE_JSON_AUDIT_LOG_FILE | grep -v "^0 "
-        grep -c '^{' $ANSIBLE_JSON_AUDIT_LOG_FILE|grep -v '^0$'
-        grep '^{' $ANSIBLE_JSON_AUDIT_LOG_FILE|head -n 5
+#        ls -al $ANSIBLE_JSON_AUDIT_LOG_FILE
+#        wc -l $ANSIBLE_JSON_AUDIT_LOG_FILE | grep -v "^0 "
+#        grep -c '^{' $ANSIBLE_JSON_AUDIT_LOG_FILE|grep -v '^0$'
+#        grep '^{' $ANSIBLE_JSON_AUDIT_LOG_FILE|head -n 5
 
         >&2 echo "Executing Test Playbook with codekipple_concise stdout callback"
         ANSIBLE_DISPLAY_ARGS_TO_STDOUT=False \
