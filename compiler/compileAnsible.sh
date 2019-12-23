@@ -26,7 +26,7 @@ MODULE_BIN_INCLUDES_DEFAULT="ansible-playbook"
 MODULE_BIN_INCLUDES_FILE=~/.MODULE_BIN_INCLUDES.txt
 MODULE_BIN_TOTAL_INCLUDES_FILE=~/.MODULE_BIN_TITAL_INCLUDES.txt
 
-EXCLUDED_ADDITIONAL_MODULES="watchdog.utils.win32stat"
+EXCLUDED_ADDITIONAL_MODULES="watchdog.utils.win32stat ansible.plugins.callback.detailed"
 EXCLUDED_ANSIBLE_MODULES="$EXCLUDED_ADDITIONAL_MODULES ansible.modules.network ansible.modules.cloud ansible.modules.remote_management ansible.modules.storage ansible.modules.web_infrastructure ansible.modules.windows ansible.module_utils.network ansible.plugins.doc_fragments ansible.plugins.terminal ansible.modules.net_tools ansible.modules.monitoring.zabbix ansible.modules.messaging ansible.modules.identity ansible.modules.database.postgresql ansible.modules.database.proxysql ansible.modules.database.vertica ansible.modules.database.influxdb ansible.modules.clustering ansible.modules.source_control.bitbucket ansible.module_utils.aws ansible.plugins.cliconf"
 
 
@@ -532,6 +532,8 @@ fi
         addAdditionalAnsibleModules modules library "$ADDITIONAL_ANSIBLE_LIBRARY_MODULES"
 
 
+    find $DIST_PATH/ansible-playbook -type d|grep __pycache__$|xargs -I % rm -rf %
+    find $DIST_PATH/ansible-playbook -type f -name detailed.py|xargs -I %  unlink %
 
 
     ### Mangle binary
@@ -575,6 +577,18 @@ fi
 
         file $PLAYBOOK_BINARY_PATH | grep '^ansible-playbook' | grep ': ELF 64-bit LSB executable, x86-64' && >&2 echo Valid File
         $PLAYBOOK_BINARY_PATH --version | grep '^ansible-playbook $ANSIBLE_VERSION' && >&2 echo Valid Version
+
+
+
+
+
+
+
+
+
+
+
+
 
     if [[ "$MANGLE_MAIN_BINARY" == "1" ]]; then
 
@@ -641,7 +655,7 @@ fi
         ls -al $ANSIBLE_JSON_AUDIT_LOG_FILE
         wc -l $ANSIBLE_JSON_AUDIT_LOG_FILE | grep -v "^0 "
         grep -c '^{' /tmp/tmp.8FzjKQkWPd|grep -v '^0$'
-        grep -c '^{' /tmp/tmp.8FzjKQkWPd|head -n 5
+        grep '^{' /tmp/tmp.8FzjKQkWPd|head -n 5
 
         >&2 echo "Executing Test Playbook with codekipple_concise stdout callback"
         ANSIBLE_DISPLAY_ARGS_TO_STDOUT=False \
