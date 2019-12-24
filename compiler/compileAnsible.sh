@@ -51,7 +51,14 @@ MODULE_BIN_INCLUDES_DEFAULT="ansible-playbook"
 MODULE_BIN_INCLUDES_FILE=~/.MODULE_BIN_INCLUDES.txt
 MODULE_BIN_TOTAL_INCLUDES_FILE=~/.MODULE_BIN_TITAL_INCLUDES.txt
 
-EXCLUDED_ADDITIONAL_MODULES="watchdog.utils.win32stat ansible.plugins.callback.detailed"
+EXCLUDED_PYARMOR_MODULES="ansible.modules.database.mongodb ansible.modules.database.mongodb.mongodb_parameter ansible.modules.database.mongodb.mongodb_replicaset ansible.modules.database.mongodb.mongodb_shard ansible.modules.database.mongodb.mongodb_user \
+    ansible.plugins.cache.mongodb \
+    ansible.plugins.lookup.mongodb \
+    ansible.plugins.cache.jsonfile ansible.plugins.cache.memcached ansible.plugins.cache.mongodb ansible.plugins.cache.pickle ansible.plugins.cache.redis ansible.plugins.cache.yaml \
+    ansible.plugins.callback.jabber ansible.plugins.callback.grafana_annotations ansible.plugins.callback.aws_resource_actions \
+"
+EXCLUDED_ADDITIONAL_MODULES="watchdog.utils.win32stat ansible.plugins.callback.detailed $EXCLUDED_PYARMOR_MODULES"
+
 EXCLUDED_ANSIBLE_MODULES="$EXCLUDED_ADDITIONAL_MODULES ansible.modules.network ansible.modules.cloud ansible.modules.remote_management ansible.modules.storage ansible.modules.web_infrastructure ansible.modules.windows ansible.module_utils.network ansible.plugins.doc_fragments ansible.plugins.terminal ansible.modules.net_tools ansible.modules.monitoring.zabbix ansible.modules.messaging ansible.modules.identity ansible.modules.database.postgresql ansible.modules.database.proxysql ansible.modules.database.vertica ansible.modules.database.influxdb ansible.modules.clustering ansible.modules.source_control.bitbucket ansible.module_utils.aws ansible.plugins.cliconf"
 
 
