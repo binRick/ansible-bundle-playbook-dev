@@ -652,8 +652,9 @@ fi
 
         >&2 echo "Creating Ansible Configuration File.."
         ANSIBLE_CONFIG_FILENAME="$(basename $ANSIBLE_CONFIG_FILE)"
+        ANSIBLE_CONFIG_FILENAME="$DIST_PATH/ansible-playbook/ansible.cfg"
         [[ -f "$ANSIBLE_CONFIG_FILENAME" ]] && unlink $ANSIBLE_CONFIG_FILENAME
-        cp $ANSIBLE_CONFIG_FILE ./$ANSIBLE_CONFIG_FILENAME
+        cp $ANSIBLE_CONFIG_FILE $ANSIBLE_CONFIG_FILENAME
 
 
         testAnsible(){
