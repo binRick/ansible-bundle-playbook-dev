@@ -21,6 +21,10 @@ PYARMOR_OUTPUT_PATH="/tmp/pyarmor.out"
 
 [[ "$DEBUG_CMD" == "" ]] && export DEBUG_CMD=0
 
+_RM_PATHS="\
+   ansible/modules/web_infrastructure
+"
+
 _ADD_DATAS="--add-data $VENV_PATH/lib/python3.6/site-packages/ansible/config/base.yml:ansible/config \
 		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/config/module_defaults.yml:ansible/config \
 		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/utils/shlex.py:ansible/utils \
@@ -646,6 +650,15 @@ fi
     fi
 
         
+        >&2 echo "Removing Paths.."
+        for x in $_RM_PATHS; do
+            rm_cmd="rm -rf $DIST_PATH/ansible-playbook/$x"
+            >&2 echo -e "       Removing Path  \"$x\" with cmd \"$rm_cmd\""
+            eval $rm_cmd
+            
+        done
+
+
         >&2 echo "Configuring Ansible Base Environment.."
         source <(echo $ANSIBLE_TEST_ENV |tr ' ' '\n'|xargs -I % echo export %)
         export ANSIBLE_CALLBACK_WHITELIST=""
