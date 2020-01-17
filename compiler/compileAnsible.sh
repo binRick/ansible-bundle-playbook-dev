@@ -347,7 +347,7 @@ replaceModuleName(){
 }
 limitAnsibleVersions(){
     if [[ "$LIMIT_ANSIBLE_VERSIONS" == "" ]]; then
-        egrep "2.8.7"
+        egrep "2.8.8"
     else
         egrep "$LIMIT_ANSIBLE_VERSIONS"
     fi
