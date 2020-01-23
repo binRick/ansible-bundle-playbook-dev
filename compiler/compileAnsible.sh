@@ -50,7 +50,7 @@ ADDITIONAL_COMPILED_MODULES="simplejson terminaltables psutil loguru json2yaml s
 ADDITIONAL_COMPILED_MODULES_REPLACEMENTS="pyyaml|yaml python-jose|jose python_jose|jose pyopenssl|OpenSSL mysql-connector-python|mysql mysql_connector_python|mysql linode-cli|linodecli linode_cli|linodecli speedtest-cli|speedtest websocket-client|websocket"
 
 
-MODULE_BIN_INCLUDES="ansible ansible-playbook json2yaml yaml2json speedtest-cli"
+MODULE_BIN_INCLUDES="ansible ansible-playbook json2yaml yaml2json speedtest-cli paramiko"
 MODULE_BIN_INCLUDES_DEFAULT="ansible-playbook"
 MODULE_BIN_INCLUDES_FILE=~/.MODULE_BIN_INCLUDES.txt
 MODULE_BIN_TOTAL_INCLUDES_FILE=~/.MODULE_BIN_TITAL_INCLUDES.txt
