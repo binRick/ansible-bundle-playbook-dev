@@ -1,0 +1,32 @@
+Name:           static-ansible-playbook
+Version:        __RELEASE_VERSION__
+Release:        1%{?dist}
+Summary:        static-ansible-playbook
+
+License:        GPLv2
+URL:            https://github.com/kilobyte/termrec
+Source0: 	    static-ansible-playbook-%{version}.tar.gz
+
+%define _unpackaged_files_terminate_build 0
+
+
+%description
+static-ansible-playbook
+
+%prep
+%setup -q
+
+%build
+%configure
+#make %{?_smp_mflags}
+
+%install
+#rm -rf %{buildroot}
+#%make_install
+#find %{buildroot} -type f | sed 's|^%{buildroot}||' > filelist
+#grep '/man/' filelist | sed 's/$/*/g' > filelist2
+#grep -v '/man/' filelist >> filelist2
+#mv filelist2 filelist
+#cat filelist
+
+%files -f filelist
