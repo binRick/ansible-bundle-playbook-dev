@@ -24,6 +24,12 @@ REMOVE_INCLUDED_TOOL_COMMENTS=1
 ANSIBLE_TOOLS="ansible-config"
 
 
+if ! command -v shc >/dev/null 2>/dev/null; then
+    echo shc not found in PATH
+    exit 1
+fi
+
+
 [[ "$DEBUG_CMD" == "" ]] && export DEBUG_CMD=0
 
 _RM_PATHS="\
@@ -658,12 +664,14 @@ doMain(){
     set -e
 
     if [[ "$MANGLE_MAIN_BINARY" == "1" ]]; then
-        for m in $(echo $MODULE_BIN_INCLUDES|tr '-' '_'|tr ' ' '\n'); do
+        for m in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
+            
             DDIR="$(dirname $PLAYBOOK_BINARY_PATH)"
             MF="$DDIR/${m}.sh"
-            >&2 echo "Creating Launcher Script for module \"$m\" in file \"$MF\""
+            _m="$(echo $m|tr '-' '_'|tr '[a-z]' '[A-z]')"
+            >&2 echo "Creating Launcher Script for module \"$m\" in file \"$MF\", _m=\"$_m\""
             cp $origDir/moduleBinTemplate.sh.j2 $MF
-            sed -i "s/{{MODULE_NAME}}/$m/g" $MF
+            sed -i "s/{{MODULE_NAME}}/$_m/g" $MF
             chmod +x $MF
             chmod 755 $MF
             echo "$MF" >> $MODULE_LAUNCHERS_FILE
