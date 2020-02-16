@@ -660,7 +660,7 @@ doMain(){
     if [[ "$MANGLE_MAIN_BINARY" == "1" ]]; then
         for m in $(echo $MODULE_BIN_INCLUDES|tr '-' '_'|tr ' ' '\n'); do
             DDIR="$(dirname $PLAYBOOK_BINARY_PATH)"
-            MF="$DDIR/${m}"
+            MF="$DDIR/${m}.sh"
             >&2 echo "Creating Launcher Script for module \"$m\" in file \"$MF\""
             cp $origDir/moduleBinTemplate.sh.j2 $MF
             sed -i "s/{{MODULE_NAME}}/$m/g" $MF
