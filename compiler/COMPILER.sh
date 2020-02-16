@@ -1,6 +1,7 @@
 #!/bin/bash 
 set -e
 cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+. common.sh
 
 if [[ "$_IS_COMPILER" == "" ]]; then
     cmd="_IS_COMPILER=1 exec ${BASH_SOURCE[0]} $@"
@@ -32,7 +33,9 @@ fi
 sudo chown -R COMPILER:COMPILER /home/COMPILER 
 sudo chmod -R 700 /home/COMPILER
 
-sudo rm -rf \
+#nukeTmp
+
+  sudo rm -rf \
     ~COMPILER/ansible-bundle-playbook-dev \
     /tmp/__pycache__ \
     ~COMPILER/build \
