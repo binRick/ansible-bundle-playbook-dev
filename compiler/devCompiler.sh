@@ -1,5 +1,5 @@
 #!/bin/bash
 set -e
-set +x
 cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-_EXEC_BIN_{{MODULE_NAME}}= exec ./ansible-playbook $@
+
+nodemon -w . -e sh --delay 1 --signal SIGTERM -x time -- ./COMPILER.sh

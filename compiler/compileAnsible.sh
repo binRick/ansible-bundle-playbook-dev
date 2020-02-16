@@ -63,6 +63,7 @@ ADDITIONAL_COMPILED_MODULES_REPLACEMENTS="pyyaml|yaml python-jose|jose python_jo
 
 
 MODULE_BIN_INCLUDES="ansible-playbook json2yaml yaml2json speedtest-cli ansible ansible-config"
+COMPILE_MODULE_BIN_INCLUDES="1"
 MODULE_BIN_INCLUDES_DEFAULT="ansible-playbook"
 MODULE_BIN_INCLUDES_FILE=~/.MODULE_BIN_INCLUDES.txt
 MODULE_BIN_TOTAL_INCLUDES_FILE=~/.MODULE_BIN_TITAL_INCLUDES.txt
@@ -668,12 +669,23 @@ doMain(){
             
             DDIR="$(dirname $PLAYBOOK_BINARY_PATH)"
             MF="$DDIR/${m}.sh"
+            MF_bin="$DDIR/${m}.bin"
             _m="$(echo $m|tr '-' '_'|tr '[a-z]' '[A-z]')"
             >&2 echo "Creating Launcher Script for module \"$m\" in file \"$MF\", _m=\"$_m\""
             cp $origDir/moduleBinTemplate.sh.j2 $MF
             sed -i "s/{{MODULE_NAME}}/$_m/g" $MF
             chmod +x $MF
             chmod 755 $MF
+            if [[ "$COMPILE_MODULE_BIN_INCLUDES" == "1" ]]; then
+                shc_cmd="shc -r -f $MF -o $MF_bin"
+                eval $shc_cmd
+                e=$?
+                if [[ "$e" != "0" ]]; then
+                    echo "Failed to compile module $m using cmd \"$shc_cmd\", got exit code $e"
+                    exit $e
+                fi
+                ls -al $MF $MF_bin
+            fi
             echo "$MF" >> $MODULE_LAUNCHERS_FILE
         done
     fi
