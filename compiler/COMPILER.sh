@@ -1,8 +1,9 @@
 #!/bin/bash 
 set -e
+cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+
 if [[ "$_IS_COMPILER" == "" ]]; then
     cmd="_IS_COMPILER=1 exec ${BASH_SOURCE[0]} $@"
-    echo cmd=$cmd
     eval $cmd
     exit
 fi
