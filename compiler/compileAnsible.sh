@@ -54,7 +54,7 @@ ADDITIONAL_COMPILED_MODULES="simplejson terminaltables psutil loguru json2yaml s
 ADDITIONAL_COMPILED_MODULES_REPLACEMENTS="pyyaml|yaml python-jose|jose python_jose|jose pyopenssl|OpenSSL mysql-connector-python|mysql mysql_connector_python|mysql linode-cli|linodecli linode_cli|linodecli speedtest-cli|speedtest websocket-client|websocket"
 
 
-MODULE_BIN_INCLUDES="ansible ansible-playbook ansible-config json2yaml yaml2json speedtest-cli"
+MODULE_BIN_INCLUDES="ansible-playbook json2yaml yaml2json speedtest-cli"
 MODULE_BIN_INCLUDES_DEFAULT="ansible-playbook"
 MODULE_BIN_INCLUDES_FILE=~/.MODULE_BIN_INCLUDES.txt
 MODULE_BIN_TOTAL_INCLUDES_FILE=~/.MODULE_BIN_TITAL_INCLUDES.txt
@@ -84,7 +84,7 @@ getBinModulesFile(){
     totalModulesFile=$MODULE_BIN_TOTAL_INCLUDES_FILE
     echo -e "import os, sys, base64, setproctitle" > $modulesFile
     echo -e "import os, sys, base64, setproctitle" > $totalModulesFile
-    echo "$MODULE_BIN_INCLUDEs=\"$MODULE_BIN_INCLUDES\""
+    >&2 echo "$MODULE_BIN_INCLUDEs=\"$MODULE_BIN_INCLUDES\""
     for m in $(echo $MODULE_BIN_INCLUDES|tr '-' '_'|tr ' ' '\n'); do
         m="$(replaceModuleName $m)"
         echo -e "#import $m" >> $modulesFile
@@ -154,7 +154,7 @@ getBinModulesFile(){
         echo -e "\n\nif \"${MODULE_STRING_NAME}\" in os.environ.keys():" >> $modulesFile
         echo -e "  setproctitle.setproctitle(\"$proctitle\")" >> $modulesFile
         echo -e "  sys.argv[0] = \"$proctitle\"" >> $modulesFile
-        echo -e "  sys.exit(exec(base64.b64decode(_EXEC_BIN_MODULES[\"$m\"]).decode()))\n" >> $modulesFile
+        echo -e "  sys.exit(exec(base64.b64decode(_EXEC_BIN_MODULES[\"$m\".upper()]).decode()))\n" >> $modulesFile
     done
 
 
@@ -177,15 +177,22 @@ mangleMainBinary(){
     set -e
     PATCHED_MAIN_BINARY=$(mktemp)
     TF=$(getBinModulesFile)
-    command cp -f $TF $PATCHED_MAIN_BINARY
     echo TF=$TF
+    echo PATCHED_MAIN_BINARY=$PATCHED_MAIN_BINARY
+    command cp -f $TF $PATCHED_MAIN_BINARY
     #exit 1
 
     #if [[ "1" == "" ]]; then
     if [[ "1" == "1" ]]; then
         _LINES=$(wc -l $MAIN_BINARY |cut -d' ' -f1)
         _FUTURE_LINE_NUMBER=$(grep -n 'from __future__ import' $MAIN_BINARY | cut -d':' -f1)
+
+        echo _LINES=$_LINES
+        echo _FUTURE_LINE_NUMBER=$_FUTURE_LINE_NUMBER
+        echo MAIN_BINARY=$MAIN_BINARY
+
         _LAST_LINES=$(($_LINES-$_FUTURE_LINE_NUMBER))
+        echo _LAST_LINES=$_LAST_LINES
 
     (
         echo _LINES=$_LINES
