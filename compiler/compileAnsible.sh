@@ -80,8 +80,10 @@ findFileImports(){
 
 getBinModulesFile(){
     set -e
+
     modulesFile=$MODULE_BIN_INCLUDES_FILE
     totalModulesFile=$MODULE_BIN_TOTAL_INCLUDES_FILE
+
     echo -e "import os, sys, base64, setproctitle" > $modulesFile
     echo -e "import os, sys, base64, setproctitle" > $totalModulesFile
     >&2 echo "$MODULE_BIN_INCLUDEs=\"$MODULE_BIN_INCLUDES\""
@@ -169,17 +171,32 @@ getBinModulesFile(){
     echo -e "#getattr(sys.modules[__name__], "_EXEC_BIN_%s" % $(echo $MODULE_BIN_INCLUDES_DEFAULT|tr '-' '_'|tr '[a-z]' '[A-Z]'))()\n\n" >> $totalModulesFile
     echo -e "eval(_EXEC_BIN_$(echo $MODULE_BIN_INCLUDES_DEFAULT|tr '-' '_'|tr '[a-z]' '[A-Z]')())" >> $totalModulesFile
 
-
+    if [[ "$modulesFile" == "" ]]; then
+        echo -e "\nERROR: Invalid modulesFile \"$modulesFile\"\n"
+        exit 1
+    fi
     echo $modulesFile
     #echo $totalModulesFile
 }
 mangleMainBinary(){
     set -e
+    set -x
     PATCHED_MAIN_BINARY=$(mktemp)
     TF=$(getBinModulesFile)
-    echo TF=$TF
-    echo PATCHED_MAIN_BINARY=$PATCHED_MAIN_BINARY
-    command cp -f $TF $PATCHED_MAIN_BINARY
+    if [[ "$TF" == "" ]]; then
+        echo -e "\nERROR: Invalid TF from getBinModulesFile()\n"
+        exit 1
+    fi
+    >&2 echo TF=$TF
+    >&2 echo PATCHED_MAIN_BINARY=$PATCHED_MAIN_BINARY
+    mangle_cmd="command cp -f $TF $PATCHED_MAIN_BINARY"
+    >&2 echo mangle_cmd=$mangle_cmd
+    eval $mangle_cmd
+    exit_code=$?
+    if [[ "$exit_code" != "0" ]]; then
+        echo -e "\nERROR: Mangle command \"$mangle_cmd\" exited $exit_code\n"
+        exit $exit_code
+    fi
     #exit 1
 
     #if [[ "1" == "" ]]; then
@@ -187,20 +204,25 @@ mangleMainBinary(){
         _LINES=$(wc -l $MAIN_BINARY |cut -d' ' -f1)
         _FUTURE_LINE_NUMBER=$(grep -n 'from __future__ import' $MAIN_BINARY | cut -d':' -f1)
 
-        echo _LINES=$_LINES
-        echo _FUTURE_LINE_NUMBER=$_FUTURE_LINE_NUMBER
-        echo MAIN_BINARY=$MAIN_BINARY
+        >&2 echo _LINES=$_LINES
+        >&2 echo _FUTURE_LINE_NUMBER=$_FUTURE_LINE_NUMBER
+        >&2 echo MAIN_BINARY=$MAIN_BINARY
 
-        _LAST_LINES=$(($_LINES-$_FUTURE_LINE_NUMBER))
-        echo _LAST_LINES=$_LAST_LINES
+        if [[ "_FUTURE_LINE_NUMBER" != "" ]]; then
+            _LAST_LINES=$(($_LINES-$_FUTURE_LINE_NUMBER))
+        else
+            _LAST_LINES=$_LINES
+        fi
 
-    (
-        echo _LINES=$_LINES
-        echo _FUTURE_LINE_NUMBER=$_FUTURE_LINE_NUMBER
-        echo _LAST_LINES=$_LAST_LINES
-        echo PATCHED_MAIN_BINARY=$PATCHED_MAIN_BINARY
-        echo "PATCHED_MAIN_BINARY=$PATCHED_MAIN_BINARY" >> /tmp/PATCHED_MAIN_BINARIES.txt
-    ) >&2
+        >&2 echo _LAST_LINES=$_LAST_LINES
+
+        (
+         >&2   echo _LINES=$_LINES
+         >&2   echo _FUTURE_LINE_NUMBER=$_FUTURE_LINE_NUMBER
+         >&2   echo _LAST_LINES=$_LAST_LINES
+         >&2   echo PATCHED_MAIN_BINARY=$PATCHED_MAIN_BINARY
+         >&2   echo "PATCHED_MAIN_BINARY=$PATCHED_MAIN_BINARY" >> /tmp/PATCHED_MAIN_BINARIES.txt
+        )
 
 
         head -n $_FUTURE_LINE_NUMBER $MAIN_BINARY > $PATCHED_MAIN_BINARY
@@ -210,9 +232,10 @@ mangleMainBinary(){
         tail -n $_LAST_LINES $MAIN_BINARY >> $PATCHED_MAIN_BINARY
     fi
 
-    echo PATCHED_MAIN_BINARY=$PATCHED_MAIN_BINARY
+    >&2 echo PATCHED_MAIN_BINARY=$PATCHED_MAIN_BINARY
+    >&2 wc -l $PATCHED_MAIN_BINARY $MAIN_BINARY $TF
 
-    wc -l $PATCHED_MAIN_BINARY $MAIN_BINARY $TF
+    echo $PATCHED_MAIN_BINARY
 }
 
 
@@ -576,6 +599,11 @@ doMain(){
     if [[ "$MANGLE_MAIN_BINARY" == "1" ]]; then
         >&2 echo "Mangling Main Binary......"
         NEW_MAIN_BINARY=$(mangleMainBinary)
+        if [[ "$NEW_MAIN_BINARY" == "" ]]; then
+            echo Invalid NEW_MAIN_BINARY
+            exit 1
+        fi
+    
         pwd
         ls -al $MAIN_BINARY $NEW_MAIN_BINARY
         mv $MAIN_BINARY ${MAIN_BINARY}.orig
@@ -636,7 +664,7 @@ fi
 
 
     if [[ "$MANGLE_MAIN_BINARY" == "1" ]]; then
-        set +e
+        #set +e
         >&2 echo "Testing mangled binary"
         TEST_MANGLED_CMD="_EXEC_BIN_list=1 sh -c \"$PLAYBOOK_BINARY_PATH\""
         TEST_MANGLED_OUTPUT_FILE=$(mktemp)
