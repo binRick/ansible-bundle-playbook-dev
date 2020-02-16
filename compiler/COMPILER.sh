@@ -1,6 +1,12 @@
 #!/bin/bash 
 set -e
-NUKE_DIR=0
+if [[ "$_IS_COMPILER" == "" ]]; then
+    cmd="_IS_COMPILER=1 exec ${BASH_SOURCE[0]} $@"
+    echo cmd=$cmd
+    eval $cmd
+    exit
+fi
+NUKE_DIR=1
 
 if [[ "$REPO_PATH" == "" ]]; then
     REPO_PATH=~/public_html/whmcs/modules/addons/vpntech/submodules/ansible-bundle-playbook-dev
@@ -29,6 +35,7 @@ sudo rm -rf \
     ~COMPILER/ansible-bundle-playbook-dev \
     /tmp/__pycache__ \
     ~COMPILER/build \
+    ~COMPILER/.venv* \
     ~COMPILER/.*.txt \
     ~COMPILER/*.spec \
     /tmp/*.txt

@@ -50,11 +50,11 @@ MANUAL_HIDDEN_IMPORTS="--hidden-import=\"configparser\" \
 		    --hidden-import=\"logging.handlers\" \
 "
 
-ADDITIONAL_COMPILED_MODULES="simplejson terminaltables psutil loguru json2yaml setproctitle speedtest-cli pyyaml netaddr configparser urllib3 jmespath paramiko pyaml"
+ADDITIONAL_COMPILED_MODULES="simplejson terminaltables psutil loguru json2yaml setproctitle speedtest-cli pyyaml netaddr configparser urllib3 jmespath paramiko pyaml docopt"
 ADDITIONAL_COMPILED_MODULES_REPLACEMENTS="pyyaml|yaml python-jose|jose python_jose|jose pyopenssl|OpenSSL mysql-connector-python|mysql mysql_connector_python|mysql linode-cli|linodecli linode_cli|linodecli speedtest-cli|speedtest websocket-client|websocket"
 
 
-MODULE_BIN_INCLUDES="ansible-playbook json2yaml yaml2json speedtest-cli"
+MODULE_BIN_INCLUDES="ansible-playbook json2yaml yaml2json speedtest-cli ansible ansible-config"
 MODULE_BIN_INCLUDES_DEFAULT="ansible-playbook"
 MODULE_BIN_INCLUDES_FILE=~/.MODULE_BIN_INCLUDES.txt
 MODULE_BIN_TOTAL_INCLUDES_FILE=~/.MODULE_BIN_TITAL_INCLUDES.txt
@@ -109,7 +109,14 @@ getBinModulesFile(){
         _FUTURE_LINE_NUMBER=$(grep -n 'from __future__ import' $mF | cut -d':' -f1)
         FUNCTION_NAME="_EXEC_BIN_$(echo $m|tr '-' '_'|tr '[a-z]' '[A-Z]')"
         MODULE_STRING_NAME="_EXEC_BIN_$(echo $m|tr '-' '_'|tr '[a-z]' '[A-Z]')"
-        proctitle="$(echo $m|tr '[A-z]' '[a-z]| tr '_' '-'')"
+        proctitle="$(echo $m|tr '[A-Z]' '[a-z]'| tr '_' '-')"
+
+        >&2 echo "m=\"$m\" proctitle=\"$proctitle\""
+        if [[ "$proctitle" == "" ]]; then
+            echo "Invalid proctitle ($proctitle) for module $m"
+            exit 1
+        fi
+
 
         if [[ "$_FUTURE_LINE_NUMBER" != "" ]]; then
             _LAST_LINES=$(($_LINES-$_FUTURE_LINE_NUMBER))
@@ -152,11 +159,11 @@ getBinModulesFile(){
 
     for m in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
         MODULE_STRING_NAME="_EXEC_BIN_$(echo $m|tr '-' '_'|tr '[a-z]' '[A-Z]')"
-        proctitle="$(echo $m|tr '[A-z]' '[a-z]| tr '_' '-'')"
+        proctitle="$(echo $m|tr '[A-Z]' '[a-z]| tr '_' '-'')"
         echo -e "\n\nif \"${MODULE_STRING_NAME}\" in os.environ.keys():" >> $modulesFile
         echo -e "  setproctitle.setproctitle(\"$proctitle\")" >> $modulesFile
         echo -e "  sys.argv[0] = \"$proctitle\"" >> $modulesFile
-        echo -e "  sys.exit(exec(base64.b64decode(_EXEC_BIN_MODULES[\"$m\".upper()]).decode()))\n" >> $modulesFile
+        echo -e "  sys.exit(exec(base64.b64decode(_EXEC_BIN_MODULES[\"$m\".upper().replace('-','_')]).decode()))\n" >> $modulesFile
     done
 
 
