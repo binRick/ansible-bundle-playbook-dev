@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -e
+set +x
+cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+_EXEC_BIN_{{MODULE_NAME}}= exec ./ansible-playbook --help
