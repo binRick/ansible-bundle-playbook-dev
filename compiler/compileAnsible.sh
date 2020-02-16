@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+origDir="$(pwd)"
 umask 002
-ANSIBLE_CONFIG_FILE="$(pwd)/files/ansible.cfg"
+ANSIBLE_CONFIG_FILE="$origDir/files/ansible.cfg"
 BORG_ARCHIVE_QUOTA="5G"  # Max Disk Space borg repo can use
 BORG_ARCHIVE=~/ansible-playbook.borg
 BORG_SSH_KEY="BORG_KEY"
@@ -28,6 +29,7 @@ ANSIBLE_TOOLS="ansible-config"
 _RM_PATHS="\
    ansible/modules/web_infrastructure
 "
+MODULE_LAUNCHERS_FILE=$(mktemp)
 
 _ADD_DATAS="--add-data $VENV_PATH/lib/python3.6/site-packages/ansible/config/base.yml:ansible/config \
 		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/config/module_defaults.yml:ansible/config \
@@ -627,7 +629,6 @@ doMain(){
             exit 
         fi
         ANSIBLE_HIDDEN_IMPORTS_QTY="$(echo "$CMD" | tr ' ' '\n'|grep -c hidden-import)"
-	#findModules ansible $(getSitePackagesPath) | mangleModules|tr ' ' '\n'|grep '^--hidden-import='|wc -l)"
         >&2 echo "Building binary with $ANSIBLE_HIDDEN_IMPORTS_QTY hidden modules"
 
 
@@ -656,18 +657,36 @@ doMain(){
 
     set -e
 
-if [[ "1" == "0" ]]; then
-    echo "Compiling with pyarmor :: $PYARMOR_CMD_FILE"
-    bash $PYARMOR_CMD_FILE
+    if [[ "$MANGLE_MAIN_BINARY" == "1" ]]; then
+        for m in $(echo $MODULE_BIN_INCLUDES|tr '-' '_'|tr ' ' '\n'); do
+            DDIR="$(dirname $PLAYBOOK_BINARY_PATH)"
+            MF="$DDIR/${m}.launcher"
+            >&2 echo "Creating Launcher Script for module \"$m\" in file \"$MF\""
+            cp $origDir/moduleBinTemplate.sh.j2 $MF
+            sed -i "s/{{MODULE_NAME}}/$m/g" $MF
+            chmod +x $MF
+            chmod 755 $MF
+            echo "$MF" >> $MODULE_LAUNCHERS_FILE
+        done
+    fi
 
-    find $PYARMOR_OUTPUT_PATH -type d|grep __pycache__$|xargs -I % rm -rf %
+    echo MODULE_LAUNCHERS_FILE=$MODULE_LAUNCHERS_FILE
+    pwd
+    exit
 
-    echo "Compiled $(find $PYARMOR_OUTPUT_PATH|wc -l) files to $PYARMOR_OUTPUT_PATH"
+
+    if [[ "1" == "0" ]]; then
+        echo "Compiling with pyarmor :: $PYARMOR_CMD_FILE"
+        bash $PYARMOR_CMD_FILE
+
+        find $PYARMOR_OUTPUT_PATH -type d|grep __pycache__$|xargs -I % rm -rf %
+
+        echo "Compiled $(find $PYARMOR_OUTPUT_PATH|wc -l) files to $PYARMOR_OUTPUT_PATH"
 
 
 
-    exit 
-fi
+        exit 
+    fi
 
 
     if [[ "$MANGLE_MAIN_BINARY" == "1" ]]; then
