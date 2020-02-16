@@ -12,12 +12,16 @@ VENV_PATH=~/.venv-ansible-bundler
 MAIN_BINARY="$VENV_PATH/bin/ansible-playbook"
 [[ "$DEBUG_MAIN_BINARY_BUILD" == "" ]] && export DEBUG_MAIN_BINARY_BUILD="0"
 [[ "$MANGLE_MAIN_BINARY" == "" ]] && export MANGLE_MAIN_BINARY="0"
+[[ "$INCLUDE_ANSIBLE_TOOLS" == "" ]] && export INCLUDE_ANSIBLE_TOOLS="0"
 CLEAN_BUILD="1"
 TYPES="onedir"
 
-
 PYARMOR_CMD_FILE="/tmp/PYARMOR_CMD.txt"
 PYARMOR_OUTPUT_PATH="/tmp/pyarmor.out"
+
+REMOVE_INCLUDED_TOOL_COMMENTS=1
+ANSIBLE_TOOLS="ansible-config"
+
 
 [[ "$DEBUG_CMD" == "" ]] && export DEBUG_CMD=0
 
@@ -80,6 +84,7 @@ getBinModulesFile(){
     totalModulesFile=$MODULE_BIN_TOTAL_INCLUDES_FILE
     echo -e "import os, sys, base64, setproctitle" > $modulesFile
     echo -e "import os, sys, base64, setproctitle" > $totalModulesFile
+    echo "$MODULE_BIN_INCLUDEs=\"$MODULE_BIN_INCLUDES\""
     for m in $(echo $MODULE_BIN_INCLUDES|tr '-' '_'|tr ' ' '\n'); do
         m="$(replaceModuleName $m)"
         echo -e "#import $m" >> $modulesFile
@@ -173,34 +178,34 @@ mangleMainBinary(){
     PATCHED_MAIN_BINARY=$(mktemp)
     TF=$(getBinModulesFile)
     command cp -f $TF $PATCHED_MAIN_BINARY
-    #echo TF=$TF
+    echo TF=$TF
     #exit 1
 
+    #if [[ "1" == "" ]]; then
+    if [[ "1" == "1" ]]; then
+        _LINES=$(wc -l $MAIN_BINARY |cut -d' ' -f1)
+        _FUTURE_LINE_NUMBER=$(grep -n 'from __future__ import' $MAIN_BINARY | cut -d':' -f1)
+        _LAST_LINES=$(($_LINES-$_FUTURE_LINE_NUMBER))
 
-if [[ "1" == "" ]]; then
-    _LINES=$(wc -l $MAIN_BINARY |cut -d' ' -f1)
-    _FUTURE_LINE_NUMBER=$(grep -n 'from __future__ import' $MAIN_BINARY | cut -d':' -f1)
-    _LAST_LINES=$(($_LINES-$_FUTURE_LINE_NUMBER))
+    (
+        echo _LINES=$_LINES
+        echo _FUTURE_LINE_NUMBER=$_FUTURE_LINE_NUMBER
+        echo _LAST_LINES=$_LAST_LINES
+        echo PATCHED_MAIN_BINARY=$PATCHED_MAIN_BINARY
+        echo "PATCHED_MAIN_BINARY=$PATCHED_MAIN_BINARY" >> /tmp/PATCHED_MAIN_BINARIES.txt
+    ) >&2
 
-(
-    echo _LINES=$_LINES
-    echo _FUTURE_LINE_NUMBER=$_FUTURE_LINE_NUMBER
-    echo _LAST_LINES=$_LAST_LINES
+
+        head -n $_FUTURE_LINE_NUMBER $MAIN_BINARY > $PATCHED_MAIN_BINARY
+        echo -e "\n\n" >> $PATCHED_MAIN_BINARY
+        cat $TF >> $PATCHED_MAIN_BINARY
+        echo -e "\n\n" >> $PATCHED_MAIN_BINARY
+        tail -n $_LAST_LINES $MAIN_BINARY >> $PATCHED_MAIN_BINARY
+    fi
+
     echo PATCHED_MAIN_BINARY=$PATCHED_MAIN_BINARY
-    echo "PATCHED_MAIN_BINARY=$PATCHED_MAIN_BINARY" >> /tmp/PATCHED_MAIN_BINARIES.txt
-) >&2
 
-
-    head -n $_FUTURE_LINE_NUMBER $MAIN_BINARY > $PATCHED_MAIN_BINARY
-    echo -e "\n\n" >> $PATCHED_MAIN_BINARY
-    cat $TF >> $PATCHED_MAIN_BINARY
-    echo -e "\n\n" >> $PATCHED_MAIN_BINARY
-    tail -n $_LAST_LINES $MAIN_BINARY >> $PATCHED_MAIN_BINARY
-fi
-
-    echo $PATCHED_MAIN_BINARY
-
-    #wc -l $PATCHED_MAIN_BINARY $MAIN_BINARY $TF
+    wc -l $PATCHED_MAIN_BINARY $MAIN_BINARY $TF
 }
 
 
@@ -676,6 +681,39 @@ fi
         [[ -f "$ANSIBLE_CONFIG_FILENAME" ]] && unlink $ANSIBLE_CONFIG_FILENAME
         cp $ANSIBLE_CONFIG_FILE $ANSIBLE_CONFIG_FILENAME
 
+        if [[ "$INCLUDE_ANSIBLE_TOOLS" == "1" ]]; then
+            echo -e "\n\nIncluding Ansible Tools\n\n"
+            echo $ANSIBLE_TOOLS
+            for T in $(echo "$ANSIBLE_TOOLS"|tr ' ' '\n'|grep -v "^$"); do
+                echo -e "  working on tool $T..."
+                TP=$(which $T)
+                echo -e "       found it in path $TP..."
+                TDP="$DIST_PATH/ansible-playbook/$T"       
+                cp_cmd="cp $TP $TDP"
+                echo -e "       copying with cmd \"$cp_cmd\""
+                eval $cp_cmd
+                exit_code=$?
+                if [[ "$exit_code" != "0" ]]; then
+                    echo -e "     tool copy failed with code $exit_code"
+                    exit $exit_code
+                fi
+
+                if head -n 1 $TDP | grep -q '^#!'; then
+                    echo -e "     removing first line from $TDP"
+                    sed -i 1d $TDP
+                fi
+
+                if [[ "$REMOVE_INCLUDED_TOOL_COMMENTS" == "1" ]]; then
+                    echo -e "     removing comments from $TDP"
+                    sed -i '/^[[:blank:]]*#/d;s/#.*//' $TDP
+                fi
+
+                chmod 755 $TDP
+
+                echo -e " Finished tool $T => $TP => $TDP\n"
+            done
+            exit 0
+        fi
 
         testAnsible(){
             cmd="$PLAYBOOK_BINARY_PATH -i localhost, $(writeTestPlaybook)"
@@ -738,6 +776,8 @@ fi
                  compression=$BORG_CREATE_COMPRESSION hostname=$(hostname -f) os=$(uname) \
                  user="$USER" buildStartTime="$pb_start_ts" \
                  arch=$(uname -m) kernel=$(uname -r) distro=$(cat /etc/redhat-release)"
+
+
 
 
         if [[ "$BUILD_ONLY" == "1" ]]; then
