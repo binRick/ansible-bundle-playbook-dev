@@ -4,10 +4,10 @@ block_cipher = None
 
 
 a = Analysis(['test.spec'],
-             pathex=['/home/rblundell@product.healthinteractive.net/ansible-bundle-playbook-dev/compiler/test_multi_spec'],
+             pathex=['./venv/lib64/python3.6/site-packages', '/home/rblundell@product.healthinteractive.net/ansible-bundle-playbook-dev/compiler/test_multi_spec'],
              binaries=[],
              datas=[],
-             hiddenimports=[],
+             hiddenimports=['setproctitle'],
              hookspath=[],
              runtime_hooks=[],
              excludes=[],
