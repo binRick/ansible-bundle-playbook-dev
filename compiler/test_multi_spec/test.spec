@@ -3,8 +3,8 @@
 block_cipher = None
 
 
-a = Analysis(['test.py'],
-             pathex=['/home/rblundell@product.healthinteractive.net/ansible-bundle-playbook-dev/compiler'],
+a = Analysis(['test.spec'],
+             pathex=['/home/rblundell@product.healthinteractive.net/ansible-bundle-playbook-dev/compiler/test_multi_spec'],
              binaries=[],
              datas=[],
              hiddenimports=[],

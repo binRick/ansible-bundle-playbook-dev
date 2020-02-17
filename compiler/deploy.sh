@@ -15,7 +15,8 @@ if [[ -d "$STATIC_ANSIBLE_PATH" ]]; then
     sudo rm -rf "$STATIC_ANSIBLE_PATH"
 fi
 
-sudo mv $SRC_DIR/ansible-playbook $STATIC_ANSIBLE_PATH
-sudo chmod 0755 $STATIC_ANSIBLE_PATH
+sudo mv $SRC_DIR $STATIC_ANSIBLE_PATH
+
+sudo chmod 0755 $STATIC_ANSIBLE_PATH $STATIC_ANSIBLE_PATH/*.sh $STATIC_ANSIBLE_PATH/ansible-playbook
 
 

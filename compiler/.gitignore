@@ -2,3 +2,9 @@
 b
 LOADER.sh
 .log.txt
+.o
+.e
+.venv
+__pycache__
+build
+dist
