@@ -7,12 +7,15 @@ pip install \
     setproctitle \
     pyaml \
     psutil \
-    python-prctl \
     paramiko
+#    ansible==2.8.8 \
+
+#    --hidden-import="ansible" \
 
 pyi-makespec \
     --hidden-import="paramiko" \
     --hidden-import="pyaml" \
+    --hidden-import="psutil" \
     -p ./venv/lib64/python3.6/site-packages \
         test.spec
 

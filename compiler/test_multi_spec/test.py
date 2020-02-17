@@ -1,7 +1,5 @@
 #!/usr/bin/env python
-import os, sys, time
-import paramiko, pyaml, psutil
-import prctl
+import os, sys, time, paramiko, pyaml, psutil
 
 print("OK")
 time.sleep(10)
