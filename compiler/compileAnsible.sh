@@ -59,8 +59,8 @@ MANUAL_HIDDEN_IMPORTS="--hidden-import=\"configparser\" \
 		    --hidden-import=\"logging.handlers\" \
 "
 
-ADDITIONAL_COMPILED_MODULES="simplejson terminaltables psutil loguru json2yaml setproctitle speedtest-cli pyyaml netaddr configparser urllib3 jmespath paramiko pyaml docopt python-prctl"
-ADDITIONAL_COMPILED_MODULES_REPLACEMENTS="python-prctl|prctl pyyaml|yaml python-jose|jose python_jose|jose pyopenssl|OpenSSL mysql-connector-python|mysql mysql_connector_python|mysql linode-cli|linodecli linode_cli|linodecli speedtest-cli|speedtest websocket-client|websocket"
+ADDITIONAL_COMPILED_MODULES="simplejson terminaltables psutil loguru json2yaml setproctitle speedtest-cli pyyaml netaddr configparser urllib3 jmespath paramiko pyaml docopt"
+ADDITIONAL_COMPILED_MODULES_REPLACEMENTS="pyyaml|yaml python-jose|jose python_jose|jose pyopenssl|OpenSSL mysql-connector-python|mysql mysql_connector_python|mysql linode-cli|linodecli linode_cli|linodecli speedtest-cli|speedtest websocket-client|websocket"
 
 
 MODULE_BIN_INCLUDES="ansible-playbook json2yaml yaml2json speedtest-cli ansible ansible-config"
@@ -94,8 +94,8 @@ getBinModulesFile(){
     modulesFile=$MODULE_BIN_INCLUDES_FILE
     totalModulesFile=$MODULE_BIN_TOTAL_INCLUDES_FILE
 
-    echo -e "import os, sys, base64, setproctitle, prctl" > $modulesFile
-    echo -e "import os, sys, base64, setproctitle, prctl" > $totalModulesFile
+    echo -e "import os, sys, base64, setproctitle" > $modulesFile
+    echo -e "import os, sys, base64, setproctitle" > $totalModulesFile
     >&2 echo "$MODULE_BIN_INCLUDEs=\"$MODULE_BIN_INCLUDES\""
     for m in $(echo $MODULE_BIN_INCLUDES|tr '-' '_'|tr ' ' '\n'); do
         m="$(replaceModuleName $m)"
@@ -153,9 +153,7 @@ getBinModulesFile(){
                         _FUTURE_LINE_NUMBER=$_FUTURE_LINE_NUMBER _LAST_LINES=$_LAST_LINES"
 
         echo -e "\n\nif \"${MODULE_STRING_NAME}\" in os.environ.keys():" >> $totalModulesFile
-        echo -e "  #setproctitle.setproctitle(\"$proctitle\")" >> $totalModulesFile
-        echo -e "  #prctl.set_name(\"$proctitle\")" >> $totalModulesFile
-        echo -e "  prctl.set_proctitle(\"$proctitle\")" >> $totalModulesFile
+        echo -e "  setproctitle.setproctitle(\"$proctitle\")" >> $totalModulesFile
         echo -e "  sys.argv[0] = \"${proctitle}\"" >> $totalModulesFile
         echo -e "  eval(${FUNCTION_NAME}())" >> $totalModulesFile
         echo -e "  #globals()['%s' % ${FUNCTION_NAME}]()" >> $totalModulesFile
@@ -173,9 +171,7 @@ getBinModulesFile(){
         MODULE_STRING_NAME="_EXEC_BIN_$(echo $m|tr '-' '_'|tr '[a-z]' '[A-Z]')"
         proctitle="$(echo $m|tr '[A-Z]' '[a-z]| tr '_' '-'')"
         echo -e "\n\nif \"${MODULE_STRING_NAME}\" in os.environ.keys():" >> $modulesFile
-        echo -e "  #setproctitle.setproctitle(\"$proctitle\")" >> $modulesFile
-        echo -e "  #prctl.set_name(\"$proctitle\")" >> $modulesFile
-        echo -e "  prctl.set_proctitle(\"$proctitle\")" >> $modulesFile
+        echo -e "  setproctitle.setproctitle(\"$proctitle\")" >> $modulesFile
         echo -e "  sys.argv[0] = \"$proctitle\"" >> $modulesFile
         echo -e "  sys.exit(exec(base64.b64decode(_EXEC_BIN_MODULES[\"$m\".upper().replace('-','_')]).decode()))\n" >> $modulesFile
     done
