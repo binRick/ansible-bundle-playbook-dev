@@ -1,8 +1,16 @@
 #!/bin/bash
 set -e
+cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+
+if [[ -d .venv ]]; then rm -rf .venv; fi
+for d in build dist __pycache__; do 
+    if [[ -d $d ]]; then rm -rf $d; fi
+done
+
 python3 -m venv .venv
-rm -rf build dist __pycache__
 source .venv/bin/activate
+
+
 pip install \
     setproctitle \
     pyaml \

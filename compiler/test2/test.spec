@@ -3,11 +3,11 @@
 block_cipher = None
 
 
-a = Analysis(['test1.py'],
-             pathex=['/home/rblundell@product.healthinteractive.net/ansible-bundle-playbook-dev/compiler'],
+a = Analysis(['test.py'],
+             pathex=['./venv/lib64/python3.6/site-packages', '/home/whmcs/public_html/whmcs/modules/addons/vpntech/submodules/ansible-bundle-playbook-dev/compiler/test2'],
              binaries=[],
              datas=[],
-             hiddenimports=[],
+             hiddenimports=['paramiko', 'pyaml', 'psutil'],
              hookspath=[],
              runtime_hooks=[],
              excludes=[],
@@ -21,7 +21,7 @@ exe = EXE(pyz,
           a.scripts,
           [],
           exclude_binaries=True,
-          name='test1',
+          name='test',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
@@ -34,4 +34,4 @@ coll = COLLECT(exe,
                strip=False,
                upx=True,
                upx_exclude=[],
-               name='test1')
+               name='test')
