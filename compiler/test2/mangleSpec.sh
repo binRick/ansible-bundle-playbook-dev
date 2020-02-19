@@ -10,12 +10,6 @@ if [[ ! -f "$SPEC_FILE" ]]; then
     exit
 fi
 
-#sed -i "s/a\./${_F}_a./g" $SPEC_FILE
-
-#sed -i "s/pyz/${_F}_pyz/g" $SPEC_FILE
-#sed -i "s/pyz/${_F}_pyz/g" $SPEC_FILE
-#sed -i "s/pyz,/${_F}_pyz,/g" $SPEC_FILE
-
 ANALYSIS_START_LINE="$(grep '^a = Analysis(' $SPEC_FILE -n|cut -d':' -f1)"
 PYZ_START_LINE="$(grep '^pyz = PYZ(' $SPEC_FILE -n|cut -d':' -f1)"
 ANALYSIS_END_LINE="$(echo ${PYZ_START_LINE}-1|bc)"
@@ -51,19 +45,11 @@ sed -n "${COLLECT_START_LINE},${COLLECT_END_LINE}p" $SPEC_FILE > $_DIR/COLLECT.t
 sed -i "s/^a = Analysis/${_F}_a = Analysis/g" $_DIR/ANALYSIS.txt
 sed -i "s/^pyz = PYZ/${_F}_pyz = PYZ/g" $_DIR/PYZ.txt
 sed -i "s/a\./${_F}_a./g" $_DIR/PYZ.txt $_DIR/COLLECT.txt
-#sed -i "s/pyz/${_F}_pyz/g" $_DIR/PYZ.txt
-#sed -i "s/pyz/${_F}_pyz/g" $_DIR/PYZ.txt
-#sed -i "s/^exe = EXE/${_F}_exe = EXE/g" $_DIR/EXE.txt
 sed -i "s/^exe = EXE/${_F}_exe = EXE/g" $_DIR/EXE.txt
 sed -i "s/pyz,/${_F}_pyz,/g" $_DIR/EXE.txt
 sed -i "s/a\./${_F}_a./g" $_DIR/EXE.txt
 sed -i "s/^coll = COLLECT/${_F}_coll = COLLECT/g" $_DIR/COLLECT.txt
 sed -i "s/exe,/${_F}_exe,/g" $_DIR/COLLECT.txt
-
-
-#sed -i "s/a\./${_F}_a./g" $_DIR/PYZ.txt
-#sed -i "s/a\./${_F}_a./g" $_DIR/EXE.txt
-#sed -i "s/a\./${_F}_a./g" $_DIR/COLLECT.txt
 
 
 echo WORKDIR=$_DIR

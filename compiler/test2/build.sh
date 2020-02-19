@@ -140,7 +140,7 @@ for x in $BUILD_SCRIPTS; do
 
     if ! grep -q '^block_cipher' $COMBINED_SPEC_FILE; then
         cat "$(get_mangled_var $x_mangle_vars BLOCK_CIPHER)" >> $COMBINED_SPEC_FILE
-        ansi --green "   Added block Cipher!"
+#        ansi --green "   Added block Cipher!"
     fi
 done 
 ansi --green " OK"
@@ -152,10 +152,10 @@ for x in $BUILD_SCRIPTS; do
     x_spec="${x}.spec"
     x_mangle_vars="$(get_mangle_vars_file $x_orig)"
     for k in ANALYSIS; do 
-        ansi --magenta " [$x_orig => $k]"
+#        ansi --magenta " [$x_orig => $k]"
         cat "$(get_mangled_var $x_mangle_vars $k)" >> $COMBINED_SPEC_FILE
         echo -ne "\n" >> $COMBINED_SPEC_FILE
-        ansi --green "   OK"
+#        ansi --green "   OK"
     done
     echo -ne "\n\n" >> $COMBINED_SPEC_FILE
 done
@@ -188,10 +188,10 @@ for x in $BUILD_SCRIPTS; do
     x_spec="${x}.spec"
     x_mangle_vars="$(get_mangle_vars_file $x_orig)"
     for k in PYZ EXE COLLECT; do 
-        ansi --magenta " [$k]"
+#        ansi --magenta " [$k]"
         cat "$(get_mangled_var $x_mangle_vars $k)" >> $COMBINED_SPEC_FILE
         echo -ne "\n" >> $COMBINED_SPEC_FILE
-        ansi --green "   OK"
+#        ansi --green "   OK"
     done
     echo -ne "\n\n" >> $COMBINED_SPEC_FILE
 done
@@ -238,7 +238,6 @@ else
 
 fi
 
-
 #cat $COMBINED_SPEC_FILE
 #exit
 
@@ -278,10 +277,29 @@ for x in $BUILD_SCRIPTS; do
 
 done
 
+
+ansi --cyan Testing Combined Binaries
+for x in $BUILD_SCRIPTS; do 
+    x_orig="$x"
+    x="$(basename $x .py)"
+    x_dist_dir="./dist/$x"
+    x_combined="${COMBINED_DIR}/$x"
+    if [[ ! -e $x_combined ]]; then
+        ansi --red $x_combined is not executable!
+        exit 1
+    else
+        ansi --green "  $x_orig => $x => $x_combined"
+    fi
+done
+
+
+ansi --green "OK"
+
+#find $COMBINED_DIR
+#ls -al $COMBINED_DIR
+
 echo -ne "\n\n"
 ansi --green "BUILD OK"
 echo -ne "\n\n"
 
-#find $COMBINED_DIR
-#ls -al $COMBINED_DIR
 echo $COMBINED_DIR
