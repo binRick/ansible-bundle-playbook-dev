@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['test.py'],
-             pathex=['./venv/lib64/python3.6/site-packages', '/home/whmcs/public_html/whmcs/modules/addons/vpntech/submodules/ansible-bundle-playbook-dev/compiler/test2'],
+             pathex=['.venv-1/lib64/python3.6/site-packages', '/home/whmcs/public_html/whmcs/modules/addons/vpntech/submodules/ansible-bundle-playbook-dev/compiler/test2'],
              binaries=[],
              datas=[],
              hiddenimports=['paramiko', 'pyaml', 'psutil'],

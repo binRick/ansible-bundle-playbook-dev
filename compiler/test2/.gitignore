@@ -1,0 +1,6 @@
+*.spec
+*.txt
+*.std*
+.e*
+.venv*
+.COMBINED*
