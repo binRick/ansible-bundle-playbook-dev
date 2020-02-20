@@ -666,7 +666,7 @@ buildPyInstallerCommand(){
 
 
 
-        exit 102
+        #exit 102
 
 
 
