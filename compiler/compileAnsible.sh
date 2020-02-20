@@ -519,6 +519,9 @@ buildPyInstallerCommand(){
                     exit 100
                 fi
                 >&2 echo GENERATING SPEC FILE FOR MODULE $M
+                SPEC_FILE="$(basename ${M}).spec"
+                mangle_cmd="cp -f $MANGLE_SCRIPT_PATH $MANGLE_SCRIPT_NAME && ./$MANGLE_SCRIPT_NAME $SPEC_FILE"
+                >&2 echo " [MODULE $M]: SPEC_FILE=$SPEC_FILE"
                 >&2 echo mangle_cmd=$mangle_cmd
                 mangle_stdout=$(mktemp)
                 mangle_stderr=$(mktemp)
