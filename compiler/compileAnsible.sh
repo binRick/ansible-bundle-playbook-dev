@@ -485,16 +485,24 @@ buildPyInstallerCommand(){
         CREATED_SPEC_FILE="$(grep '^wrote ' $mkspec_out | tail -n1|cut -d' ' -f2)"
         >&2 echo CREATED_SPEC_FILE=$CREATED_SPEC_FILE
         cp $CREATED_SPEC_FILE $SPEC_FILE
-        MANGLE_CMD="$MANGLE_SCRIPT $SPEC_FILE"
-        >&2 echo MANGLE_CMD=$MANGLE_CMD
-        
-
-
-        pwd
+        mangle_cmd="$MANGLE_SCRIPT $SPEC_FILE"
+        >&2 echo mangle_cmd=$mangle_cmd
+        mangle_stdout=$(mktemp)
+        mangle_stderr=$(mktemp)
+        eval $mangle_cmd > $mangle_stdout 2>$mangle_stderr
+        exit_code=$?        
+        if [[ "$exit_code" != "0" ]]; then
+            cat $mangle_stdout
+            cat $mangle_stderr
+            echo -e "\n\nexit code $exit_code\n\n"
+            exit $exit_code
+        fi
         >&2 ls $SPEC_FILE
-        exit 100
-
+        #exit 100
+        export _PY_INSTALLER_TARGET=$SPEC_FILE
     else
+      export _PY_INSTALLER_TARGET=$_MAIN_BINARY
+    fi
         >&2 echo -e "   *** NOT USING SPEC MODE ***"
         echo pyinstaller \
             -n ansible-playbook \
@@ -508,8 +516,7 @@ buildPyInstallerCommand(){
                \
                 ${_ANSIBLE_MODULES} \
                 \
-                 $_MAIN_BINARY
-    fi
+                 $_PY_INSTALLER_TARGET
 
 }
 
