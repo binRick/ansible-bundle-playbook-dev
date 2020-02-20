@@ -526,7 +526,15 @@ buildPyInstallerCommand(){
                         $_ANSIBLE_MODULES \
                         -p $VIRTUAL_ENV/lib64/python3.6/site-packages \
                            $M"
-                SPEC_FILE="$(basename ${M}).spec"
+                SPEC_FILE="${M}.spec"
+                mkspec_out=$(mktemp)
+                mkspec_err=$(mktemp)
+                eval $py_mkspec_cmd > $mkspec_out 2> $mkspec_err
+                exit_code=$?
+                >&2 echo py_mkspec exit_code=$exit_code
+                CREATED_SPEC_FILE="$(grep '^wrote ' $mkspec_out | tail -n1|cut -d' ' -f2)"
+                >&2 echo CREATED_SPEC_FILE=$CREATED_SPEC_FILE
+                cp $CREATED_SPEC_FILE $SPEC_FILE
                 mangle_cmd="cp -f $MANGLE_SCRIPT_PATH $MANGLE_SCRIPT_NAME && ./$MANGLE_SCRIPT_NAME $SPEC_FILE"
                 >&2 echo " [MODULE $M]: SPEC_FILE=$SPEC_FILE"
                 >&2 echo py_mkspec_cmd=$py_mkspec_cmd
