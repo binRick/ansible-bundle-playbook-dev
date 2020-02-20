@@ -492,25 +492,21 @@ buildPyInstallerCommand(){
         exit 100
 
     else
-        >&2 echo NOT USING SPEC MODE
-
+        >&2 echo -e "   *** NOT USING SPEC MODE ***"
+        echo pyinstaller \
+            -n ansible-playbook \
+            --$type -y --clean \
+            --distpath $DIST_PATH \
+               \
+                $_ADD_DATAS \
+               \
+                ${HIDDEN_ADDITIONAL_COMPILED_MODULES} \
+                ${MANUAL_HIDDEN_IMPORTS} \
+               \
+                ${_ANSIBLE_MODULES} \
+                \
+                 $_MAIN_BINARY
     fi
-
-
-
-	echo pyinstaller \
-		-n ansible-playbook \
-		--$type -y --clean \
-		--distpath $DIST_PATH \
-		   \
-            $_ADD_DATAS \
-		   \
-		    ${HIDDEN_ADDITIONAL_COMPILED_MODULES} \
-		    ${MANUAL_HIDDEN_IMPORTS} \
-		   \
-			${_ANSIBLE_MODULES} \
-		    \
-		     $_MAIN_BINARY
 
 }
 
