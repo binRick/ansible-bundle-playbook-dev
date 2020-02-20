@@ -10,6 +10,7 @@ BORG_SSH_KEY="BORG_KEY"
 BORG_SSH_PORT=22
 BORG_SSH_HOST=web1
 BORG_SSH_USER=BORG
+USE_PYINSTALLER_SPEC_METHOD="1"
 VENV_PATH=~/.venv-ansible-bundler
 MAIN_BINARY="$VENV_PATH/bin/ansible-playbook"
 [[ "$DEBUG_MAIN_BINARY_BUILD" == "" ]] && export DEBUG_MAIN_BINARY_BUILD="0"
@@ -465,8 +466,7 @@ buildPyInstallerCommand(){
     PYARMOR_CMD="cp $_MAIN_BINARY ${_MAIN_BINARY}.py && pyarmor pack --debug -t PyInstaller --clean -O $PYARMOR_OUTPUT_PATH -e \" $PYARMOR_CMD_E \" ${_MAIN_BINARY}.py"
     echo $PYARMOR_CMD > $PYARMOR_CMD_FILE
 
-    USE_SPEC="1"
-    if [[ "$USE_SPEC" == "1" ]]; then
+    if [[ "$USE_PYINSTALLER_SPEC_METHOD" == "1" ]]; then
         py_mkspec_cmd="pyi-makespec \
             --hidden-import=\"paramiko\" \
             --hidden-import=\"pyaml\" \
@@ -519,46 +519,34 @@ buildPyInstallerCommand(){
         echo 'source .go.env' >> $GO_FILE
 
         
-        cmd="pyinstaller \
-            -n ansible-playbook \
-            --$type -y --clean \
-            --distpath $DIST_PATH \
-               \
-                $_ADD_DATAS \
-               \
-                ${HIDDEN_ADDITIONAL_COMPILED_MODULES} \
-                ${MANUAL_HIDDEN_IMPORTS} \
-               \
-                ${_ANSIBLE_MODULES} \
-                \
-                 $_PY_INSTALLER_TARGET"
-
 
         echo $cmd >> $GO_FILE
         chmod +x $GO_FILE
         cp $GO_FILE GO.sh
         cp $GO_FILE_env .go.env
-        pwd
-        ls -al GO.sh .go.env
-        exit 100
-        eval $cmd
+        >&2 pwd
+        >&2 ls -al GO.sh .go.env
+        #exit 100
+        echo $cmd
     else
+      >&2 echo -e "   *** NOT USING SPEC MODE ***"
       export _PY_INSTALLER_TARGET=$_MAIN_BINARY
-        >&2 echo -e "   *** NOT USING SPEC MODE ***"
-        echo pyinstaller \
-            -n ansible-playbook \
-            --$type -y --clean \
-            --distpath $DIST_PATH \
-               \
-                $_ADD_DATAS \
-               \
-                ${HIDDEN_ADDITIONAL_COMPILED_MODULES} \
-                ${MANUAL_HIDDEN_IMPORTS} \
-               \
-                ${_ANSIBLE_MODULES} \
-                \
-                 $_PY_INSTALLER_TARGET
     fi
+    cmd="pyinstaller \
+        -n ansible-playbook \
+        --$type -y --clean \
+        --distpath $DIST_PATH \
+           \
+            $_ADD_DATAS \
+           \
+            ${HIDDEN_ADDITIONAL_COMPILED_MODULES} \
+            ${MANUAL_HIDDEN_IMPORTS} \
+           \
+            ${_ANSIBLE_MODULES} \
+            \
+             $_PY_INSTALLER_TARGET"
+    echo $cmd
+
 
 }
 
@@ -631,7 +619,6 @@ getAnsibleVersions(){
 }
 export ANSIBLE_VERSIONS="$(getAnsibleVersions|tr '\n' ' ')"
 
-#set +e; $BORG_BINARY --version >/dev/null 2>&1 || {
 if [[ ! -e ~/.local/bin/borg ]]; then
     mkdir -p ~/.local/bin
     wget https://github.com/borgbackup/borg/releases/download/1.1.10/borg-linux64 -O ~/.local/bin/borg-linux64
@@ -640,7 +627,6 @@ if [[ ! -e ~/.local/bin/borg ]]; then
     alias borg="$BORG_BINARY"
     alias borg-linux64="$BORG_BINARY"
 fi
-#}
 
 doMain(){
     set -e
