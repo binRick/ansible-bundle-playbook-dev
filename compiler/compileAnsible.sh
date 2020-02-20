@@ -13,6 +13,7 @@ BORG_SSH_HOST=web1
 BORG_SSH_USER=BORG
 VENV_PATH=~/.venv-ansible-bundler
 MAIN_BINARY="$VENV_PATH/bin/ansible-playbook"
+export USE_MERGED_PY_INSTALL_METHOD=1
 [[ "$USE_PYINSTALLER_SPEC_METHOD" == "" ]] && export USE_PYINSTALLER_SPEC_METHOD=1
 [[ "$DEBUG_MAIN_BINARY_BUILD" == "" ]] && export DEBUG_MAIN_BINARY_BUILD="0"
 [[ "$MANGLE_MAIN_BINARY" == "" ]] && export MANGLE_MAIN_BINARY="0"
@@ -472,8 +473,7 @@ buildPyInstallerCommand(){
     echo $PYARMOR_CMD > $PYARMOR_CMD_FILE
 
     if [[ "$USE_PYINSTALLER_SPEC_METHOD" == "1" ]]; then
-
-        if [[ "1" == "1" ]]; then
+        if [[ "$USE_MERGED_PY_INSTALL_METHOD" == "0" ]]; then
                     py_mkspec_cmd="pyi-makespec \
                             $_ADD_DATAS \
                             $HIDDEN_ADDITIONAL_COMPILED_MODULES \
