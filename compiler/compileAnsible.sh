@@ -511,8 +511,6 @@ buildPyInstallerCommand(){
         >&2 ls $SPEC_FILE
         export _ANSIBLE_PLAYBOOK_SPEC_FILE=$SPEC_FILE
         
-
-
         SAVE_DIR=$(pwd)
         SPEC_FILES_DIR=$(mktemp -d)
         for M in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
@@ -651,10 +649,10 @@ buildPyInstallerCommand(){
             x_spec="${x}.spec"
             x_mangle_vars="$(get_mangle_vars_file $x_orig)"
             for k in PYZ EXE COLLECT; do
-        #        ansi --magenta " [$k]"
+                ansi --magenta " [$k]"
                 cat "$(get_mangled_var $x_mangle_vars $k)" >> $COMBINED_SPEC_FILE
                 echo -ne "\n" >> $COMBINED_SPEC_FILE
-        #        ansi --green "   OK"
+                ansi --green "   OK"
             done
             echo -ne "\n\n" >> $COMBINED_SPEC_FILE
         done
