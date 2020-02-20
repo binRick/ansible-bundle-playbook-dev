@@ -593,7 +593,7 @@ buildPyInstallerCommand(){
             for x in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
                 x_orig="$x"
                 x="$(basename $x .py)"
-                x_spec="${x}.spec"
+                x_spec="$SPEC_FILES_DIR/${x}.spec"
                 mangle_cmd="$MANGLE_SCRIPT $x_spec"
                 x_mangle_vars="$(get_mangle_vars_file $x_orig)"
                 PYZ_file="$(get_mangled_var $x_mangle_vars PYZ)"
@@ -613,7 +613,7 @@ buildPyInstallerCommand(){
             for x in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
                 x_orig="$x"
                 x="$(basename $x .py)"
-                x_spec="${x}.spec"
+                x_spec="$SPEC_FILES_DIR/${x}.spec"
                 x_mangle_vars="$(get_mangle_vars_file $x_orig)"
                 for k in ANALYSIS; do
                     >&2 ansi --magenta " [$x_orig => $k]"
@@ -644,7 +644,7 @@ buildPyInstallerCommand(){
             for x in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
                 x_orig="$x"
                 x="$(basename $x .py)"
-                x_spec="${x}.spec"
+                x_spec="$SPEC_FILES_DIR/${x}.spec"
                 x_mangle_vars="$(get_mangle_vars_file $x_orig)"
                 for k in PYZ EXE COLLECT; do
                     >&2 ansi --magenta " [$k]"
