@@ -15,6 +15,7 @@ MAIN_BINARY="$VENV_PATH/bin/ansible-playbook"
 [[ "$DEBUG_MAIN_BINARY_BUILD" == "" ]] && export DEBUG_MAIN_BINARY_BUILD="0"
 [[ "$MANGLE_MAIN_BINARY" == "" ]] && export MANGLE_MAIN_BINARY="0"
 [[ "$INCLUDE_ANSIBLE_TOOLS" == "" ]] && export INCLUDE_ANSIBLE_TOOLS="0"
+[[ "$BUILD_ONLY" == "" ]] && export BUILD_ONLY=1
 CLEAN_BUILD="1"
 TYPES="onedir"
 
@@ -23,7 +24,6 @@ PYARMOR_OUTPUT_PATH="/tmp/pyarmor.out"
 
 REMOVE_INCLUDED_TOOL_COMMENTS=1
 ANSIBLE_TOOLS="ansible-config"
-
 MANGLE_SCRIPT="./mangleSpec.sh"
 
 if ! command -v shc >/dev/null 2>/dev/null; then
@@ -463,12 +463,18 @@ buildPyInstallerCommand(){
     PYARMOR_CMD="cp $_MAIN_BINARY ${_MAIN_BINARY}.py && pyarmor pack --debug -t PyInstaller --clean -O $PYARMOR_OUTPUT_PATH -e \" $PYARMOR_CMD_E \" ${_MAIN_BINARY}.py"
     echo $PYARMOR_CMD > $PYARMOR_CMD_FILE
 
+
+
+
     py_mkspec_cmd="pyi-makespec \
         --hidden-import=\"paramiko\" \
         --hidden-import=\"pyaml\" \
         --hidden-import=\"psutil\" \
-        -p $VENV_DIRECTORY/lib64/python3.6/site-packages \
+        -p $DIST_PATH \
            $_MAIN_BINARY"
+
+#$VENV_DIRECTORY/lib64/python3.6/site-packages \
+    #SPEC_FILE="{{$_MAIN_BINARY}.spec"
 
 
 
