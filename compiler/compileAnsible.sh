@@ -467,9 +467,6 @@ buildPyInstallerCommand(){
     echo $PYARMOR_CMD > $PYARMOR_CMD_FILE
 
     if [[ "$USE_PYINSTALLER_SPEC_METHOD" == "1" ]]; then
-#            --hidden-import=\"paramiko\" \
-#            --hidden-import=\"pyaml\" \
-#            --hidden-import=\"psutil\" \
         py_mkspec_cmd="pyi-makespec \
                 $_ADD_DATAS \
                 $HIDDEN_ADDITIONAL_COMPILED_MODULES \
@@ -656,14 +653,22 @@ buildPyInstallerCommand(){
         echo -ne "\n\n" >> $COMBINED_SPEC_FILE
 
 
-        export _PY_INSTALLER_TARGET=$COMBINED_SPEC_FILE
+        export _PY_INSTALLER_TARGET="$(pwd)/$COMBINED_SPEC_FILE"
         >&2 echo _PY_INSTALLER_TARGET=$_PY_INSTALLER_TARGET
 
         [[ "$_DEBUG_PY_INSTALLER" == "1" ]] && exit 666
+
+
     else
+
+
       >&2 echo -e "   *** NOT USING SPEC MODE ***"
       export _PY_INSTALLER_TARGET=$_MAIN_BINARY
+
     fi
+
+
+
     cmd="pyinstaller \
         -n ansible-playbook \
         --$type -y --clean \
