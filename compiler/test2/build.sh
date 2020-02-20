@@ -1,7 +1,8 @@
 #!/bin/bash
 set -e
 cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-source ~/.ansi
+#source ~/.ansi
+source .ansi
 export -n VENV_DIRECTORY
 
 [[ "$BUILD_SCRIPTS" == "" ]] && \
