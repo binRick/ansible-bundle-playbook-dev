@@ -8,3 +8,4 @@ LOADER.sh
 __pycache__
 build
 dist
+test2/BUILD*
