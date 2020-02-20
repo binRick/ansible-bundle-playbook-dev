@@ -662,28 +662,7 @@ buildPyInstallerCommand(){
         export _PY_INSTALLER_TARGET=$COMBINED_SPEC_FILE
         >&2 echo _PY_INSTALLER_TARGET=$_PY_INSTALLER_TARGET
 
-
-
-
-
-        #exit 102
-
-
-
-
-
-        #GO_FILE=$(mktemp)
-        #GO_FILE_env=$(mktemp)
-        #echo '#!/bin/bash' > $GO_FILE
-        #env >> $GO_FILE_env
-        #echo 'source .go.env' >> $GO_FILE
-        #echo $cmd >> $GO_FILE
-        #chmod +x $GO_FILE
-        #cp $GO_FILE GO.sh
-        #cp $GO_FILE_env .go.env
-        #>&2 pwd
-        #>&2 ls -al GO.sh .go.env
-        #exit 100
+        [[ "$_DEBUG_PY_INSTALLER" == "1" ]] && exit 666
     else
       >&2 echo -e "   *** NOT USING SPEC MODE ***"
       export _PY_INSTALLER_TARGET=$_MAIN_BINARY
