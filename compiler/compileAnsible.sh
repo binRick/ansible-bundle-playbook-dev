@@ -24,7 +24,9 @@ PYARMOR_OUTPUT_PATH="/tmp/pyarmor.out"
 
 REMOVE_INCLUDED_TOOL_COMMENTS=1
 ANSIBLE_TOOLS="ansible-config"
-MANGLE_SCRIPT="./mangleSpec.sh"
+MANGLE_SCRIPT_NAME="mangleSpec.sh"
+MANGLE_SCRIPT="./$MANGLE_SCRIPT_NAME"
+export MANGLE_SCRIPT_PATH="$(pwd)/$MANGLE_SCRIPT_NAME"
 
 if ! command -v shc >/dev/null 2>/dev/null; then
     >&2 echo shc not found in PATH
@@ -485,7 +487,7 @@ buildPyInstallerCommand(){
         CREATED_SPEC_FILE="$(grep '^wrote ' $mkspec_out | tail -n1|cut -d' ' -f2)"
         >&2 echo CREATED_SPEC_FILE=$CREATED_SPEC_FILE
         cp $CREATED_SPEC_FILE $SPEC_FILE
-        mangle_cmd="$MANGLE_SCRIPT $SPEC_FILE"
+        mangle_cmd="cp -f $MANGLE_SCRIPT_PATH $MANGLE_SCRIPT_NAME && ./$MANGLE_SCRIPT_NAME $SPEC_FILE"
         >&2 echo mangle_cmd=$mangle_cmd
         mangle_stdout=$(mktemp)
         mangle_stderr=$(mktemp)
