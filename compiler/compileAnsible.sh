@@ -199,13 +199,15 @@ getBinModulesFile(){
     #echo $totalModulesFile
 }
 
+MANGLED_VARS_PATH=$(mktemp -d --suffix __compiler__mangled_vars_path__)
+
 get_mangled_var(){
-    (source $1 && echo ${!2})
+    (source $MANGLED_VARS_PATH/$1 && echo ${!2})
 }
 
 get_mangle_vars_file(){
     x="$(basename $1 .py)"
-    x_mangle_vars=".${x}_mangled_vars.txt"
+    x_mangle_vars="$MANGLED_VARS_PATH/.${x}_mangled_vars.txt"
     echo $x_mangle_vars
 }
 
@@ -777,9 +779,10 @@ export ANSIBLE_VERSIONS="$(getAnsibleVersions|tr '\n' ' ')"
 
 if [[ ! -e ~/.local/bin/borg ]]; then
     mkdir -p ~/.local/bin
-    wget https://github.com/borgbackup/borg/releases/download/1.1.10/borg-linux64 -O ~/.local/bin/borg-linux64
-    chmod +x ~/.local/bin/borg-linux64
-    export BORG_BINARY=~/.local/bin/borg-linux64
+    wget https://github.com/borgbackup/borg/releases/download/1.1.10/borg-linux64 -O ~/.local/bin/borg
+    chmod +x ~/.local/bin/borg
+    export BORG_BINARY=~/.local/bin/borg
+    if [[ ! -f ~/.local/bin/borg-linux64 ]]; then cp ~/.local/bin/borg ~/.local/bin/borg-linux64; fi
     alias borg="$BORG_BINARY"
     alias borg-linux64="$BORG_BINARY"
 fi
