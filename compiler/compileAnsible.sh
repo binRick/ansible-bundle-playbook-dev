@@ -504,8 +504,16 @@ buildPyInstallerCommand(){
         >&2 ls $SPEC_FILE
         export _PY_INSTALLER_TARGET=$SPEC_FILE
 
-        for M in $MODULE_BIN_INCLUDES; do
+        for M in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
             echo ADDING $M
+            M_b=$(basename $M)
+            if [[ "$(basename $M)" == "ansible-playbook" ]]; then
+                echo -e "  ansible-playbook detected"
+            else
+                echo -e "  adding module $M"
+
+            fi
+
         done
         exit 102
 
