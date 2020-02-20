@@ -532,6 +532,7 @@ buildPyInstallerCommand(){
         chmod +x $GO_FILE
         cp $GO_FILE GO.sh
         cp $GO_FILE_env .go.env
+        pwd
         ls -al GO.sh .go.env
         exit 100
         eval $cmd
