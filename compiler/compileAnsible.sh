@@ -575,12 +575,11 @@ buildPyInstallerCommand(){
             cp $SPEC_FILE $SPEC_FILES_DIR
 
         done
+
         cd $SAVE_DIR
         ls -al $SPEC_FILES_DIR
         >&2 echo SPEC_FILES_DIR=$SPEC_FILES_DIR
         >&2 echo SAVE_DIR=$SAVE_DIR
-
-
 
         >&2 ansi --cyan Assembling combined spec file from mangled spec files
 
@@ -833,7 +832,7 @@ doMain(){
     fi
 
 
-        CMD="$(buildPyInstallerCommand $MAIN_BINARY)"
+        CMD="$(buildPyInstallerCommand $MAIN_BINARY|grep '^pyinstaller '|tail -n1)"
         if [ "$DEBUG_CMD" == "1" ]; then
             cmd_file=$(mktemp)
             echo $CMD > $cmd_file
