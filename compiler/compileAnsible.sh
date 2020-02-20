@@ -472,7 +472,7 @@ buildPyInstallerCommand(){
             -p $VIRTUAL_ENV/lib64/python3.6/site-packages \
                $_MAIN_BINARY"
 
-        SPEC_FILE="$(pwd)/$(basename ${_MAIN_BINARY}).spec"
+        SPEC_FILE="$(basename ${_MAIN_BINARY}).spec"
 
         >&2 echo py_mkspec_cmd=$py_mkspec_cmd
         >&2 echo SPEC_FILE=$SPEC_FILE
@@ -485,6 +485,8 @@ buildPyInstallerCommand(){
         CREATED_SPEC_FILE="$(grep '^wrote ' $mkspec_out | tail -n1|cut -d' ' -f2)"
         >&2 echo CREATED_SPEC_FILE=$CREATED_SPEC_FILE
         cp $CREATED_SPEC_FILE $SPEC_FILE
+        MANGLE_CMD="$MANGLE_SCRIPT $SPEC_FILE"
+        
 
 
         pwd
