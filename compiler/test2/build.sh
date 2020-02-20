@@ -12,6 +12,8 @@ NUKE_VENV=0
 MANGLE_SCRIPT="./mangleSpec.sh"
 combined_stdout=combined-compile.stdout
 combined_stderr=combined-compile.stderr
+MODULES="pyinstaller $MODULES"
+#setproctitle pyaml psutil paramiko"
 
 retry_nuked_venv(){
     cmd="RETRIED=1 NUKE_VENV=1 exec ${BASH_SOURCE[0]} $@"
@@ -40,12 +42,7 @@ fi
 source $VENV_DIR/bin/activate || retry_nuked_venv
 
 ansi --cyan Installing Python Requirements
-pip -q install \
-    pyinstaller \
-    setproctitle \
-    pyaml \
-    psutil \
-    paramiko || retry_nuked_venv
+pip -q install $MODULES || retry_nuked_venv
 
 ansi --green "   OK"
 
@@ -288,6 +285,11 @@ for x in $BUILD_SCRIPTS; do
         ansi --red $x_combined is not executable!
         exit 1
     else
+        test_cmd="$x_combined --test"
+        of=$(mktemp)
+        ef=$(mktemp)
+        eval $test_cmd > $of 2> $ef
+        exit_code=$?
         ansi --green "  $x_orig => $x => $x_combined"
     fi
 done

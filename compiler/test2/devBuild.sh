@@ -1,8 +1,7 @@
 #!/bin/bash
 set -e
-export DEV_FILES="test.py test1.py test2.py"
 
 nodemon --delay 1 --signal SIGTERM \
-    -w test*.py -w build.sh -w mangleSpec*.sh \
+    -w test*.py -w build.sh -w mangleSpec*.sh -w test_build.sh \
     -V \
-    -e sh,py -x -- bash -x ./build.sh 
+    -e sh,py -x -- bash -x ./test_build.sh
