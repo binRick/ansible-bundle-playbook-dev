@@ -472,7 +472,7 @@ buildPyInstallerCommand(){
             -p $VIRTUAL_ENV/lib64/python3.6/site-packages \
                $_MAIN_BINARY"
 
-        SPEC_FILE="$(pwd)/${_MAIN_BINARY}.spec"
+        SPEC_FILE="$(pwd)/$(basename ${_MAIN_BINARY}).spec"
 
         >&2 echo py_mkspec_cmd=$py_mkspec_cmd
         >&2 echo SPEC_FILE=$SPEC_FILE
