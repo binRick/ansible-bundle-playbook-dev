@@ -477,9 +477,17 @@ buildPyInstallerCommand(){
         >&2 echo py_mkspec_cmd=$py_mkspec_cmd
         >&2 echo SPEC_FILE=$SPEC_FILE
         #exit 100
-        eval $py_mkspec_cmd
+        mkspec_out=$(mktemp)
+        mkspec_err=$(mktemp)
+        eval $py_mkspec_cmd > $mkspec_out 2> $mkspec_err
         exit_code=$?
         >&2 echo py_mkspec exit_code=$exit_code
+        CREATED_SPEC_FILE="$(grep '^wrote ' $mkspec_out | tail -n1|cut -d' ' -f2)"
+        >&2 echo CREATED_SPEC_FILE=$CREATED_SPEC_FILE
+        cp $CREATED_SPEC_FILE $SPEC_FILE
+
+
+        pwd
         >&2 ls $SPEC_FILE
         exit 100
 
