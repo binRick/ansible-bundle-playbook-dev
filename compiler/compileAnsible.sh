@@ -473,12 +473,15 @@ buildPyInstallerCommand(){
         -p #$VENV_DIRECTORY/lib64/python3.6/site-packages \
            $_MAIN_BINARY"
 
-    #SPEC_FILE="{{$_MAIN_BINARY}.spec"
+    SPEC_FILE="${_MAIN_BINARY}.spec"
 
 
 
     echo py_mkspec_cmd=$py_mkspec_cmd
+    echo SPEC_FILE=$SPEC_FILE
     exit 100
+    eval $py_mkspec_cmd
+    ls $SPEC_FILE
 
 	echo pyinstaller \
 		-n ansible-playbook \
