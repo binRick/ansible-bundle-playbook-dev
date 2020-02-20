@@ -502,7 +502,10 @@ buildPyInstallerCommand(){
             exit $exit_code
         fi
         >&2 ls $SPEC_FILE
-        export _PY_INSTALLER_TARGET=$SPEC_FILE
+        export _ANSIBLE_PLAYBOOK_SPEC_FILE=$SPEC_FILE
+        
+
+
         SAVE_DIR=$(pwd)
         SPEC_FILES_DIR=$(mktemp -d)
         for M in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
@@ -556,13 +559,16 @@ buildPyInstallerCommand(){
                 fi
                 >&2 ls $SPEC_FILE
                 cp $SPEC_FILE $SPEC_FILES_DIR
-                
-
             fi
 
         done
         cd $SAVE_DIR
         ls -al $SPEC_FILES_DIR
+        >&2 echo SPEC_FILES_DIR=$SPEC_FILES_DIR
+        >&2 echo SAVE_DIR=$SAVE_DIR
+        MANGLED_SPEC_FILE=xxxxxxxxx
+        export _PY_INSTALLER_TARGET=$MANGLED_SPEC_FILE
+        echo _PY_INSTALLER_TARGET=$_PY_INSTALLER_TARGET
         exit 102
 
 
@@ -578,7 +584,6 @@ buildPyInstallerCommand(){
         #>&2 pwd
         #>&2 ls -al GO.sh .go.env
         #exit 100
-        echo $cmd
     else
       >&2 echo -e "   *** NOT USING SPEC MODE ***"
       export _PY_INSTALLER_TARGET=$_MAIN_BINARY
