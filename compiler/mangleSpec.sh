@@ -1,7 +1,8 @@
 #!/bin/bash
 set -e
 cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-SPEC_FILE="$(basename $1)"
+SPEC_FILE="$1"
+_SPEC_FILE="$(echo $SPEC_FILE|sed 's/\.spec//g')"
 #SPEC_FILE="$(echo $SPEC_FILE | sed 's/[[::space::]]//g')"
 #sed -i 's/-/_/g' $SPEC_FILE
 _DIR=$(mktemp -d)
@@ -10,6 +11,8 @@ if [[ ! -f "$SPEC_FILE" ]]; then
     echo First Argument must be a spec file
     exit
 fi
+
+sed -i 's/^_//g' $SPEC_FILE
 
 ANALYSIS_START_LINE="$(grep '^a = Analysis(' $SPEC_FILE -n|cut -d':' -f1)"
 PYZ_START_LINE="$(grep '^pyz = PYZ(' $SPEC_FILE -n|cut -d':' -f1)"
@@ -43,6 +46,8 @@ sed -n "${PYZ_START_LINE},${PYZ_END_LINE}p" $SPEC_FILE > $_DIR/PYZ.txt
 sed -n "${EXE_START_LINE},${EXE_END_LINE}p" $SPEC_FILE > $_DIR/EXE.txt
 sed -n "${COLLECT_START_LINE},${COLLECT_END_LINE}p" $SPEC_FILE > $_DIR/COLLECT.txt
 
+_F="$(basename $SPEC_FILE)"
+
 sed -i "s/^a = Analysis/${_F}_a = Analysis/g" $_DIR/ANALYSIS.txt
 sed -i "s/^pyz = PYZ/${_F}_pyz = PYZ/g" $_DIR/PYZ.txt
 sed -i "s/a\./${_F}_a./g" $_DIR/PYZ.txt $_DIR/COLLECT.txt
@@ -60,3 +65,4 @@ echo ANALYSIS=$_DIR/ANALYSIS.txt
 echo EXE=$_DIR/EXE.txt
 echo COLLECT=$_DIR/COLLECT.txt
 
+#find $_DIR|xargs cat

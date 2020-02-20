@@ -2,8 +2,9 @@
 umask 002
 cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source .ansi
-
 origDir="$(pwd)"
+export START_DIR=$(mktemp -d)
+cd $START_DIR
 ANSIBLE_CONFIG_FILE="$origDir/files/ansible.cfg"
 BORG_ARCHIVE_QUOTA="5G"  # Max Disk Space borg repo can use
 BORG_ARCHIVE=~/ansible-playbook.borg
@@ -12,6 +13,7 @@ BORG_SSH_PORT=22
 BORG_SSH_HOST=web1
 BORG_SSH_USER=BORG
 VENV_PATH=~/.venv-ansible-bundler
+export SPEC_FILES_DIR=$(mktemp -d --suffix __spec_files__)
 MAIN_BINARY="$VENV_PATH/bin/ansible-playbook"
 [[ "$INCLUDE_ALL_ANSIBLE_MODULES" == "" ]] && export INCLUDE_ALL_ANSIBLE_MODULES=1
 [[ "$USE_MERGED_PY_INSTALL_METHOD" == "" ]] && export USE_MERGED_PY_INSTALL_METHOD=0
@@ -31,7 +33,7 @@ ANSIBLE_TOOLS="ansible-config"
 MANGLE_SCRIPT_NAME="mangleSpec.sh"
 MANGLE_SCRIPT="./$MANGLE_SCRIPT_NAME"
 
-export MANGLE_SCRIPT_PATH="$(pwd)/$MANGLE_SCRIPT_NAME"
+export MANGLE_SCRIPT_PATH="$origDir/$MANGLE_SCRIPT_NAME"
 
 if ! command -v shc >/dev/null 2>/dev/null; then
     >&2 echo shc not found in PATH
@@ -72,7 +74,7 @@ ADDITIONAL_COMPILED_MODULES_REPLACEMENTS="pyyaml|yaml python-jose|jose python_jo
 
 #MODULE_BIN_INCLUDES="ansible-playbook json2yaml yaml2json speedtest-cli ansible ansible-config"
 MODULE_BIN_INCLUDES="json2yaml"
-MODULE_BIN_INCLUDES="json2yaml yaml2json"
+MODULE_BIN_INCLUDES="json2yaml ansible-playbook"
 COMPILE_MODULE_BIN_INCLUDES="1"
 MODULE_BIN_INCLUDES_DEFAULT="ansible-playbook"
 MODULE_BIN_INCLUDES_FILE=~/.MODULE_BIN_INCLUDES.txt
@@ -540,9 +542,9 @@ buildPyInstallerCommand(){
                     fi
                     >&2 ls $SPEC_FILE
                     export _ANSIBLE_PLAYBOOK_SPEC_FILE=$SPEC_FILE
-                    export _PY_INSTALLER_TARGET=$(pwd)/$_ANSIBLE_PLAYBOOK_SPEC_FILE
+                    export _PY_INSTALLER_TARGET=$SPEC_FILES_DIR/$_ANSIBLE_PLAYBOOK_SPEC_FILE
         else
-
+            set -e
             echo -ne "\n"
             >&2 ansi --cyan Create Compined Spec File
             COMBINED_SPEC_FILE=""
@@ -553,14 +555,13 @@ buildPyInstallerCommand(){
 
             COMBINED_SPEC_FILE="${COMBINED_SPEC_FILE}.spec"
             COMBINED_SPEC_FILE="$(echo $COMBINED_SPEC_FILE | sed 's/^_//g')"
-            COMBINED_SPEC_FILE="$SPEC_FILES_DIR/$COMBINED_SPEC_FILE"
+            COMBINED_SPEC_FILE="$SPEC_FILES_DIR/$(basename $COMBINED_SPEC_FILE)"
 
             [[ -f $COMBINED_SPEC_FILE ]] && rm $COMBINED_SPEC_FILE
             touch $COMBINED_SPEC_FILE
             >&2 ansi --green "OK - Created $COMBINED_SPEC_FILE"
             
             SAVE_DIR=$(pwd)
-            SPEC_FILES_DIR=$(mktemp -d)
             for M in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
                 >&2 ansi --green ADDING $M
                 M_b=$(basename $M)
@@ -570,8 +571,10 @@ buildPyInstallerCommand(){
                 >&2 ansi --green "  adding module $M"
                 add_cmd="pip install $M -q 2>/dev/null; cp $(which $M) $BIN_MODULES_PATH/$M; true"
                 >&2 ansi --cyan add_cmd=$add_cmd
+                set +e
                 eval $add_cmd
                 exit_code=$?
+                set -e
                 ansi-exit_code "$add_cmd" $exit_code
                 if [[ ! -f $BIN_MODULES_PATH/$M ]]; then
                     echo cannot find file $M at $BIN_MODULES_PATH/$M
@@ -594,7 +597,6 @@ buildPyInstallerCommand(){
                 ansi-exit_code "$py_mkspec_cmd" $exit_code
                 CREATED_SPEC_FILE="$(grep '^wrote ' $mkspec_out | tail -n1|cut -d' ' -f2)"
                 >&2 echo CREATED_SPEC_FILE=$CREATED_SPEC_FILE
-                cp $CREATED_SPEC_FILE $SPEC_FILE
                 mangle_cmd="cp -f $MANGLE_SCRIPT_PATH $MANGLE_SCRIPT_NAME && ./$MANGLE_SCRIPT_NAME $SPEC_FILE"
                 >&2 echo " [MODULE $M]: SPEC_FILE=$SPEC_FILE"
                 >&2 echo py_mkspec_cmd=$py_mkspec_cmd
@@ -672,10 +674,7 @@ buildPyInstallerCommand(){
             merge_line="$(echo $merge_line|sed 's/,$//g')"
             merge_line="${merge_line} )"
             echo $merge_line >> $COMBINED_SPEC_FILE
-            echo -ne "\n\n" >> $COMBINED_SPEC_FILE
-
-
-            echo -ne "\n\n" >> $COMBINED_SPEC_FILE
+            echo -ne "\n\n\n\n" >> $COMBINED_SPEC_FILE
             for x in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
                 x_orig="$x"
                 x="$(basename $x .py)"
@@ -691,9 +690,13 @@ buildPyInstallerCommand(){
             done
             echo -ne "\n\n" >> $COMBINED_SPEC_FILE
 
-            export _PY_INSTALLER_TARGET="$(pwd)/$COMBINED_SPEC_FILE"
-            #cat $_PY_INSTALLER_TARGET
-            #exit 69
+            export _PY_INSTALLER_TARGET="$COMBINED_SPEC_FILE"
+            if cat $_PY_INSTALLER_TARGET | grep -q '^_pyz = '; then 
+                >&2 ansi --red Invalid PY Installer file $_PY_INSTALLER_TARGET
+                exit 69
+            fi 
+            cat $_PY_INSTALLER_TARGET
+            exit 169
     fi
         >&2 echo _PY_INSTALLER_TARGET=$_PY_INSTALLER_TARGET
 
@@ -702,6 +705,8 @@ buildPyInstallerCommand(){
 
     else
 
+#replace '.spec' '' -- xxxxx
+#replace 'ansible-playbook' '' -- xxxxx
 
       >&2 echo -e "   *** NOT USING SPEC MODE ***"
       export _PY_INSTALLER_TARGET=$_MAIN_BINARY
