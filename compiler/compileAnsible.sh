@@ -583,9 +583,12 @@ buildPyInstallerCommand(){
                     echo -e "\n\nexit code $exit_code\n\n"
                     exit $exit_code
                 fi
-                cp $mangle_stdout $SPEC_FILE
+
+                COPY_MANGLE_STDOUT_DEST="$(get_mangle_vars_file $(basename $M))"
+                >&2 echo COPY_MANGLE_STDOUT_DEST=$COPY_MANGLE_STDOUT_DEST
+                cp $mangle_stdout $COPY_MANGLE_STDOUT_DEST
                 >&2 ls $SPEC_FILE
-                cp $SPEC_FILE $SPEC_FILES_DIR
+                cp $SPEC_FILE $SPEC_FILES_DIR/.
 
             done
 
