@@ -433,7 +433,7 @@ excludeAnsibleModules(){
 }
 
 mangleModules(){
-    sed 's/\//./g'| xargs -I % echo -e "         --hidden-import=\"%\" \n"
+    sed 's/\//./g'| xargs -I % echo -e "         --hidden-import=\"%\" "
 }
 
 
@@ -482,7 +482,8 @@ buildPyInstallerCommand(){
 
         >&2 echo py_mkspec_cmd=$py_mkspec_cmd
         >&2 echo SPEC_FILE=$SPEC_FILE
-        #exit 100
+
+
         mkspec_out=$(mktemp)
         mkspec_err=$(mktemp)
         eval $py_mkspec_cmd > $mkspec_out 2> $mkspec_err
@@ -491,6 +492,8 @@ buildPyInstallerCommand(){
         CREATED_SPEC_FILE="$(grep '^wrote ' $mkspec_out | tail -n1|cut -d' ' -f2)"
         >&2 echo CREATED_SPEC_FILE=$CREATED_SPEC_FILE
         cp $CREATED_SPEC_FILE $SPEC_FILE
+
+        
         mangle_cmd="cp -f $MANGLE_SCRIPT_PATH $MANGLE_SCRIPT_NAME && ./$MANGLE_SCRIPT_NAME $SPEC_FILE"
         >&2 echo mangle_cmd=$mangle_cmd
         mangle_stdout=$(mktemp)
@@ -504,9 +507,15 @@ buildPyInstallerCommand(){
             exit $exit_code
         fi
         >&2 ls $SPEC_FILE
-        #exit 100
+        exit 100
         export _PY_INSTALLER_TARGET=$SPEC_FILE
-        echo pyinstaller \
+        GO_FILE=$(mktemp)
+        GO_FILE_env=$(mktemp)
+        echo '#!/bin/bash' > $GO_FILE
+        env >> $GO_FILE_env
+        echo 'source .go.env' >> $GO_FILE
+        
+        cmd="pyinstaller \
             -n ansible-playbook \
             --$type -y --clean \
             --distpath $DIST_PATH \
@@ -518,7 +527,14 @@ buildPyInstallerCommand(){
                \
                 ${_ANSIBLE_MODULES} \
                 \
-                 $_PY_INSTALLER_TARGET
+                 $_PY_INSTALLER_TARGET"
+        echo $cmd >> $GO_FILE
+        chmod +x $GO_FILE
+        cp $GO_FILE GO.sh
+        cp $GO_FILE_env .go.env
+        ls -al GO.sh .go.env
+        exit 100
+        eval $cmd
     else
       export _PY_INSTALLER_TARGET=$_MAIN_BINARY
         >&2 echo -e "   *** NOT USING SPEC MODE ***"
