@@ -616,9 +616,6 @@ buildPyInstallerCommand(){
                 if ! grep -q '^block_cipher' $COMBINED_SPEC_FILE; then
                     cat "$(get_mangled_var $x_mangle_vars BLOCK_CIPHER)" >> $COMBINED_SPEC_FILE
                     >&2 ansi --green "   Added block Cipher!"
-                else
-                    >&2 ansi --red "   Invalid spec file.. missing blocker cipher!"
-                    exit 1
                 fi
             done
             >&2 ansi --green " OK"
