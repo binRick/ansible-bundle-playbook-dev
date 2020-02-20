@@ -610,7 +610,7 @@ done
 ansi --green " OK"
 
 echo -ne "\n\n" >> $COMBINED_SPEC_FILE
-for x in $BUILD_SCRIPTS; do
+for x in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
     x_orig="$x"
     x="$(basename $x .py)"
     x_spec="${x}.spec"
@@ -631,7 +631,7 @@ ansi --magenta " [Merge Statement]"
 echo -ne "\n" >> $COMBINED_SPEC_FILE
 merge_line="MERGE( (test_a, 'test', 'test'), (test1_a, 'test1', 'test1') )"
 merge_line="MERGE("
-for x in $BUILD_SCRIPTS; do
+for x in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
     x="$(basename $x .py)"
     script_line=" (${x}_a, '$x', '$x'),"
     merge_line="${merge_line}${script_line}"
@@ -645,7 +645,7 @@ echo -ne "\n\n" >> $COMBINED_SPEC_FILE
 
 
 echo -ne "\n\n" >> $COMBINED_SPEC_FILE
-for x in $BUILD_SCRIPTS; do
+for x in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
     x_orig="$x"
     x="$(basename $x .py)"
     x_spec="${x}.spec"
