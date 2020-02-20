@@ -504,6 +504,12 @@ buildPyInstallerCommand(){
         >&2 ls $SPEC_FILE
         export _PY_INSTALLER_TARGET=$SPEC_FILE
 
+        for M in $MODULE_BIN_INCLUDES; do
+            echo ADDING $M
+        done
+        exit 102
+
+
         #GO_FILE=$(mktemp)
         #GO_FILE_env=$(mktemp)
         #echo '#!/bin/bash' > $GO_FILE
