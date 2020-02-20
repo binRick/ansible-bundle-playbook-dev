@@ -470,7 +470,7 @@ buildPyInstallerCommand(){
         --hidden-import=\"paramiko\" \
         --hidden-import=\"pyaml\" \
         --hidden-import=\"psutil\" \
-        -p #$VENV_DIRECTORY/lib64/python3.6/site-packages \
+        -p $VIRTUAL_ENV/lib64/python3.6/site-packages \
            $_MAIN_BINARY"
 
     SPEC_FILE="${_MAIN_BINARY}.spec"
