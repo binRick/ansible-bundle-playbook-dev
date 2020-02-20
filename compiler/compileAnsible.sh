@@ -10,19 +10,19 @@ BORG_SSH_KEY="BORG_KEY"
 BORG_SSH_PORT=22
 BORG_SSH_HOST=web1
 BORG_SSH_USER=BORG
-USE_PYINSTALLER_SPEC_METHOD="1"
 VENV_PATH=~/.venv-ansible-bundler
 MAIN_BINARY="$VENV_PATH/bin/ansible-playbook"
+[[ "$USE_PYINSTALLER_SPEC_METHOD" == "" ]] && export DEBUG_MAIN_BINARY_BUILD="1"
 [[ "$DEBUG_MAIN_BINARY_BUILD" == "" ]] && export DEBUG_MAIN_BINARY_BUILD="0"
 [[ "$MANGLE_MAIN_BINARY" == "" ]] && export MANGLE_MAIN_BINARY="0"
 [[ "$INCLUDE_ANSIBLE_TOOLS" == "" ]] && export INCLUDE_ANSIBLE_TOOLS="0"
 [[ "$BUILD_ONLY" == "" ]] && export BUILD_ONLY=1
+[[ "$DEBUG_CMD" == "" ]] && export DEBUG_CMD=0
 CLEAN_BUILD="1"
 TYPES="onedir"
 
 PYARMOR_CMD_FILE="/tmp/PYARMOR_CMD.txt"
 PYARMOR_OUTPUT_PATH="/tmp/pyarmor.out"
-
 REMOVE_INCLUDED_TOOL_COMMENTS=1
 ANSIBLE_TOOLS="ansible-config"
 MANGLE_SCRIPT_NAME="mangleSpec.sh"
@@ -31,11 +31,8 @@ export MANGLE_SCRIPT_PATH="$(pwd)/$MANGLE_SCRIPT_NAME"
 
 if ! command -v shc >/dev/null 2>/dev/null; then
     >&2 echo shc not found in PATH
-    #exit 1
 fi
 
-
-[[ "$DEBUG_CMD" == "" ]] && export DEBUG_CMD=0
 
 _RM_PATHS="\
    ansible/modules/web_infrastructure
@@ -408,7 +405,6 @@ limitAnsibleVersions(){
     else
         egrep "$LIMIT_ANSIBLE_VERSIONS"
     fi
-    #egrep "2.8.7|2.8.6"
 }
 findModules(){
 	_M="$1"
