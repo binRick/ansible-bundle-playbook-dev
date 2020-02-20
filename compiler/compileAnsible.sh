@@ -599,7 +599,7 @@ buildPyInstallerCommand(){
             >&2 echo SPEC_FILES_DIR=$SPEC_FILES_DIR
             >&2 echo SAVE_DIR=$SAVE_DIR
 
-           exit 255
+#           exit 255
 
             >&2 ansi --cyan Assembling combined spec file from mangled spec files
 
