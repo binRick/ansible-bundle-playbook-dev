@@ -13,11 +13,12 @@ BORG_SSH_PORT=22
 BORG_SSH_HOST=web1
 BORG_SSH_USER=BORG
 VENV_PATH=~/.venv-ansible-bundler
+WGET_ARGS="-4 --no-check-certificate"
 export SPEC_FILES_DIR=$(mktemp -d --suffix __spec_files__)
 MAIN_BINARY="$VENV_PATH/bin/ansible-playbook"
 [[ "$INCLUDE_ALL_ANSIBLE_MODULES" == "" ]] && export INCLUDE_ALL_ANSIBLE_MODULES=1
 [[ "$USE_MERGED_PY_INSTALL_METHOD" == "" ]] && export USE_MERGED_PY_INSTALL_METHOD=0
-[[ "$USE_PYINSTALLER_SPEC_METHOD" == "" ]] && export USE_PYINSTALLER_SPEC_METHOD=1
+[[ "$USE_PYINSTALLER_SPEC_METHOD" == "" ]] && export USE_PYINSTALLER_SPEC_METHOD=0
 [[ "$DEBUG_MAIN_BINARY_BUILD" == "" ]] && export DEBUG_MAIN_BINARY_BUILD="0"
 [[ "$MANGLE_MAIN_BINARY" == "" ]] && export MANGLE_MAIN_BINARY="0"
 [[ "$INCLUDE_ANSIBLE_TOOLS" == "" ]] && export INCLUDE_ANSIBLE_TOOLS="0"
@@ -67,14 +68,14 @@ MANUAL_HIDDEN_IMPORTS="--hidden-import=\"configparser\" \
 "
 MANUAL_HIDDEN_IMPORTS=""
 
-ADDITIONAL_COMPILED_MODULES="json2yaml"
-#ADDITIONAL_COMPILED_MODULES="simplejson terminaltables psutil loguru json2yaml setproctitle speedtest-cli pyyaml netaddr configparser urllib3 jmespath paramiko pyaml docopt"
+#ADDITIONAL_COMPILED_MODULES="json2yaml"
+ADDITIONAL_COMPILED_MODULES="simplejson terminaltables psutil loguru json2yaml setproctitle speedtest-cli pyyaml netaddr configparser urllib3 jmespath paramiko pyaml docopt"
 ADDITIONAL_COMPILED_MODULES_REPLACEMENTS="pyyaml|yaml python-jose|jose python_jose|jose pyopenssl|OpenSSL mysql-connector-python|mysql mysql_connector_python|mysql linode-cli|linodecli linode_cli|linodecli speedtest-cli|speedtest websocket-client|websocket"
 
 
-#MODULE_BIN_INCLUDES="ansible-playbook json2yaml yaml2json speedtest-cli ansible ansible-config"
-MODULE_BIN_INCLUDES="json2yaml"
-MODULE_BIN_INCLUDES="json2yaml ansible-playbook"
+#MODULE_BIN_INCLUDES="json2yaml"
+#MODULE_BIN_INCLUDES="json2yaml ansible-playbook"
+MODULE_BIN_INCLUDES="ansible-playbook json2yaml yaml2json speedtest-cli ansible ansible-config"
 COMPILE_MODULE_BIN_INCLUDES="1"
 MODULE_BIN_INCLUDES_DEFAULT="ansible-playbook"
 MODULE_BIN_INCLUDES_FILE=~/.MODULE_BIN_INCLUDES.txt
@@ -92,10 +93,11 @@ EXCLUDED_ADDITIONAL_MODULES="watchdog.utils.win32stat ansible.plugins.callback.d
 EXCLUDED_ANSIBLE_MODULES="$EXCLUDED_ADDITIONAL_MODULES ansible.modules.network ansible.modules.cloud ansible.modules.remote_management ansible.modules.storage ansible.modules.web_infrastructure ansible.modules.windows ansible.module_utils.network ansible.plugins.doc_fragments ansible.plugins.terminal ansible.modules.net_tools ansible.modules.monitoring.zabbix ansible.modules.messaging ansible.modules.identity ansible.modules.database.postgresql ansible.modules.database.proxysql ansible.modules.database.vertica ansible.modules.database.influxdb ansible.modules.clustering ansible.modules.source_control.bitbucket ansible.module_utils.aws ansible.plugins.cliconf"
 
 
-#ADDITIONAL_ANSIBLE_CALLLBACK_MODULES="https://raw.githubusercontent.com/binRick/ansible-callback-concise/master/callback_plugins/codekipple_concise.py https://raw.githubusercontent.com/binRick/ansible-beautiful-output/master/callback_plugins/beautiful_output.py https://raw.githubusercontent.com/binRick/ansible-json-audit-log/master/callback/json_audit.py"
-ADDITIONAL_ANSIBLE_CALLLBACK_MODULES=""
-#ADDITIONAL_ANSIBLE_LIBRARY_MODULES="https://raw.githubusercontent.com/binRick/ansible-mysql-query/master/library/mysql_query.py https://raw.githubusercontent.com/ageis/ansible-module-ping/master/modules/icmp_ping.py https://raw.githubusercontent.com/cleargray/git_commit/master/git_commit.py https://raw.githubusercontent.com/binRick/mysql_database_query/master/mysql_database_query.py"
-ADDITIONAL_ANSIBLE_LIBRARY_MODULES=""
+#ADDITIONAL_ANSIBLE_CALLLBACK_MODULES=""
+ADDITIONAL_ANSIBLE_CALLLBACK_MODULES="https://raw.githubusercontent.com/binRick/ansible-callback-concise/master/callback_plugins/codekipple_concise.py https://raw.githubusercontent.com/binRick/ansible-beautiful-output/master/callback_plugins/beautiful_output.py https://raw.githubusercontent.com/binRick/ansible-json-audit-log/master/callback/json_audit.py"
+
+#ADDITIONAL_ANSIBLE_LIBRARY_MODULES=""
+ADDITIONAL_ANSIBLE_LIBRARY_MODULES="https://raw.githubusercontent.com/binRick/ansible-mysql-query/master/library/mysql_query.py https://raw.githubusercontent.com/ageis/ansible-module-ping/master/modules/icmp_ping.py https://raw.githubusercontent.com/cleargray/git_commit/master/git_commit.py https://raw.githubusercontent.com/binRick/mysql_database_query/master/mysql_database_query.py"
 
 findFileImports(){
     ./findimports/findimports.py -n $VENV_PATH/bin/ansible-playbook  -l 1 2>/dev/null|grep -v ':$'|sed 's/^[[:space:]]//g'
@@ -330,7 +332,7 @@ BORG_OPTIONS="--lock-wait 300"
 JQ="$(which jq)"
 set +e; $JQ --version >/dev/null 2>&1 || {
     mkdir -p ~/.local/bin
-    wget -4 https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -O ~/.local/bin/jq
+    wget $WGET_ARGS https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -O ~/.local/bin/jq
     chmod +x ~/.local/bin/jq
     export JQ=~/.local/bin/jq
 }
@@ -398,7 +400,7 @@ installJo(){
     set +e
     rm -rf jo-1.2.tar.gz
     set -e
-    wget -4 https://github.com/jpmens/jo/releases/download/1.2/jo-1.2.tar.gz
+    wget $WGET_ARGS https://github.com/jpmens/jo/releases/download/1.2/jo-1.2.tar.gz
     tar zxvf jo-1.2.tar.gz
     cd jo-1.2
     (./configure --prefix=/usr/local && make) >/dev/null
@@ -804,7 +806,7 @@ export ANSIBLE_VERSIONS="$(getAnsibleVersions|tr '\n' ' ')"
 
 if [[ ! -e ~/.local/bin/borg ]]; then
     mkdir -p ~/.local/bin
-    wget https://github.com/borgbackup/borg/releases/download/1.1.10/borg-linux64 -O ~/.local/bin/borg
+    wget $WGET_ARGS https://github.com/borgbackup/borg/releases/download/1.1.10/borg-linux64 -O ~/.local/bin/borg
     chmod +x ~/.local/bin/borg
     export BORG_BINARY=~/.local/bin/borg
     if [[ ! -f ~/.local/bin/borg-linux64 ]]; then cp ~/.local/bin/borg ~/.local/bin/borg-linux64; fi
