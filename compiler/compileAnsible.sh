@@ -28,12 +28,12 @@ REMOVE_INCLUDED_TOOL_COMMENTS=1
 ANSIBLE_TOOLS="ansible-config"
 MANGLE_SCRIPT_NAME="mangleSpec.sh"
 MANGLE_SCRIPT="./$MANGLE_SCRIPT_NAME"
+
 export MANGLE_SCRIPT_PATH="$(pwd)/$MANGLE_SCRIPT_NAME"
 
 if ! command -v shc >/dev/null 2>/dev/null; then
     >&2 echo shc not found in PATH
 fi
-
 
 _RM_PATHS="\
    ansible/modules/web_infrastructure
@@ -109,9 +109,6 @@ getBinModulesFile(){
     echo -e "_EXEC_BIN_FUNCTIONS = {}" >> $totalModulesFile
     echo -e "_EXEC_BIN_OBJECT = {}" >> $totalModulesFile
 
-
-
-
     for m in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
         mF=$VENV_PATH/bin/$m
         mFM=$(mktemp)
@@ -161,7 +158,6 @@ getBinModulesFile(){
         echo -e "  #globals()['%s' % ${FUNCTION_NAME}]()" >> $totalModulesFile
         echo -e "  #getattr(sys.modules[__name__], "%s" % ${FUNCTION_NAME})()" >> $totalModulesFile
         echo -e "\n\n" >> $totalModulesFile
-
 
     done
 
@@ -348,6 +344,7 @@ writeTestPlaybook(){
     debug:
       var: id
   - name: icmp_ping module test
+    ignore_errors: yes
     icmp_ping:
       dest: 127.0.0.1
 #  - name: mysql_query module test
