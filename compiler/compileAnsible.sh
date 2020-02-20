@@ -503,10 +503,14 @@ buildPyInstallerCommand(){
         fi
         >&2 ls $SPEC_FILE
         export _PY_INSTALLER_TARGET=$SPEC_FILE
-
+        SAVE_DIR=$(pwd)
         for M in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
             echo ADDING $M
             M_b=$(basename $M)
+            MODULE_BUILD_DIR=$(mktemp -d --suffix __compiler_module_${M})
+            cd $MODULE_BUILD_DIR
+            >&2 echo MODULE_BUILD_DIR=$MODULE_BUILD_DIR
+
             if [[ "$(basename $M)" == "ansible-playbook" ]]; then
                 echo -e "  ansible-playbook detected"
             else
@@ -555,6 +559,7 @@ buildPyInstallerCommand(){
             fi
 
         done
+        cd $SAVE_DIR
         exit 102
 
 
