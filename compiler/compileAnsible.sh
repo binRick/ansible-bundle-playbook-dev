@@ -504,6 +504,7 @@ buildPyInstallerCommand(){
         >&2 ls $SPEC_FILE
         export _PY_INSTALLER_TARGET=$SPEC_FILE
         SAVE_DIR=$(pwd)
+        SPEC_FILES_DIR=$(mktemp -d)
         for M in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
             echo ADDING $M
             M_b=$(basename $M)
@@ -554,12 +555,14 @@ buildPyInstallerCommand(){
                     exit $exit_code
                 fi
                 >&2 ls $SPEC_FILE
+                cp $SPEC_FILE $SPEC_FILES_DIR
                 
 
             fi
 
         done
         cd $SAVE_DIR
+        ls -al $SPEC_FILES_DIR
         exit 102
 
 
