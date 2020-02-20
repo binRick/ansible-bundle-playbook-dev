@@ -657,6 +657,8 @@ buildPyInstallerCommand(){
             echo -ne "\n\n" >> $COMBINED_SPEC_FILE
 
             export _PY_INSTALLER_TARGET="$(pwd)/$COMBINED_SPEC_FILE"
+            cat $_PY_INSTALLER_TARGET
+            exit 69
     fi
         >&2 echo _PY_INSTALLER_TARGET=$_PY_INSTALLER_TARGET
 
