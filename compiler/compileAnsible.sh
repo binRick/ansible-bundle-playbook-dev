@@ -467,22 +467,21 @@ buildPyInstallerCommand(){
     echo $PYARMOR_CMD > $PYARMOR_CMD_FILE
 
     if [[ "$USE_PYINSTALLER_SPEC_METHOD" == "1" ]]; then
+#            --hidden-import=\"paramiko\" \
+#            --hidden-import=\"pyaml\" \
+#            --hidden-import=\"psutil\" \
         py_mkspec_cmd="pyi-makespec \
-            --hidden-import=\"paramiko\" \
-            --hidden-import=\"pyaml\" \
-            --hidden-import=\"psutil\" \
                 $_ADD_DATAS \
-                ${HIDDEN_ADDITIONAL_COMPILED_MODULES} \
-                ${MANUAL_HIDDEN_IMPORTS} \
-                ${_ANSIBLE_MODULES} \
-            -p $VIRTUAL_ENV/lib64/python3.6/site-packages \
-               $_MAIN_BINARY"
+                $HIDDEN_ADDITIONAL_COMPILED_MODULES \
+                $MANUAL_HIDDEN_IMPORTS \
+                $_ANSIBLE_MODULES \
+                -p $VIRTUAL_ENV/lib64/python3.6/site-packages \
+                   $_MAIN_BINARY"
 
         SPEC_FILE="$(basename ${_MAIN_BINARY}).spec"
 
         >&2 echo py_mkspec_cmd=$py_mkspec_cmd
         >&2 echo SPEC_FILE=$SPEC_FILE
-
 
         mkspec_out=$(mktemp)
         mkspec_err=$(mktemp)
@@ -507,25 +506,19 @@ buildPyInstallerCommand(){
             exit $exit_code
         fi
         >&2 ls $SPEC_FILE
-
-#        exit 100
-
-
         export _PY_INSTALLER_TARGET=$SPEC_FILE
-        GO_FILE=$(mktemp)
-        GO_FILE_env=$(mktemp)
-        echo '#!/bin/bash' > $GO_FILE
-        env >> $GO_FILE_env
-        echo 'source .go.env' >> $GO_FILE
 
-        
-
-        echo $cmd >> $GO_FILE
-        chmod +x $GO_FILE
-        cp $GO_FILE GO.sh
-        cp $GO_FILE_env .go.env
-        >&2 pwd
-        >&2 ls -al GO.sh .go.env
+        #GO_FILE=$(mktemp)
+        #GO_FILE_env=$(mktemp)
+        #echo '#!/bin/bash' > $GO_FILE
+        #env >> $GO_FILE_env
+        #echo 'source .go.env' >> $GO_FILE
+        #echo $cmd >> $GO_FILE
+        #chmod +x $GO_FILE
+        #cp $GO_FILE GO.sh
+        #cp $GO_FILE_env .go.env
+        #>&2 pwd
+        #>&2 ls -al GO.sh .go.env
         #exit 100
         echo $cmd
     else
