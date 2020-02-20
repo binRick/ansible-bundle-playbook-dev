@@ -583,6 +583,7 @@ buildPyInstallerCommand(){
                     echo -e "\n\nexit code $exit_code\n\n"
                     exit $exit_code
                 fi
+                cp $mangle_stdout $SPEC_FILE
                 >&2 ls $SPEC_FILE
                 cp $SPEC_FILE $SPEC_FILES_DIR
 
