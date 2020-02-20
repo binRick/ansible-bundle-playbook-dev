@@ -463,26 +463,32 @@ buildPyInstallerCommand(){
     PYARMOR_CMD="cp $_MAIN_BINARY ${_MAIN_BINARY}.py && pyarmor pack --debug -t PyInstaller --clean -O $PYARMOR_OUTPUT_PATH -e \" $PYARMOR_CMD_E \" ${_MAIN_BINARY}.py"
     echo $PYARMOR_CMD > $PYARMOR_CMD_FILE
 
+    USE_SPEC="1"
+    if [[ "$USE_SPEC" == "1" ]]; then
+        py_mkspec_cmd="pyi-makespec \
+            --hidden-import=\"paramiko\" \
+            --hidden-import=\"pyaml\" \
+            --hidden-import=\"psutil\" \
+            -p $VIRTUAL_ENV/lib64/python3.6/site-packages \
+               $_MAIN_BINARY"
+
+        SPEC_FILE="$(pwd)/${_MAIN_BINARY}.spec"
+
+        >&2 echo py_mkspec_cmd=$py_mkspec_cmd
+        >&2 echo SPEC_FILE=$SPEC_FILE
+        #exit 100
+        eval $py_mkspec_cmd
+        exit_code=$?
+        >&2 echo py_mkspec exit_code=$exit_code
+        >&2 ls $SPEC_FILE
+        exit 100
+
+    else
+        >&2 echo NOT USING SPEC MODE
+
+    fi
 
 
-
-    py_mkspec_cmd="pyi-makespec \
-        --hidden-import=\"paramiko\" \
-        --hidden-import=\"pyaml\" \
-        --hidden-import=\"psutil\" \
-        -p $VIRTUAL_ENV/lib64/python3.6/site-packages \
-           $_MAIN_BINARY"
-
-    SPEC_FILE="$(pwd)/${_MAIN_BINARY}.spec"
-
-    >&2 echo py_mkspec_cmd=$py_mkspec_cmd
-    >&2 echo SPEC_FILE=$SPEC_FILE
-    #exit 100
-    eval $py_mkspec_cmd
-    exit_code=$?
-    >&2 echo py_mkspec exit_code=$exit_code
-    >&2 ls $SPEC_FILE
-    exit 100
 
 	echo pyinstaller \
 		-n ansible-playbook \
