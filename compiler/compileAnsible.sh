@@ -473,7 +473,7 @@ buildPyInstallerCommand(){
 
     if [[ "$USE_PYINSTALLER_SPEC_METHOD" == "1" ]]; then
 
-        if [[ "1" == "0" ]]; then
+        if [[ "1" == "1" ]]; then
                     py_mkspec_cmd="pyi-makespec \
                             $_ADD_DATAS \
                             $HIDDEN_ADDITIONAL_COMPILED_MODULES \
@@ -511,7 +511,8 @@ buildPyInstallerCommand(){
                     fi
                     >&2 ls $SPEC_FILE
                     export _ANSIBLE_PLAYBOOK_SPEC_FILE=$SPEC_FILE
-        fi
+                    export _PY_INSTALLER_TARGET=$(pwd)/$_ANSIBLE_PLAYBOOK_SPEC_FILE
+        else
 
         echo -ne "\n"
         >&2 ansi --cyan Create Compined Spec File
@@ -656,6 +657,7 @@ buildPyInstallerCommand(){
         echo -ne "\n\n" >> $COMBINED_SPEC_FILE
 
         export _PY_INSTALLER_TARGET="$(pwd)/$COMBINED_SPEC_FILE"
+    fi
         >&2 echo _PY_INSTALLER_TARGET=$_PY_INSTALLER_TARGET
 
         [[ "$_DEBUG_PY_INSTALLER" == "1" ]] && exit 666
