@@ -574,7 +574,7 @@ buildPyInstallerCommand(){
 
 
         echo -ne "\n"
-        ansi --cyan Create Compined Spec File
+        >&2 ansi --cyan Create Compined Spec File
         COMBINED_SPEC_FILE=""
         for x in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
             x="$(basename $x .py)"
@@ -586,11 +586,11 @@ buildPyInstallerCommand(){
 
         [[ -f $COMBINED_SPEC_FILE ]] && rm $COMBINED_SPEC_FILE
         touch $COMBINED_SPEC_FILE
-        ansi --green "OK - $COMBINED_SPEC_FILE"
+        >&2 ansi --green "OK - $COMBINED_SPEC_FILE"
 
-        ansi --cyan Assembling combined spec file from mangled spec files
+        >&2 ansi --cyan Assembling combined spec file from mangled spec files
 
-        ansi --magenta " [Block Cipher]"
+        >&2 ansi --magenta " [Block Cipher]"
         for x in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
             x_orig="$x"
             x="$(basename $x .py)"
@@ -602,10 +602,10 @@ buildPyInstallerCommand(){
 
             if ! grep -q '^block_cipher' $COMBINED_SPEC_FILE; then
                 cat "$(get_mangled_var $x_mangle_vars BLOCK_CIPHER)" >> $COMBINED_SPEC_FILE
-        #        ansi --green "   Added block Cipher!"
+                >&2 ansi --green "   Added block Cipher!"
             fi
         done
-        ansi --green " OK"
+        >&2 ansi --green " OK"
 
         echo -ne "\n\n" >> $COMBINED_SPEC_FILE
         for x in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
@@ -614,10 +614,10 @@ buildPyInstallerCommand(){
             x_spec="${x}.spec"
             x_mangle_vars="$(get_mangle_vars_file $x_orig)"
             for k in ANALYSIS; do
-        #        ansi --magenta " [$x_orig => $k]"
+                >&2 ansi --magenta " [$x_orig => $k]"
                 cat "$(get_mangled_var $x_mangle_vars $k)" >> $COMBINED_SPEC_FILE
                 echo -ne "\n" >> $COMBINED_SPEC_FILE
-        #        ansi --green "   OK"
+                >&2 ansi --green "   OK"
             done
             echo -ne "\n\n" >> $COMBINED_SPEC_FILE
         done
@@ -625,7 +625,7 @@ buildPyInstallerCommand(){
 
 
 
-        ansi --magenta " [Merge Statement]"
+        >&2 ansi --magenta " [Merge Statement]"
         echo -ne "\n" >> $COMBINED_SPEC_FILE
         merge_line="MERGE( (test_a, 'test', 'test'), (test1_a, 'test1', 'test1') )"
         merge_line="MERGE("
@@ -649,10 +649,10 @@ buildPyInstallerCommand(){
             x_spec="${x}.spec"
             x_mangle_vars="$(get_mangle_vars_file $x_orig)"
             for k in PYZ EXE COLLECT; do
-                ansi --magenta " [$k]"
+                >&2 ansi --magenta " [$k]"
                 cat "$(get_mangled_var $x_mangle_vars $k)" >> $COMBINED_SPEC_FILE
                 echo -ne "\n" >> $COMBINED_SPEC_FILE
-                ansi --green "   OK"
+                >&2 ansi --green "   OK"
             done
             echo -ne "\n\n" >> $COMBINED_SPEC_FILE
         done
@@ -660,7 +660,7 @@ buildPyInstallerCommand(){
 
 
         export _PY_INSTALLER_TARGET=$COMBINED_SPEC_FILE
-        echo _PY_INSTALLER_TARGET=$_PY_INSTALLER_TARGET
+        >&2 echo _PY_INSTALLER_TARGET=$_PY_INSTALLER_TARGET
 
 
 
