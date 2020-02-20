@@ -1,8 +1,9 @@
 #!/bin/bash
 set -e
 cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-SPEC_FILE=$1
-_F="$(basename $SPEC_FILE .spec)"
+SPEC_FILE="$(basename $1)"
+#SPEC_FILE="$(echo $SPEC_FILE | sed 's/[[::space::]]//g')"
+#sed -i 's/-/_/g' $SPEC_FILE
 _DIR=$(mktemp -d)
 
 if [[ ! -f "$SPEC_FILE" ]]; then

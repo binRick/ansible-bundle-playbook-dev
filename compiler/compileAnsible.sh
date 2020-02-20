@@ -13,6 +13,7 @@ BORG_SSH_HOST=web1
 BORG_SSH_USER=BORG
 VENV_PATH=~/.venv-ansible-bundler
 MAIN_BINARY="$VENV_PATH/bin/ansible-playbook"
+[[ "$INCLUDE_ALL_ANSIBLE_MODULES" == "" ]] && export INCLUDE_ALL_ANSIBLE_MODULES=1
 [[ "$USE_MERGED_PY_INSTALL_METHOD" == "" ]] && export USE_MERGED_PY_INSTALL_METHOD=0
 [[ "$USE_PYINSTALLER_SPEC_METHOD" == "" ]] && export USE_PYINSTALLER_SPEC_METHOD=1
 [[ "$DEBUG_MAIN_BINARY_BUILD" == "" ]] && export DEBUG_MAIN_BINARY_BUILD="0"
@@ -51,6 +52,7 @@ _ADD_DATAS="--add-data $VENV_PATH/lib/python3.6/site-packages/ansible/config/bas
 		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/modules:ansible/modules \
 		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/executor/discovery/python_target.py:ansible/executor/discovery \
 "
+_ADD_DATAS=""
 MANUAL_HIDDEN_IMPORTS="--hidden-import=\"configparser\" \
 		    --hidden-import=\"distutils.spawn\" \
 		    --hidden-import=\"xml.etree\" \
@@ -61,14 +63,16 @@ MANUAL_HIDDEN_IMPORTS="--hidden-import=\"configparser\" \
 		    --hidden-import=\"smtplib\" \
 		    --hidden-import=\"logging.handlers\" \
 "
+MANUAL_HIDDEN_IMPORTS=""
 
+ADDITIONAL_COMPILED_MODULES="json2yaml"
 #ADDITIONAL_COMPILED_MODULES="simplejson terminaltables psutil loguru json2yaml setproctitle speedtest-cli pyyaml netaddr configparser urllib3 jmespath paramiko pyaml docopt"
-ADDITIONAL_COMPILED_MODULES="paramiko json2yaml"
 ADDITIONAL_COMPILED_MODULES_REPLACEMENTS="pyyaml|yaml python-jose|jose python_jose|jose pyopenssl|OpenSSL mysql-connector-python|mysql mysql_connector_python|mysql linode-cli|linodecli linode_cli|linodecli speedtest-cli|speedtest websocket-client|websocket"
 
 
 #MODULE_BIN_INCLUDES="ansible-playbook json2yaml yaml2json speedtest-cli ansible ansible-config"
-MODULE_BIN_INCLUDES="ansible-playbook json2yaml"
+MODULE_BIN_INCLUDES="json2yaml"
+MODULE_BIN_INCLUDES="json2yaml yaml2json"
 COMPILE_MODULE_BIN_INCLUDES="1"
 MODULE_BIN_INCLUDES_DEFAULT="ansible-playbook"
 MODULE_BIN_INCLUDES_FILE=~/.MODULE_BIN_INCLUDES.txt
@@ -200,9 +204,16 @@ getBinModulesFile(){
 }
 
 MANGLED_VARS_PATH=$(mktemp -d --suffix __compiler__mangled_vars_path__)
+BIN_MODULES_PATH=$(mktemp -d --suffix __compiler__bin_modules__)
 
 get_mangled_var(){
-    (source $MANGLED_VARS_PATH/$1 && echo ${!2})
+    (source $MANGLED_VARS_PATH/.${1}_mangled_vars.txt && echo ${!2})
+}
+ansi-exit_code(){
+    >&2 ansi -n --cyan --bg-black "    "
+    >&2 ansi --white --bg-black "  $(echo $1|sed 's/[[:space:]]/ /g')  "
+    >&2 ansi -n --cyan --bg-black "           Exited  "
+    >&2 ansi --yellow --bg-black $2
 }
 
 get_mangle_vars_file(){
@@ -452,11 +463,17 @@ mangleModules(){
 
 buildPyInstallerCommand(){
     _MAIN_BINARY="$1"
-	ANSIBLE_MODULES="$(findModules ansible $(getSitePackagesPath) | mangleModules)"
-	_ANSIBLE_MODULES="$(echo $ANSIBLE_MODULES | tr ' ' '\n'| excludeAnsibleModules|tr '\n' ' ')"
+	if [[ "$INCLUDE_ALL_ANSIBLE_MODULES" == "1" ]]; then
+	    export ANSIBLE_MODULES="$(findModules ansible $(getSitePackagesPath) | mangleModules)"
+	    export _ANSIBLE_MODULES="$(echo $ANSIBLE_MODULES | tr ' ' '\n'| excludeAnsibleModules|tr '\n' ' ')"
+    else
+        >&2 echo Skipping Ansible Modules
+	    export ANSIBLE_MODULES=""
+	    export _ANSIBLE_MODULES=""
+    fi
 
-	#echo ANSIBLE_MODULES=$ANSIBLE_MODULES
-	#echo _ANSIBLE_MODULES=$_ANSIBLE_MODULES
+	>&2 echo ANSIBLE_MODULES=$ANSIBLE_MODULES
+	>&2 echo _ANSIBLE_MODULES=$_ANSIBLE_MODULES
 
 	(
 		echo -n "ANSIBLE_MODULES chars: ";  echo $ANSIBLE_MODULES  |tr ' ' '\n' | wc -l
@@ -480,11 +497,11 @@ buildPyInstallerCommand(){
 
     if [[ "$USE_PYINSTALLER_SPEC_METHOD" == "1" ]]; then
         if [[ "$USE_MERGED_PY_INSTALL_METHOD" == "0" ]]; then
-                    py_mkspec_cmd="pyi-makespec \
                             $_ADD_DATAS \
                             $HIDDEN_ADDITIONAL_COMPILED_MODULES \
                             $MANUAL_HIDDEN_IMPORTS \
                             $_ANSIBLE_MODULES \
+                    py_mkspec_cmd="pyi-makespec \
                             -p $VIRTUAL_ENV/lib64/python3.6/site-packages \
                                $_MAIN_BINARY"
 
@@ -536,42 +553,45 @@ buildPyInstallerCommand(){
 
             COMBINED_SPEC_FILE="${COMBINED_SPEC_FILE}.spec"
             COMBINED_SPEC_FILE="$(echo $COMBINED_SPEC_FILE | sed 's/^_//g')"
+            COMBINED_SPEC_FILE="$SPEC_FILES_DIR/$COMBINED_SPEC_FILE"
 
             [[ -f $COMBINED_SPEC_FILE ]] && rm $COMBINED_SPEC_FILE
             touch $COMBINED_SPEC_FILE
-            >&2 ansi --green "OK - $COMBINED_SPEC_FILE"
+            >&2 ansi --green "OK - Created $COMBINED_SPEC_FILE"
             
             SAVE_DIR=$(pwd)
             SPEC_FILES_DIR=$(mktemp -d)
             for M in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
-                >&2 echo ADDING $M
+                >&2 ansi --green ADDING $M
                 M_b=$(basename $M)
                 MODULE_BUILD_DIR=$(mktemp -d --suffix __compiler_module_${M})
                 cd $MODULE_BUILD_DIR
-                >&2 echo MODULE_BUILD_DIR=$MODULE_BUILD_DIR
-
-                >&2 echo -e "  adding module $M"
-                add_cmd="pip install $M ; cp $(which $M) $(pwd)/$M"
-                >&2 echo add_cmd=$add_cmd
+                >&2 ansi --magenta MODULE_BUILD_DIR=$MODULE_BUILD_DIR
+                >&2 ansi --green "  adding module $M"
+                add_cmd="pip install $M -q 2>/dev/null; cp $(which $M) $BIN_MODULES_PATH/$M; true"
+                >&2 ansi --cyan add_cmd=$add_cmd
                 eval $add_cmd
-                if [[ ! -f $M ]]; then
-                    echo cannot find file $M at $(pwd)
+                exit_code=$?
+                ansi-exit_code "$add_cmd" $exit_code
+                if [[ ! -f $BIN_MODULES_PATH/$M ]]; then
+                    echo cannot find file $M at $BIN_MODULES_PATH/$M
                     exit 100
                 fi
+
                 >&2 echo GENERATING SPEC FILE FOR MODULE $M
+#                        $_ADD_DATAS \
+#                        $HIDDEN_ADDITIONAL_COMPILED_MODULES \
+#                        $MANUAL_HIDDEN_IMPORTS \
+#                        $_ANSIBLE_MODULES \
                 py_mkspec_cmd="pyi-makespec \
-                        $_ADD_DATAS \
-                        $HIDDEN_ADDITIONAL_COMPILED_MODULES \
-                        $MANUAL_HIDDEN_IMPORTS \
-                        $_ANSIBLE_MODULES \
                         -p $VIRTUAL_ENV/lib64/python3.6/site-packages \
-                           $M"
+                           $BIN_MODULES_PATH/$M"
                 SPEC_FILE="${M}.spec"
                 mkspec_out=$(mktemp)
                 mkspec_err=$(mktemp)
                 eval $py_mkspec_cmd > $mkspec_out 2> $mkspec_err
                 exit_code=$?
-                >&2 echo py_mkspec exit_code=$exit_code
+                ansi-exit_code "$py_mkspec_cmd" $exit_code
                 CREATED_SPEC_FILE="$(grep '^wrote ' $mkspec_out | tail -n1|cut -d' ' -f2)"
                 >&2 echo CREATED_SPEC_FILE=$CREATED_SPEC_FILE
                 cp $CREATED_SPEC_FILE $SPEC_FILE
@@ -590,9 +610,7 @@ buildPyInstallerCommand(){
                     exit $exit_code
                 fi
 
-                COPY_MANGLE_STDOUT_DEST="$(get_mangle_vars_file $(basename $M))"
-                >&2 echo COPY_MANGLE_STDOUT_DEST=$COPY_MANGLE_STDOUT_DEST
-                cp $mangle_stdout $COPY_MANGLE_STDOUT_DEST
+                cp $mangle_stdout $(get_mangle_vars_file $(basename $M))
                 >&2 ls $SPEC_FILE
                 cp $SPEC_FILE $SPEC_FILES_DIR/.
 
@@ -600,7 +618,9 @@ buildPyInstallerCommand(){
 
             cd $SAVE_DIR
             ls -al $SPEC_FILES_DIR
+            ls -al $BIN_MODULES_PATH
             >&2 echo SPEC_FILES_DIR=$SPEC_FILES_DIR
+            >&2 echo BIN_MODULES_PATH=$BIN_MODULES_PATH
             >&2 echo SAVE_DIR=$SAVE_DIR
 
 #           exit 255
@@ -614,11 +634,11 @@ buildPyInstallerCommand(){
                 x_spec="$SPEC_FILES_DIR/${x}.spec"
                 mangle_cmd="$MANGLE_SCRIPT $x_spec"
                 x_mangle_vars="$(get_mangle_vars_file $x_orig)"
-                PYZ_file="$(get_mangled_var $x_mangle_vars PYZ)"
-                EXE_file="$(get_mangled_var $x_mangle_vars EXE)"
+                PYZ_file="$(get_mangled_var $x_orig PYZ)"
+                EXE_file="$(get_mangled_var $x_orig EXE)"
 
                 if ! grep -q '^block_cipher' $COMBINED_SPEC_FILE; then
-                    cat "$(get_mangled_var $x_mangle_vars BLOCK_CIPHER)" >> $COMBINED_SPEC_FILE
+                    cat "$(get_mangled_var $x_orig BLOCK_CIPHER)" >> $COMBINED_SPEC_FILE
                     >&2 ansi --green "   Added block Cipher!"
                 fi
             done
@@ -632,7 +652,7 @@ buildPyInstallerCommand(){
                 x_mangle_vars="$(get_mangle_vars_file $x_orig)"
                 for k in ANALYSIS; do
                     >&2 ansi --magenta " [$x_orig => $k]"
-                    cat "$(get_mangled_var $x_mangle_vars $k)" >> $COMBINED_SPEC_FILE
+                    cat "$(get_mangled_var $x_orig $k)" >> $COMBINED_SPEC_FILE
                     echo -ne "\n" >> $COMBINED_SPEC_FILE
                     >&2 ansi --green "   OK"
                 done
@@ -663,7 +683,7 @@ buildPyInstallerCommand(){
                 x_mangle_vars="$(get_mangle_vars_file $x_orig)"
                 for k in PYZ EXE COLLECT; do
                     >&2 ansi --magenta " [$k]"
-                    cat "$(get_mangled_var $x_mangle_vars $k)" >> $COMBINED_SPEC_FILE
+                    cat "$(get_mangled_var $x_orig $k)" >> $COMBINED_SPEC_FILE
                     echo -ne "\n" >> $COMBINED_SPEC_FILE
                     >&2 ansi --green "   OK"
                 done
@@ -672,8 +692,8 @@ buildPyInstallerCommand(){
             echo -ne "\n\n" >> $COMBINED_SPEC_FILE
 
             export _PY_INSTALLER_TARGET="$(pwd)/$COMBINED_SPEC_FILE"
-            cat $_PY_INSTALLER_TARGET
-            exit 69
+            #cat $_PY_INSTALLER_TARGET
+            #exit 69
     fi
         >&2 echo _PY_INSTALLER_TARGET=$_PY_INSTALLER_TARGET
 
@@ -864,7 +884,7 @@ doMain(){
         if [ "$DEBUG_CMD" == "1" ]; then
             cmd_file=$(mktemp)
             echo $CMD > $cmd_file
-            echo "cmd_file=$cmd_file"
+            echo -e "\n\ncmd_file=$cmd_file\n"
             exit 
         fi
         ANSIBLE_HIDDEN_IMPORTS_QTY="$(echo "$CMD" | tr ' ' '\n'|grep -c hidden-import)"
