@@ -3,6 +3,7 @@ set -e
 cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 SPEC_FILE="$1"
 _SPEC_FILE="$(echo $SPEC_FILE|sed 's/\.spec//g')"
+SPEC_NAME="$(echo $SPEC_FILE)"
 #SPEC_FILE="$(echo $SPEC_FILE | sed 's/[[::space::]]//g')"
 #sed -i 's/-/_/g' $SPEC_FILE
 _DIR=$(mktemp -d)
@@ -14,14 +15,16 @@ fi
 
 sed -i 's/^_//g' $SPEC_FILE
 
-ANALYSIS_START_LINE="$(grep '^a = Analysis(' $SPEC_FILE -n|cut -d':' -f1)"
-PYZ_START_LINE="$(grep '^pyz = PYZ(' $SPEC_FILE -n|cut -d':' -f1)"
+#sed -i ".spec_" $SPEC_FILE
+
+ANALYSIS_START_LINE="$(grep '^a = Analysis(' $SPEC_NAME -n|cut -d':' -f1)"
+PYZ_START_LINE="$(grep '^pyz = PYZ(' $SPEC_NAME -n|cut -d':' -f1)"
 ANALYSIS_END_LINE="$(echo ${PYZ_START_LINE}-1|bc)"
-EXE_START_LINE="$(grep '^exe = EXE(p' $SPEC_FILE -n|cut -d':' -f1)"
+EXE_START_LINE="$(grep '^exe = EXE(p' $SPEC_NAME -n|cut -d':' -f1)"
 PYZ_END_LINE="$(echo ${EXE_START_LINE}-1|bc)"
-COLLECT_START_LINE="$(grep '^coll = COLLECT(' $SPEC_FILE -n|cut -d':' -f1)"
+COLLECT_START_LINE="$(grep '^coll = COLLECT(' $SPEC_NAME -n|cut -d':' -f1)"
 EXE_END_LINE="$(echo ${COLLECT_START_LINE}-1|bc)"
-LAST_LINE="$(wc -l $SPEC_FILE|cut -d' ' -f1)"
+LAST_LINE="$(wc -l $SPEC_NAME|cut -d' ' -f1)"
 COLLECT_END_LINE="$(echo ${LAST_LINE}|bc)"
 
 echo ANALYSIS_START_LINE=$ANALYSIS_START_LINE
@@ -46,6 +49,7 @@ sed -n "${PYZ_START_LINE},${PYZ_END_LINE}p" $SPEC_FILE > $_DIR/PYZ.txt
 sed -n "${EXE_START_LINE},${EXE_END_LINE}p" $SPEC_FILE > $_DIR/EXE.txt
 sed -n "${COLLECT_START_LINE},${COLLECT_END_LINE}p" $SPEC_FILE > $_DIR/COLLECT.txt
 
+
 _F="$(basename $SPEC_FILE)"
 
 sed -i "s/^a = Analysis/${_F}_a = Analysis/g" $_DIR/ANALYSIS.txt
@@ -57,6 +61,7 @@ sed -i "s/a\./${_F}_a./g" $_DIR/EXE.txt
 sed -i "s/^coll = COLLECT/${_F}_coll = COLLECT/g" $_DIR/COLLECT.txt
 sed -i "s/exe,/${_F}_exe,/g" $_DIR/COLLECT.txt
 
+(cd $_DIR && sed -i "s/${_SPEC_FILE}.spec_/${_SPEC_FILE}_/g" *.txt)
 
 echo WORKDIR=$_DIR
 echo BLOCK_CIPHER=$_DIR/block_cipher.txt
