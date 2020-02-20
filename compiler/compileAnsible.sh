@@ -193,6 +193,11 @@ getBinModulesFile(){
     echo $modulesFile
     #echo $totalModulesFile
 }
+
+get_mangled_var(){
+    (source $1 && echo ${!2})
+}
+
 get_mangle_vars_file(){
     x="$(basename $1 .py)"
     x_mangle_vars=".${x}_mangled_vars.txt"
