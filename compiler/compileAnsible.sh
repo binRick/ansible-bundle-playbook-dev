@@ -486,6 +486,7 @@ buildPyInstallerCommand(){
         >&2 echo CREATED_SPEC_FILE=$CREATED_SPEC_FILE
         cp $CREATED_SPEC_FILE $SPEC_FILE
         MANGLE_CMD="$MANGLE_SCRIPT $SPEC_FILE"
+        >&2 echo MANGLE_CMD=$MANGLE_CMD
         
 
 
