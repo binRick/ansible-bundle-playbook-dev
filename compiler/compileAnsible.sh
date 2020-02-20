@@ -12,7 +12,7 @@ BORG_SSH_HOST=web1
 BORG_SSH_USER=BORG
 VENV_PATH=~/.venv-ansible-bundler
 MAIN_BINARY="$VENV_PATH/bin/ansible-playbook"
-[[ "$USE_PYINSTALLER_SPEC_METHOD" == "" ]] && export USE_PYINSTALLER_SPEC_METHOD="1"
+export USE_PYINSTALLER_SPEC_METHOD=1
 [[ "$DEBUG_MAIN_BINARY_BUILD" == "" ]] && export DEBUG_MAIN_BINARY_BUILD="0"
 [[ "$MANGLE_MAIN_BINARY" == "" ]] && export MANGLE_MAIN_BINARY="0"
 [[ "$INCLUDE_ANSIBLE_TOOLS" == "" ]] && export INCLUDE_ANSIBLE_TOOLS="0"
@@ -518,6 +518,19 @@ buildPyInstallerCommand(){
                     echo cannot find file $M at $(pwd)
                     exit 100
                 fi
+                >&2 echo GENERATING SPEC FILE FOR MODULE $M
+                >&2 echo mangle_cmd=$mangle_cmd
+                mangle_stdout=$(mktemp)
+                mangle_stderr=$(mktemp)
+                eval $mangle_cmd > $mangle_stdout 2>$mangle_stderr
+                exit_code=$?        
+                if [[ "$exit_code" != "0" ]]; then
+                    cat $mangle_stdout
+                    cat $mangle_stderr
+                    echo -e "\n\nexit code $exit_code\n\n"
+                    exit $exit_code
+                fi
+                >&2 ls $SPEC_FILE
                 
 
             fi
