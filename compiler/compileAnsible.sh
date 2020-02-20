@@ -27,8 +27,8 @@ ANSIBLE_TOOLS="ansible-config"
 MANGLE_SCRIPT="./mangleSpec.sh"
 
 if ! command -v shc >/dev/null 2>/dev/null; then
-    echo shc not found in PATH
-    exit 1
+    >&2 echo shc not found in PATH
+    #exit 1
 fi
 
 
