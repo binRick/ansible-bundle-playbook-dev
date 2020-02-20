@@ -514,149 +514,149 @@ buildPyInstallerCommand(){
                     export _PY_INSTALLER_TARGET=$(pwd)/$_ANSIBLE_PLAYBOOK_SPEC_FILE
         else
 
-        echo -ne "\n"
-        >&2 ansi --cyan Create Compined Spec File
-        COMBINED_SPEC_FILE=""
-        for x in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
-            x="$(basename $x .py)"
-            COMBINED_SPEC_FILE="${COMBINED_SPEC_FILE}_${x}"
-        done
+            echo -ne "\n"
+            >&2 ansi --cyan Create Compined Spec File
+            COMBINED_SPEC_FILE=""
+            for x in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
+                x="$(basename $x .py)"
+                COMBINED_SPEC_FILE="${COMBINED_SPEC_FILE}_${x}"
+            done
 
-        COMBINED_SPEC_FILE="${COMBINED_SPEC_FILE}.spec"
-        COMBINED_SPEC_FILE="$(echo $COMBINED_SPEC_FILE | sed 's/^_//g')"
+            COMBINED_SPEC_FILE="${COMBINED_SPEC_FILE}.spec"
+            COMBINED_SPEC_FILE="$(echo $COMBINED_SPEC_FILE | sed 's/^_//g')"
 
-        [[ -f $COMBINED_SPEC_FILE ]] && rm $COMBINED_SPEC_FILE
-        touch $COMBINED_SPEC_FILE
-        >&2 ansi --green "OK - $COMBINED_SPEC_FILE"
-        
-        SAVE_DIR=$(pwd)
-        SPEC_FILES_DIR=$(mktemp -d)
-        for M in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
-            >&2 echo ADDING $M
-            M_b=$(basename $M)
-            MODULE_BUILD_DIR=$(mktemp -d --suffix __compiler_module_${M})
-            cd $MODULE_BUILD_DIR
-            >&2 echo MODULE_BUILD_DIR=$MODULE_BUILD_DIR
+            [[ -f $COMBINED_SPEC_FILE ]] && rm $COMBINED_SPEC_FILE
+            touch $COMBINED_SPEC_FILE
+            >&2 ansi --green "OK - $COMBINED_SPEC_FILE"
+            
+            SAVE_DIR=$(pwd)
+            SPEC_FILES_DIR=$(mktemp -d)
+            for M in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
+                >&2 echo ADDING $M
+                M_b=$(basename $M)
+                MODULE_BUILD_DIR=$(mktemp -d --suffix __compiler_module_${M})
+                cd $MODULE_BUILD_DIR
+                >&2 echo MODULE_BUILD_DIR=$MODULE_BUILD_DIR
 
-            >&2 echo -e "  adding module $M"
-            add_cmd="pip install $M ; cp $(which $M) $(pwd)/$M"
-            >&2 echo add_cmd=$add_cmd
-            eval $add_cmd
-            if [[ ! -f $M ]]; then
-                echo cannot find file $M at $(pwd)
-                exit 100
-            fi
-            >&2 echo GENERATING SPEC FILE FOR MODULE $M
-            py_mkspec_cmd="pyi-makespec \
-                    $_ADD_DATAS \
-                    $HIDDEN_ADDITIONAL_COMPILED_MODULES \
-                    $MANUAL_HIDDEN_IMPORTS \
-                    $_ANSIBLE_MODULES \
-                    -p $VIRTUAL_ENV/lib64/python3.6/site-packages \
-                       $M"
-            SPEC_FILE="${M}.spec"
-            mkspec_out=$(mktemp)
-            mkspec_err=$(mktemp)
-            eval $py_mkspec_cmd > $mkspec_out 2> $mkspec_err
-            exit_code=$?
-            >&2 echo py_mkspec exit_code=$exit_code
-            CREATED_SPEC_FILE="$(grep '^wrote ' $mkspec_out | tail -n1|cut -d' ' -f2)"
-            >&2 echo CREATED_SPEC_FILE=$CREATED_SPEC_FILE
-            cp $CREATED_SPEC_FILE $SPEC_FILE
-            mangle_cmd="cp -f $MANGLE_SCRIPT_PATH $MANGLE_SCRIPT_NAME && ./$MANGLE_SCRIPT_NAME $SPEC_FILE"
-            >&2 echo " [MODULE $M]: SPEC_FILE=$SPEC_FILE"
-            >&2 echo py_mkspec_cmd=$py_mkspec_cmd
-            >&2 echo mangle_cmd=$mangle_cmd
-            mangle_stdout=$(mktemp)
-            mangle_stderr=$(mktemp)
-            eval $mangle_cmd > $mangle_stdout 2>$mangle_stderr
-            exit_code=$?        
-            if [[ "$exit_code" != "0" ]]; then
-                cat $mangle_stdout
-                cat $mangle_stderr
-                echo -e "\n\nexit code $exit_code\n\n"
-                exit $exit_code
-            fi
-            >&2 ls $SPEC_FILE
-            cp $SPEC_FILE $SPEC_FILES_DIR
+                >&2 echo -e "  adding module $M"
+                add_cmd="pip install $M ; cp $(which $M) $(pwd)/$M"
+                >&2 echo add_cmd=$add_cmd
+                eval $add_cmd
+                if [[ ! -f $M ]]; then
+                    echo cannot find file $M at $(pwd)
+                    exit 100
+                fi
+                >&2 echo GENERATING SPEC FILE FOR MODULE $M
+                py_mkspec_cmd="pyi-makespec \
+                        $_ADD_DATAS \
+                        $HIDDEN_ADDITIONAL_COMPILED_MODULES \
+                        $MANUAL_HIDDEN_IMPORTS \
+                        $_ANSIBLE_MODULES \
+                        -p $VIRTUAL_ENV/lib64/python3.6/site-packages \
+                           $M"
+                SPEC_FILE="${M}.spec"
+                mkspec_out=$(mktemp)
+                mkspec_err=$(mktemp)
+                eval $py_mkspec_cmd > $mkspec_out 2> $mkspec_err
+                exit_code=$?
+                >&2 echo py_mkspec exit_code=$exit_code
+                CREATED_SPEC_FILE="$(grep '^wrote ' $mkspec_out | tail -n1|cut -d' ' -f2)"
+                >&2 echo CREATED_SPEC_FILE=$CREATED_SPEC_FILE
+                cp $CREATED_SPEC_FILE $SPEC_FILE
+                mangle_cmd="cp -f $MANGLE_SCRIPT_PATH $MANGLE_SCRIPT_NAME && ./$MANGLE_SCRIPT_NAME $SPEC_FILE"
+                >&2 echo " [MODULE $M]: SPEC_FILE=$SPEC_FILE"
+                >&2 echo py_mkspec_cmd=$py_mkspec_cmd
+                >&2 echo mangle_cmd=$mangle_cmd
+                mangle_stdout=$(mktemp)
+                mangle_stderr=$(mktemp)
+                eval $mangle_cmd > $mangle_stdout 2>$mangle_stderr
+                exit_code=$?        
+                if [[ "$exit_code" != "0" ]]; then
+                    cat $mangle_stdout
+                    cat $mangle_stderr
+                    echo -e "\n\nexit code $exit_code\n\n"
+                    exit $exit_code
+                fi
+                >&2 ls $SPEC_FILE
+                cp $SPEC_FILE $SPEC_FILES_DIR
 
-        done
+            done
 
-        cd $SAVE_DIR
-        ls -al $SPEC_FILES_DIR
-        >&2 echo SPEC_FILES_DIR=$SPEC_FILES_DIR
-        >&2 echo SAVE_DIR=$SAVE_DIR
+            cd $SAVE_DIR
+            ls -al $SPEC_FILES_DIR
+            >&2 echo SPEC_FILES_DIR=$SPEC_FILES_DIR
+            >&2 echo SAVE_DIR=$SAVE_DIR
 
-        >&2 ansi --cyan Assembling combined spec file from mangled spec files
+            >&2 ansi --cyan Assembling combined spec file from mangled spec files
 
-        >&2 ansi --magenta " [Block Cipher]"
-        for x in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
-            x_orig="$x"
-            x="$(basename $x .py)"
-            x_spec="${x}.spec"
-            mangle_cmd="$MANGLE_SCRIPT $x_spec"
-            x_mangle_vars="$(get_mangle_vars_file $x_orig)"
-            PYZ_file="$(get_mangled_var $x_mangle_vars PYZ)"
-            EXE_file="$(get_mangled_var $x_mangle_vars EXE)"
+            >&2 ansi --magenta " [Block Cipher]"
+            for x in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
+                x_orig="$x"
+                x="$(basename $x .py)"
+                x_spec="${x}.spec"
+                mangle_cmd="$MANGLE_SCRIPT $x_spec"
+                x_mangle_vars="$(get_mangle_vars_file $x_orig)"
+                PYZ_file="$(get_mangled_var $x_mangle_vars PYZ)"
+                EXE_file="$(get_mangled_var $x_mangle_vars EXE)"
 
-            if ! grep -q '^block_cipher' $COMBINED_SPEC_FILE; then
-                cat "$(get_mangled_var $x_mangle_vars BLOCK_CIPHER)" >> $COMBINED_SPEC_FILE
-                >&2 ansi --green "   Added block Cipher!"
-            else
-                >&2 ansi --red "   Invalid spec file.. missing blocker cipher!"
-                exit 1
-            fi
-        done
-        >&2 ansi --green " OK"
+                if ! grep -q '^block_cipher' $COMBINED_SPEC_FILE; then
+                    cat "$(get_mangled_var $x_mangle_vars BLOCK_CIPHER)" >> $COMBINED_SPEC_FILE
+                    >&2 ansi --green "   Added block Cipher!"
+                else
+                    >&2 ansi --red "   Invalid spec file.. missing blocker cipher!"
+                    exit 1
+                fi
+            done
+            >&2 ansi --green " OK"
 
-        echo -ne "\n\n" >> $COMBINED_SPEC_FILE
-        for x in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
-            x_orig="$x"
-            x="$(basename $x .py)"
-            x_spec="${x}.spec"
-            x_mangle_vars="$(get_mangle_vars_file $x_orig)"
-            for k in ANALYSIS; do
-                >&2 ansi --magenta " [$x_orig => $k]"
-                cat "$(get_mangled_var $x_mangle_vars $k)" >> $COMBINED_SPEC_FILE
-                echo -ne "\n" >> $COMBINED_SPEC_FILE
-                >&2 ansi --green "   OK"
+            echo -ne "\n\n" >> $COMBINED_SPEC_FILE
+            for x in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
+                x_orig="$x"
+                x="$(basename $x .py)"
+                x_spec="${x}.spec"
+                x_mangle_vars="$(get_mangle_vars_file $x_orig)"
+                for k in ANALYSIS; do
+                    >&2 ansi --magenta " [$x_orig => $k]"
+                    cat "$(get_mangled_var $x_mangle_vars $k)" >> $COMBINED_SPEC_FILE
+                    echo -ne "\n" >> $COMBINED_SPEC_FILE
+                    >&2 ansi --green "   OK"
+                done
+                echo -ne "\n\n" >> $COMBINED_SPEC_FILE
             done
             echo -ne "\n\n" >> $COMBINED_SPEC_FILE
-        done
-        echo -ne "\n\n" >> $COMBINED_SPEC_FILE
 
-        >&2 ansi --magenta " [Merge Statement]"
-        echo -ne "\n" >> $COMBINED_SPEC_FILE
-        merge_line="MERGE( (test_a, 'test', 'test'), (test1_a, 'test1', 'test1') )"
-        merge_line="MERGE("
-        for x in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
-            x="$(basename $x .py)"
-            script_line=" (${x}_a, '$x', '$x'),"
-            merge_line="${merge_line}${script_line}"
-        done
-        merge_line="$(echo $merge_line|sed 's/,$//g')"
-        merge_line="${merge_line} )"
-        echo $merge_line >> $COMBINED_SPEC_FILE
-        echo -ne "\n\n" >> $COMBINED_SPEC_FILE
+            >&2 ansi --magenta " [Merge Statement]"
+            echo -ne "\n" >> $COMBINED_SPEC_FILE
+            merge_line="MERGE( (test_a, 'test', 'test'), (test1_a, 'test1', 'test1') )"
+            merge_line="MERGE("
+            for x in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
+                x="$(basename $x .py)"
+                script_line=" (${x}_a, '$x', '$x'),"
+                merge_line="${merge_line}${script_line}"
+            done
+            merge_line="$(echo $merge_line|sed 's/,$//g')"
+            merge_line="${merge_line} )"
+            echo $merge_line >> $COMBINED_SPEC_FILE
+            echo -ne "\n\n" >> $COMBINED_SPEC_FILE
 
 
-        echo -ne "\n\n" >> $COMBINED_SPEC_FILE
-        for x in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
-            x_orig="$x"
-            x="$(basename $x .py)"
-            x_spec="${x}.spec"
-            x_mangle_vars="$(get_mangle_vars_file $x_orig)"
-            for k in PYZ EXE COLLECT; do
-                >&2 ansi --magenta " [$k]"
-                cat "$(get_mangled_var $x_mangle_vars $k)" >> $COMBINED_SPEC_FILE
-                echo -ne "\n" >> $COMBINED_SPEC_FILE
-                >&2 ansi --green "   OK"
+            echo -ne "\n\n" >> $COMBINED_SPEC_FILE
+            for x in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
+                x_orig="$x"
+                x="$(basename $x .py)"
+                x_spec="${x}.spec"
+                x_mangle_vars="$(get_mangle_vars_file $x_orig)"
+                for k in PYZ EXE COLLECT; do
+                    >&2 ansi --magenta " [$k]"
+                    cat "$(get_mangled_var $x_mangle_vars $k)" >> $COMBINED_SPEC_FILE
+                    echo -ne "\n" >> $COMBINED_SPEC_FILE
+                    >&2 ansi --green "   OK"
+                done
+                echo -ne "\n\n" >> $COMBINED_SPEC_FILE
             done
             echo -ne "\n\n" >> $COMBINED_SPEC_FILE
-        done
-        echo -ne "\n\n" >> $COMBINED_SPEC_FILE
 
-        export _PY_INSTALLER_TARGET="$(pwd)/$COMBINED_SPEC_FILE"
+            export _PY_INSTALLER_TARGET="$(pwd)/$COMBINED_SPEC_FILE"
     fi
         >&2 echo _PY_INSTALLER_TARGET=$_PY_INSTALLER_TARGET
 
