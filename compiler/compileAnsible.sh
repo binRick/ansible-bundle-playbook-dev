@@ -467,105 +467,46 @@ buildPyInstallerCommand(){
     echo $PYARMOR_CMD > $PYARMOR_CMD_FILE
 
     if [[ "$USE_PYINSTALLER_SPEC_METHOD" == "1" ]]; then
-        py_mkspec_cmd="pyi-makespec \
-                $_ADD_DATAS \
-                $HIDDEN_ADDITIONAL_COMPILED_MODULES \
-                $MANUAL_HIDDEN_IMPORTS \
-                $_ANSIBLE_MODULES \
-                -p $VIRTUAL_ENV/lib64/python3.6/site-packages \
-                   $_MAIN_BINARY"
 
-        SPEC_FILE="$(basename ${_MAIN_BINARY}).spec"
+        if [[ "1" == "0" ]]; then
+                    py_mkspec_cmd="pyi-makespec \
+                            $_ADD_DATAS \
+                            $HIDDEN_ADDITIONAL_COMPILED_MODULES \
+                            $MANUAL_HIDDEN_IMPORTS \
+                            $_ANSIBLE_MODULES \
+                            -p $VIRTUAL_ENV/lib64/python3.6/site-packages \
+                               $_MAIN_BINARY"
 
-        >&2 echo py_mkspec_cmd=$py_mkspec_cmd
-        >&2 echo SPEC_FILE=$SPEC_FILE
+                    SPEC_FILE="$(basename ${_MAIN_BINARY}).spec"
 
-        mkspec_out=$(mktemp)
-        mkspec_err=$(mktemp)
-        eval $py_mkspec_cmd > $mkspec_out 2> $mkspec_err
-        exit_code=$?
-        >&2 echo py_mkspec exit_code=$exit_code
-        CREATED_SPEC_FILE="$(grep '^wrote ' $mkspec_out | tail -n1|cut -d' ' -f2)"
-        >&2 echo CREATED_SPEC_FILE=$CREATED_SPEC_FILE
-        cp $CREATED_SPEC_FILE $SPEC_FILE
+                    >&2 echo py_mkspec_cmd=$py_mkspec_cmd
+                    >&2 echo SPEC_FILE=$SPEC_FILE
 
-        
-        mangle_cmd="cp -f $MANGLE_SCRIPT_PATH $MANGLE_SCRIPT_NAME && ./$MANGLE_SCRIPT_NAME $SPEC_FILE"
-        >&2 echo mangle_cmd=$mangle_cmd
-        mangle_stdout=$(mktemp)
-        mangle_stderr=$(mktemp)
-        eval $mangle_cmd > $mangle_stdout 2>$mangle_stderr
-        exit_code=$?        
-        if [[ "$exit_code" != "0" ]]; then
-            cat $mangle_stdout
-            cat $mangle_stderr
-            echo -e "\n\nexit code $exit_code\n\n"
-            exit $exit_code
+                    mkspec_out=$(mktemp)
+                    mkspec_err=$(mktemp)
+                    eval $py_mkspec_cmd > $mkspec_out 2> $mkspec_err
+                    exit_code=$?
+                    >&2 echo py_mkspec exit_code=$exit_code
+                    CREATED_SPEC_FILE="$(grep '^wrote ' $mkspec_out | tail -n1|cut -d' ' -f2)"
+                    >&2 echo CREATED_SPEC_FILE=$CREATED_SPEC_FILE
+                    cp $CREATED_SPEC_FILE $SPEC_FILE
+
+                    
+                    mangle_cmd="cp -f $MANGLE_SCRIPT_PATH $MANGLE_SCRIPT_NAME && ./$MANGLE_SCRIPT_NAME $SPEC_FILE"
+                    >&2 echo mangle_cmd=$mangle_cmd
+                    mangle_stdout=$(mktemp)
+                    mangle_stderr=$(mktemp)
+                    eval $mangle_cmd > $mangle_stdout 2>$mangle_stderr
+                    exit_code=$?        
+                    if [[ "$exit_code" != "0" ]]; then
+                        cat $mangle_stdout
+                        cat $mangle_stderr
+                        echo -e "\n\nexit code $exit_code\n\n"
+                        exit $exit_code
+                    fi
+                    >&2 ls $SPEC_FILE
+                    export _ANSIBLE_PLAYBOOK_SPEC_FILE=$SPEC_FILE
         fi
-        >&2 ls $SPEC_FILE
-        export _ANSIBLE_PLAYBOOK_SPEC_FILE=$SPEC_FILE
-        
-        SAVE_DIR=$(pwd)
-        SPEC_FILES_DIR=$(mktemp -d)
-        for M in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
-            echo ADDING $M
-            M_b=$(basename $M)
-            MODULE_BUILD_DIR=$(mktemp -d --suffix __compiler_module_${M})
-            cd $MODULE_BUILD_DIR
-            >&2 echo MODULE_BUILD_DIR=$MODULE_BUILD_DIR
-
-            if [[ "$(basename $M)" == "ansible-playbook" ]]; then
-                echo -e "  ansible-playbook detected"
-            else
-                echo -e "  adding module $M"
-                add_cmd="pip install $M ; cp $(which $M) $(pwd)/$M"
-                echo add_cmd=$add_cmd
-                eval $add_cmd
-                if [[ ! -f $M ]]; then
-                    echo cannot find file $M at $(pwd)
-                    exit 100
-                fi
-                >&2 echo GENERATING SPEC FILE FOR MODULE $M
-                py_mkspec_cmd="pyi-makespec \
-                        $_ADD_DATAS \
-                        $HIDDEN_ADDITIONAL_COMPILED_MODULES \
-                        $MANUAL_HIDDEN_IMPORTS \
-                        $_ANSIBLE_MODULES \
-                        -p $VIRTUAL_ENV/lib64/python3.6/site-packages \
-                           $M"
-                SPEC_FILE="${M}.spec"
-                mkspec_out=$(mktemp)
-                mkspec_err=$(mktemp)
-                eval $py_mkspec_cmd > $mkspec_out 2> $mkspec_err
-                exit_code=$?
-                >&2 echo py_mkspec exit_code=$exit_code
-                CREATED_SPEC_FILE="$(grep '^wrote ' $mkspec_out | tail -n1|cut -d' ' -f2)"
-                >&2 echo CREATED_SPEC_FILE=$CREATED_SPEC_FILE
-                cp $CREATED_SPEC_FILE $SPEC_FILE
-                mangle_cmd="cp -f $MANGLE_SCRIPT_PATH $MANGLE_SCRIPT_NAME && ./$MANGLE_SCRIPT_NAME $SPEC_FILE"
-                >&2 echo " [MODULE $M]: SPEC_FILE=$SPEC_FILE"
-                >&2 echo py_mkspec_cmd=$py_mkspec_cmd
-                >&2 echo mangle_cmd=$mangle_cmd
-                mangle_stdout=$(mktemp)
-                mangle_stderr=$(mktemp)
-                eval $mangle_cmd > $mangle_stdout 2>$mangle_stderr
-                exit_code=$?        
-                if [[ "$exit_code" != "0" ]]; then
-                    cat $mangle_stdout
-                    cat $mangle_stderr
-                    echo -e "\n\nexit code $exit_code\n\n"
-                    exit $exit_code
-                fi
-                >&2 ls $SPEC_FILE
-                cp $SPEC_FILE $SPEC_FILES_DIR
-            fi
-
-        done
-        cd $SAVE_DIR
-        ls -al $SPEC_FILES_DIR
-        >&2 echo SPEC_FILES_DIR=$SPEC_FILES_DIR
-        >&2 echo SAVE_DIR=$SAVE_DIR
-
 
         echo -ne "\n"
         >&2 ansi --cyan Create Compined Spec File
@@ -581,6 +522,66 @@ buildPyInstallerCommand(){
         [[ -f $COMBINED_SPEC_FILE ]] && rm $COMBINED_SPEC_FILE
         touch $COMBINED_SPEC_FILE
         >&2 ansi --green "OK - $COMBINED_SPEC_FILE"
+        
+        SAVE_DIR=$(pwd)
+        SPEC_FILES_DIR=$(mktemp -d)
+        for M in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
+            echo ADDING $M
+            M_b=$(basename $M)
+            MODULE_BUILD_DIR=$(mktemp -d --suffix __compiler_module_${M})
+            cd $MODULE_BUILD_DIR
+            >&2 echo MODULE_BUILD_DIR=$MODULE_BUILD_DIR
+
+            echo -e "  adding module $M"
+            add_cmd="pip install $M ; cp $(which $M) $(pwd)/$M"
+            echo add_cmd=$add_cmd
+            eval $add_cmd
+            if [[ ! -f $M ]]; then
+                echo cannot find file $M at $(pwd)
+                exit 100
+            fi
+            >&2 echo GENERATING SPEC FILE FOR MODULE $M
+            py_mkspec_cmd="pyi-makespec \
+                    $_ADD_DATAS \
+                    $HIDDEN_ADDITIONAL_COMPILED_MODULES \
+                    $MANUAL_HIDDEN_IMPORTS \
+                    $_ANSIBLE_MODULES \
+                    -p $VIRTUAL_ENV/lib64/python3.6/site-packages \
+                       $M"
+            SPEC_FILE="${M}.spec"
+            mkspec_out=$(mktemp)
+            mkspec_err=$(mktemp)
+            eval $py_mkspec_cmd > $mkspec_out 2> $mkspec_err
+            exit_code=$?
+            >&2 echo py_mkspec exit_code=$exit_code
+            CREATED_SPEC_FILE="$(grep '^wrote ' $mkspec_out | tail -n1|cut -d' ' -f2)"
+            >&2 echo CREATED_SPEC_FILE=$CREATED_SPEC_FILE
+            cp $CREATED_SPEC_FILE $SPEC_FILE
+            mangle_cmd="cp -f $MANGLE_SCRIPT_PATH $MANGLE_SCRIPT_NAME && ./$MANGLE_SCRIPT_NAME $SPEC_FILE"
+            >&2 echo " [MODULE $M]: SPEC_FILE=$SPEC_FILE"
+            >&2 echo py_mkspec_cmd=$py_mkspec_cmd
+            >&2 echo mangle_cmd=$mangle_cmd
+            mangle_stdout=$(mktemp)
+            mangle_stderr=$(mktemp)
+            eval $mangle_cmd > $mangle_stdout 2>$mangle_stderr
+            exit_code=$?        
+            if [[ "$exit_code" != "0" ]]; then
+                cat $mangle_stdout
+                cat $mangle_stderr
+                echo -e "\n\nexit code $exit_code\n\n"
+                exit $exit_code
+            fi
+            >&2 ls $SPEC_FILE
+            cp $SPEC_FILE $SPEC_FILES_DIR
+        fi
+
+        done
+        cd $SAVE_DIR
+        ls -al $SPEC_FILES_DIR
+        >&2 echo SPEC_FILES_DIR=$SPEC_FILES_DIR
+        >&2 echo SAVE_DIR=$SAVE_DIR
+
+
 
         >&2 ansi --cyan Assembling combined spec file from mangled spec files
 
@@ -617,8 +618,6 @@ buildPyInstallerCommand(){
         done
         echo -ne "\n\n" >> $COMBINED_SPEC_FILE
 
-
-
         >&2 ansi --magenta " [Merge Statement]"
         echo -ne "\n" >> $COMBINED_SPEC_FILE
         merge_line="MERGE( (test_a, 'test', 'test'), (test1_a, 'test1', 'test1') )"
@@ -627,9 +626,7 @@ buildPyInstallerCommand(){
             x="$(basename $x .py)"
             script_line=" (${x}_a, '$x', '$x'),"
             merge_line="${merge_line}${script_line}"
-
         done
-
         merge_line="$(echo $merge_line|sed 's/,$//g')"
         merge_line="${merge_line} )"
         echo $merge_line >> $COMBINED_SPEC_FILE
@@ -651,7 +648,6 @@ buildPyInstallerCommand(){
             echo -ne "\n\n" >> $COMBINED_SPEC_FILE
         done
         echo -ne "\n\n" >> $COMBINED_SPEC_FILE
-
 
         export _PY_INSTALLER_TARGET="$(pwd)/$COMBINED_SPEC_FILE"
         >&2 echo _PY_INSTALLER_TARGET=$_PY_INSTALLER_TARGET
