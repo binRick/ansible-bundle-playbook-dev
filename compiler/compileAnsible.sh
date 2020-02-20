@@ -526,15 +526,15 @@ buildPyInstallerCommand(){
         SAVE_DIR=$(pwd)
         SPEC_FILES_DIR=$(mktemp -d)
         for M in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
-            echo ADDING $M
+            >&2 echo ADDING $M
             M_b=$(basename $M)
             MODULE_BUILD_DIR=$(mktemp -d --suffix __compiler_module_${M})
             cd $MODULE_BUILD_DIR
             >&2 echo MODULE_BUILD_DIR=$MODULE_BUILD_DIR
 
-            echo -e "  adding module $M"
+            >&2 echo -e "  adding module $M"
             add_cmd="pip install $M ; cp $(which $M) $(pwd)/$M"
-            echo add_cmd=$add_cmd
+            >&2 echo add_cmd=$add_cmd
             eval $add_cmd
             if [[ ! -f $M ]]; then
                 echo cannot find file $M at $(pwd)
@@ -596,6 +596,9 @@ buildPyInstallerCommand(){
             if ! grep -q '^block_cipher' $COMBINED_SPEC_FILE; then
                 cat "$(get_mangled_var $x_mangle_vars BLOCK_CIPHER)" >> $COMBINED_SPEC_FILE
                 >&2 ansi --green "   Added block Cipher!"
+            else
+                >&2 ansi --red "   Invalid spec file.. missing blocker cipher!"
+                exit 1
             fi
         done
         >&2 ansi --green " OK"
