@@ -518,7 +518,7 @@ buildPyInstallerCommand(){
             >&2 ansi --cyan Create Compined Spec File
             COMBINED_SPEC_FILE=""
             for x in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
-                x="$(basename $x .py)"
+                x="$(basename $x .py|sed 's/-//g'|sed 's/_//g'|sed 's/[[:space:]]//g')"
                 COMBINED_SPEC_FILE="${COMBINED_SPEC_FILE}_${x}"
             done
 
