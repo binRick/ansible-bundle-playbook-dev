@@ -288,7 +288,7 @@ for x in $BUILD_SCRIPTS; do
         ansi --red $x_combined is not executable!
         exit 1
     else
-        test_cmd="$x_combined --test"
+        test_cmd="$x_combined --help"
         of=$(mktemp)
         ef=$(mktemp)
         set +e; eval $test_cmd > $of 2> $ef
