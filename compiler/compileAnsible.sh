@@ -511,17 +511,25 @@ buildPyInstallerCommand(){
                 echo -e "  ansible-playbook detected"
             else
                 echo -e "  adding module $M"
-                cmd="pip install $M ; cp $(which $M) $(pwd)/$M"
-                echo add_cmd=$cmd
+                add_cmd="pip install $M ; cp $(which $M) $(pwd)/$M"
+                echo add_cmd=$add_cmd
                 eval $add_cmd
                 if [[ ! -f $M ]]; then
                     echo cannot find file $M at $(pwd)
                     exit 100
                 fi
                 >&2 echo GENERATING SPEC FILE FOR MODULE $M
+                py_mkspec_cmd="pyi-makespec \
+                        $_ADD_DATAS \
+                        $HIDDEN_ADDITIONAL_COMPILED_MODULES \
+                        $MANUAL_HIDDEN_IMPORTS \
+                        $_ANSIBLE_MODULES \
+                        -p $VIRTUAL_ENV/lib64/python3.6/site-packages \
+                           $M"
                 SPEC_FILE="$(basename ${M}).spec"
                 mangle_cmd="cp -f $MANGLE_SCRIPT_PATH $MANGLE_SCRIPT_NAME && ./$MANGLE_SCRIPT_NAME $SPEC_FILE"
                 >&2 echo " [MODULE $M]: SPEC_FILE=$SPEC_FILE"
+                >&2 echo py_mkspec_cmd=$py_mkspec_cmd
                 >&2 echo mangle_cmd=$mangle_cmd
                 mangle_stdout=$(mktemp)
                 mangle_stderr=$(mktemp)
