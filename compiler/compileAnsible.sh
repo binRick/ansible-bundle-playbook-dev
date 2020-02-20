@@ -507,13 +507,17 @@ buildPyInstallerCommand(){
             exit $exit_code
         fi
         >&2 ls $SPEC_FILE
-        exit 100
+
+#        exit 100
+
+
         export _PY_INSTALLER_TARGET=$SPEC_FILE
         GO_FILE=$(mktemp)
         GO_FILE_env=$(mktemp)
         echo '#!/bin/bash' > $GO_FILE
         env >> $GO_FILE_env
         echo 'source .go.env' >> $GO_FILE
+
         
         cmd="pyinstaller \
             -n ansible-playbook \
@@ -528,6 +532,8 @@ buildPyInstallerCommand(){
                 ${_ANSIBLE_MODULES} \
                 \
                  $_PY_INSTALLER_TARGET"
+
+
         echo $cmd >> $GO_FILE
         chmod +x $GO_FILE
         cp $GO_FILE GO.sh
