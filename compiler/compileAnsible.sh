@@ -12,7 +12,7 @@ BORG_SSH_HOST=web1
 BORG_SSH_USER=BORG
 VENV_PATH=~/.venv-ansible-bundler
 MAIN_BINARY="$VENV_PATH/bin/ansible-playbook"
-[[ "$USE_PYINSTALLER_SPEC_METHOD" == "" ]] && export DEBUG_MAIN_BINARY_BUILD="1"
+[[ "$USE_PYINSTALLER_SPEC_METHOD" == "" ]] || export DEBUG_MAIN_BINARY_BUILD="1"
 [[ "$DEBUG_MAIN_BINARY_BUILD" == "" ]] && export DEBUG_MAIN_BINARY_BUILD="0"
 [[ "$MANGLE_MAIN_BINARY" == "" ]] && export MANGLE_MAIN_BINARY="0"
 [[ "$INCLUDE_ANSIBLE_TOOLS" == "" ]] && export INCLUDE_ANSIBLE_TOOLS="0"
@@ -511,6 +511,7 @@ buildPyInstallerCommand(){
                 echo -e "  ansible-playbook detected"
             else
                 echo -e "  adding module $M"
+                
 
             fi
 
