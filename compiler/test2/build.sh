@@ -1,17 +1,18 @@
 #!/bin/bash
 set -e
 cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-source ../../ansi
+source ~/.ansi
+export -n VENV_DIRECTORY
 
 [[ "$BUILD_SCRIPTS" == "" ]] && \
     export BUILD_SCRIPTS="test.py test1.py"
 
-COMBINED_DIR="$(pwd)/.COMBINED-$(date +%s)"
+COMBINED_DIR=".COMBINED-$(date +%s)"
 VENV_DIR=".venv-1"
 NUKE_VENV=0
 MANGLE_SCRIPT="./mangleSpec.sh"
-combined_stdout=combined-compile.stdout
-combined_stderr=combined-compile.stderr
+combined_stdout=.combined-compile.stdout
+combined_stderr=.combined-compile.stderr
 MODULES="pyinstaller $MODULES"
 #setproctitle pyaml psutil paramiko"
 
@@ -50,7 +51,7 @@ echo -ne "\n"
 
 get_mangle_vars_file(){
     x="$(basename $1 .py)"
-    x_mangle_vars="${x}_mangled_vars.txt"
+    x_mangle_vars=".${x}_mangled_vars.txt"
     echo $x_mangle_vars
 }
 
@@ -70,7 +71,7 @@ for x in $BUILD_SCRIPTS; do
         --hidden-import="pyaml" \
         --hidden-import="psutil" \
         -p $VENV_DIR/lib64/python3.6/site-packages \
-           ${x}.py > ${x}-makespec.stdout 2> ${x}-makespec.stderr || retry_nuked_venv
+           ${x}.py > .${x}-makespec.stdout 2> .${x}-makespec.stderr || retry_nuked_venv
     exit_code=$?
     ansi --green "     OK"
 
@@ -79,7 +80,7 @@ for x in $BUILD_SCRIPTS; do
         ansi --yellow "  Compiling file \"$x_orig\" using spec file $x_spec"
         pyinstaller \
             --clean -y \
-                $x_spec > ${x}-compile.stdout 2> ${x}-compile.stderr || retry_nuked_venv
+                $x_spec > .${x}-compile.stdout 2> .${x}-compile.stderr || retry_nuked_venv
         exit_code=$?
 
         ansi --green "     OK"
@@ -223,8 +224,9 @@ cmd="pyinstaller \
   --clean -y \
     $COMBINED_SPEC_FILE"
 
-set +e && eval $cmd > $combined_stdout 2> $combined_stderr; set -e
+set +e && eval $cmd > $combined_stdout 2> $combined_stderr
 exit_code=$?
+set -e
 if [[ "$exit_code" != "0" ]]; then
     ansi --red "    Command \"$cmd\" failed to compile $COMBINED_SPEC_FILE (exited $exit_code). stdout=$combined_stdout, stderr=$combined_stderr"
     cat $combined_stdout
@@ -288,8 +290,13 @@ for x in $BUILD_SCRIPTS; do
         test_cmd="$x_combined --test"
         of=$(mktemp)
         ef=$(mktemp)
-        eval $test_cmd > $of 2> $ef
+        set +e; eval $test_cmd > $of 2> $ef
         exit_code=$?
+        set -e
+        if [[ "$exit_code" != "0" ]]; then
+            ansi --red "  $x Failed Test. Test Command \"$test_cmd\" exited with code $exit_code"
+            exit 1
+        fi
         ansi --green "  $x_orig => $x => $x_combined"
     fi
 done
@@ -303,5 +310,11 @@ ansi --green "OK"
 echo -ne "\n\n"
 ansi --green "BUILD OK"
 echo -ne "\n\n"
+
+if [[ ! -d .specs ]]; then mkdir -p .specs; fi
+mv *spec .specs
+for d in build dist __pycache__ build; do 
+    if [[ -d $d ]]; then rm -rf $d; fi
+done
 
 echo $COMBINED_DIR
