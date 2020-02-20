@@ -433,7 +433,7 @@ excludeAnsibleModules(){
 }
 
 mangleModules(){
-    sed 's/\//./g'| xargs -I % echo -e "         --hidden-import=\"%\" "
+    sed 's/\//./g'| xargs -I % echo -e "         --hidden-import=\"%\" \n"
 }
 
 
@@ -471,6 +471,10 @@ buildPyInstallerCommand(){
             --hidden-import=\"paramiko\" \
             --hidden-import=\"pyaml\" \
             --hidden-import=\"psutil\" \
+                $_ADD_DATAS \
+                ${HIDDEN_ADDITIONAL_COMPILED_MODULES} \
+                ${MANUAL_HIDDEN_IMPORTS} \
+                ${_ANSIBLE_MODULES} \
             -p $VIRTUAL_ENV/lib64/python3.6/site-packages \
                $_MAIN_BINARY"
 
@@ -502,9 +506,21 @@ buildPyInstallerCommand(){
         >&2 ls $SPEC_FILE
         #exit 100
         export _PY_INSTALLER_TARGET=$SPEC_FILE
+        echo pyinstaller \
+            -n ansible-playbook \
+            --$type -y --clean \
+            --distpath $DIST_PATH \
+               \
+                $_ADD_DATAS \
+               \
+                ${HIDDEN_ADDITIONAL_COMPILED_MODULES} \
+                ${MANUAL_HIDDEN_IMPORTS} \
+               \
+                ${_ANSIBLE_MODULES} \
+                \
+                 $_PY_INSTALLER_TARGET
     else
       export _PY_INSTALLER_TARGET=$_MAIN_BINARY
-    fi
         >&2 echo -e "   *** NOT USING SPEC MODE ***"
         echo pyinstaller \
             -n ansible-playbook \
@@ -519,6 +535,7 @@ buildPyInstallerCommand(){
                 ${_ANSIBLE_MODULES} \
                 \
                  $_PY_INSTALLER_TARGET
+    fi
 
 }
 
