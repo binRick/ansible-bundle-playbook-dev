@@ -573,7 +573,6 @@ buildPyInstallerCommand(){
             fi
             >&2 ls $SPEC_FILE
             cp $SPEC_FILE $SPEC_FILES_DIR
-        fi
 
         done
         cd $SAVE_DIR
