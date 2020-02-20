@@ -24,6 +24,7 @@ PYARMOR_OUTPUT_PATH="/tmp/pyarmor.out"
 REMOVE_INCLUDED_TOOL_COMMENTS=1
 ANSIBLE_TOOLS="ansible-config"
 
+MANGLE_SCRIPT="./mangleSpec.sh"
 
 if ! command -v shc >/dev/null 2>/dev/null; then
     echo shc not found in PATH
@@ -461,6 +462,18 @@ buildPyInstallerCommand(){
     PYARMOR_CMD_E="-p ~/.venv-ansible-bundler/lib/python3.6/site-packages $(echo $HIDDEN_ADDITIONAL_COMPILED_MODULES $_ANSIBLE_MODULES $_ADD_DATAS $MANUAL_HIDDEN_IMPORTS|tr '\n' ' '|sed 's/"//g')"
     PYARMOR_CMD="cp $_MAIN_BINARY ${_MAIN_BINARY}.py && pyarmor pack --debug -t PyInstaller --clean -O $PYARMOR_OUTPUT_PATH -e \" $PYARMOR_CMD_E \" ${_MAIN_BINARY}.py"
     echo $PYARMOR_CMD > $PYARMOR_CMD_FILE
+
+    py_mkspec_cmd="pyi-makespec \
+        --hidden-import=\"paramiko\" \
+        --hidden-import=\"pyaml\" \
+        --hidden-import=\"psutil\" \
+        -p $VENV_DIRECTORY/lib64/python3.6/site-packages \
+           $_MAIN_BINARY"
+
+
+
+    echo py_mkspec_cmd=$py_mkspec_cmd
+    exit 100
 
 	echo pyinstaller \
 		-n ansible-playbook \
