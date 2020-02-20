@@ -13,7 +13,7 @@ BORG_SSH_HOST=web1
 BORG_SSH_USER=BORG
 VENV_PATH=~/.venv-ansible-bundler
 MAIN_BINARY="$VENV_PATH/bin/ansible-playbook"
-export USE_PYINSTALLER_SPEC_METHOD=1
+[[ "$USE_PYINSTALLER_SPEC_METHOD" == "" ]] && export USE_PYINSTALLER_SPEC_METHOD=1
 [[ "$DEBUG_MAIN_BINARY_BUILD" == "" ]] && export DEBUG_MAIN_BINARY_BUILD="0"
 [[ "$MANGLE_MAIN_BINARY" == "" ]] && export MANGLE_MAIN_BINARY="0"
 [[ "$INCLUDE_ANSIBLE_TOOLS" == "" ]] && export INCLUDE_ANSIBLE_TOOLS="0"
@@ -575,93 +575,90 @@ buildPyInstallerCommand(){
         >&2 echo SAVE_DIR=$SAVE_DIR
 
 
-echo -ne "\n"
-ansi --cyan Create Compined Spec File
-COMBINED_SPEC_FILE=""
-for x in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
-    x="$(basename $x .py)"
-    COMBINED_SPEC_FILE="${COMBINED_SPEC_FILE}_${x}"
-done
+        echo -ne "\n"
+        ansi --cyan Create Compined Spec File
+        COMBINED_SPEC_FILE=""
+        for x in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
+            x="$(basename $x .py)"
+            COMBINED_SPEC_FILE="${COMBINED_SPEC_FILE}_${x}"
+        done
 
-COMBINED_SPEC_FILE="${COMBINED_SPEC_FILE}.spec"
-COMBINED_SPEC_FILE="$(echo $COMBINED_SPEC_FILE | sed 's/^_//g')"
+        COMBINED_SPEC_FILE="${COMBINED_SPEC_FILE}.spec"
+        COMBINED_SPEC_FILE="$(echo $COMBINED_SPEC_FILE | sed 's/^_//g')"
 
-[[ -f $COMBINED_SPEC_FILE ]] && rm $COMBINED_SPEC_FILE
-touch $COMBINED_SPEC_FILE
-ansi --green "OK - $COMBINED_SPEC_FILE"
+        [[ -f $COMBINED_SPEC_FILE ]] && rm $COMBINED_SPEC_FILE
+        touch $COMBINED_SPEC_FILE
+        ansi --green "OK - $COMBINED_SPEC_FILE"
 
-ansi --cyan Assembling combined spec file from mangled spec files
+        ansi --cyan Assembling combined spec file from mangled spec files
 
-ansi --magenta " [Block Cipher]"
-for x in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
-    x_orig="$x"
-    x="$(basename $x .py)"
-    x_spec="${x}.spec"
-    mangle_cmd="$MANGLE_SCRIPT $x_spec"
-    x_mangle_vars="$(get_mangle_vars_file $x_orig)"
-    PYZ_file="$(get_mangled_var $x_mangle_vars PYZ)"
-    EXE_file="$(get_mangled_var $x_mangle_vars EXE)"
+        ansi --magenta " [Block Cipher]"
+        for x in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
+            x_orig="$x"
+            x="$(basename $x .py)"
+            x_spec="${x}.spec"
+            mangle_cmd="$MANGLE_SCRIPT $x_spec"
+            x_mangle_vars="$(get_mangle_vars_file $x_orig)"
+            PYZ_file="$(get_mangled_var $x_mangle_vars PYZ)"
+            EXE_file="$(get_mangled_var $x_mangle_vars EXE)"
 
-    if ! grep -q '^block_cipher' $COMBINED_SPEC_FILE; then
-        cat "$(get_mangled_var $x_mangle_vars BLOCK_CIPHER)" >> $COMBINED_SPEC_FILE
-#        ansi --green "   Added block Cipher!"
-    fi
-done
-ansi --green " OK"
+            if ! grep -q '^block_cipher' $COMBINED_SPEC_FILE; then
+                cat "$(get_mangled_var $x_mangle_vars BLOCK_CIPHER)" >> $COMBINED_SPEC_FILE
+        #        ansi --green "   Added block Cipher!"
+            fi
+        done
+        ansi --green " OK"
 
-echo -ne "\n\n" >> $COMBINED_SPEC_FILE
-for x in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
-    x_orig="$x"
-    x="$(basename $x .py)"
-    x_spec="${x}.spec"
-    x_mangle_vars="$(get_mangle_vars_file $x_orig)"
-    for k in ANALYSIS; do
-#        ansi --magenta " [$x_orig => $k]"
-        cat "$(get_mangled_var $x_mangle_vars $k)" >> $COMBINED_SPEC_FILE
+        echo -ne "\n\n" >> $COMBINED_SPEC_FILE
+        for x in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
+            x_orig="$x"
+            x="$(basename $x .py)"
+            x_spec="${x}.spec"
+            x_mangle_vars="$(get_mangle_vars_file $x_orig)"
+            for k in ANALYSIS; do
+        #        ansi --magenta " [$x_orig => $k]"
+                cat "$(get_mangled_var $x_mangle_vars $k)" >> $COMBINED_SPEC_FILE
+                echo -ne "\n" >> $COMBINED_SPEC_FILE
+        #        ansi --green "   OK"
+            done
+            echo -ne "\n\n" >> $COMBINED_SPEC_FILE
+        done
+        echo -ne "\n\n" >> $COMBINED_SPEC_FILE
+
+
+
+        ansi --magenta " [Merge Statement]"
         echo -ne "\n" >> $COMBINED_SPEC_FILE
-#        ansi --green "   OK"
-    done
-    echo -ne "\n\n" >> $COMBINED_SPEC_FILE
-done
-echo -ne "\n\n" >> $COMBINED_SPEC_FILE
+        merge_line="MERGE( (test_a, 'test', 'test'), (test1_a, 'test1', 'test1') )"
+        merge_line="MERGE("
+        for x in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
+            x="$(basename $x .py)"
+            script_line=" (${x}_a, '$x', '$x'),"
+            merge_line="${merge_line}${script_line}"
+
+        done
+
+        merge_line="$(echo $merge_line|sed 's/,$//g')"
+        merge_line="${merge_line} )"
+        echo $merge_line >> $COMBINED_SPEC_FILE
+        echo -ne "\n\n" >> $COMBINED_SPEC_FILE
 
 
-
-ansi --magenta " [Merge Statement]"
-echo -ne "\n" >> $COMBINED_SPEC_FILE
-merge_line="MERGE( (test_a, 'test', 'test'), (test1_a, 'test1', 'test1') )"
-merge_line="MERGE("
-for x in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
-    x="$(basename $x .py)"
-    script_line=" (${x}_a, '$x', '$x'),"
-    merge_line="${merge_line}${script_line}"
-
-done
-
-merge_line="$(echo $merge_line|sed 's/,$//g')"
-merge_line="${merge_line} )"
-echo $merge_line >> $COMBINED_SPEC_FILE
-echo -ne "\n\n" >> $COMBINED_SPEC_FILE
-
-
-echo -ne "\n\n" >> $COMBINED_SPEC_FILE
-for x in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
-    x_orig="$x"
-    x="$(basename $x .py)"
-    x_spec="${x}.spec"
-    x_mangle_vars="$(get_mangle_vars_file $x_orig)"
-    for k in PYZ EXE COLLECT; do
-#        ansi --magenta " [$k]"
-        cat "$(get_mangled_var $x_mangle_vars $k)" >> $COMBINED_SPEC_FILE
-        echo -ne "\n" >> $COMBINED_SPEC_FILE
-#        ansi --green "   OK"
-    done
-    echo -ne "\n\n" >> $COMBINED_SPEC_FILE
-done
-echo -ne "\n\n" >> $COMBINED_SPEC_FILE
-
-
-
+        echo -ne "\n\n" >> $COMBINED_SPEC_FILE
+        for x in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
+            x_orig="$x"
+            x="$(basename $x .py)"
+            x_spec="${x}.spec"
+            x_mangle_vars="$(get_mangle_vars_file $x_orig)"
+            for k in PYZ EXE COLLECT; do
+        #        ansi --magenta " [$k]"
+                cat "$(get_mangled_var $x_mangle_vars $k)" >> $COMBINED_SPEC_FILE
+                echo -ne "\n" >> $COMBINED_SPEC_FILE
+        #        ansi --green "   OK"
+            done
+            echo -ne "\n\n" >> $COMBINED_SPEC_FILE
+        done
+        echo -ne "\n\n" >> $COMBINED_SPEC_FILE
 
 
         MANGLED_SPEC_FILE=xxxxxxxxx
