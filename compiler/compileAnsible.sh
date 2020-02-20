@@ -631,14 +631,16 @@ getAnsibleVersions(){
 }
 export ANSIBLE_VERSIONS="$(getAnsibleVersions|tr '\n' ' ')"
 
-set +e; $BORG_BINARY --version >/dev/null 2>&1 || {
+#set +e; $BORG_BINARY --version >/dev/null 2>&1 || {
+if [[ ! -e ~/.local/bin/borg ]]; then
     mkdir -p ~/.local/bin
     wget https://github.com/borgbackup/borg/releases/download/1.1.10/borg-linux64 -O ~/.local/bin/borg-linux64
     chmod +x ~/.local/bin/borg-linux64
     export BORG_BINARY=~/.local/bin/borg-linux64
     alias borg="$BORG_BINARY"
     alias borg-linux64="$BORG_BINARY"
-}
+fi
+#}
 
 doMain(){
     set -e
