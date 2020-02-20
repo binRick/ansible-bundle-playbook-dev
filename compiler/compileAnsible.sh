@@ -659,8 +659,7 @@ buildPyInstallerCommand(){
         echo -ne "\n\n" >> $COMBINED_SPEC_FILE
 
 
-        MANGLED_SPEC_FILE=xxxxxxxxx
-        export _PY_INSTALLER_TARGET=$MANGLED_SPEC_FILE
+        export _PY_INSTALLER_TARGET=$COMBINED_SPEC_FILE
         echo _PY_INSTALLER_TARGET=$_PY_INSTALLER_TARGET
 
 
