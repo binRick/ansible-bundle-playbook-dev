@@ -124,7 +124,7 @@ for x in $BUILD_SCRIPTS; do
         set +e; eval $test_cmd > $of 2> $ef
         exit_code=$?
         set -e
-        if [[ "$exit_code" != "0" && "$exit_code" != "255" ]]; then
+        if [[ "$exit_code" != "0" && "$exit_code" != "999255" ]]; then
             ansi --red "  $x Failed Test. Test Command \"$test_cmd\" exited with code $exit_code"
             exit 1
         fi

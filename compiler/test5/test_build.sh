@@ -19,7 +19,6 @@ export _BUILD_SCRIPTS="\
 " 
 #    python3-parse-nagios-status-dat
 export _MODULES="\
-    ansible \
     pexpect \
     tcconfig \
     libtmux \
@@ -35,6 +34,7 @@ export MODULES="\
     json2yaml \
     paramiko \
     psutil \
+    ansible \
 " 
 
 time ./build.sh
