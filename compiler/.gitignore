@@ -9,3 +9,9 @@ __pycache__
 build
 dist
 test2/BUILD*
+*/.*.std*
+*/.COMBINED-*
+*/.test*spec
+*/.test*txt
+*/.venv*
+*/*.spec

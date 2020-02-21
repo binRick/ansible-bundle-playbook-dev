@@ -70,7 +70,9 @@ MANUAL_HIDDEN_IMPORTS=""
 
 #ADDITIONAL_COMPILED_MODULES="json2yaml"
 ADDITIONAL_COMPILED_MODULES="simplejson terminaltables psutil loguru json2yaml setproctitle speedtest-cli pyyaml netaddr configparser urllib3 jmespath paramiko pyaml docopt"
-ADDITIONAL_COMPILED_MODULES_REPLACEMENTS="pyyaml|yaml python-jose|jose python_jose|jose pyopenssl|OpenSSL mysql-connector-python|mysql mysql_connector_python|mysql linode-cli|linodecli linode_cli|linodecli speedtest-cli|speedtest websocket-client|websocket"
+
+. constants.sh
+#ADDITIONAL_COMPILED_MODULES_REPLACEMENTS="pyyaml|yaml python-jose|jose python_jose|jose pyopenssl|OpenSSL mysql-connector-python|mysql mysql_connector_python|mysql linode-cli|linodecli linode_cli|linodecli speedtest-cli|speedtest websocket-client|websocket"
 
 
 #MODULE_BIN_INCLUDES="json2yaml"
@@ -415,21 +417,26 @@ installJo(){
   }
 }
 
-replaceModuleName(){
-	_M="$1"
-	for r in $(echo "$ADDITIONAL_COMPILED_MODULES_REPLACEMENTS"|tr ' ' '\n'); do
-		s1="$(echo $r|cut -d'|' -f1)"
-		s2="$(echo $r|cut -d'|' -f2)"
-		if [[ "$s1" == "$_M" ]]; then
-			__M="$_M"
-			_M=$(echo $_M|sed "s/^$s1\$/$s2/g")
-			>&2 echo -e "        Changed Module name from \"$__M\" -> \"$_M\" based on r=$r, s1=$s1, s2=$s2"
-		else
-			[[ "0" == "1" ]] && >&2 echo -e "       module \"$_M\" does not match s1 \"$s1\" "
-		fi
-	done
-	echo "$_M"
-}
+
+. $origCwd/utils.sh
+
+#replaceModuleName(){
+#	_ ="$1"
+#	for r in $(echo "$ADDITIONAL_COMPILED_MODULES_REPLACEMENTS"|tr ' ' '\n'); do
+#		s1="$(echo $r|cut -d'|' -f1)"
+#		s2="$(echo $r|cut -d'|' -f2)"
+#		if [[ "$s1" == "$_M" ]]; then
+#			__M="$_M"
+#			_M=$(echo $_M|sed "s/^$s1\$/$s2/g")
+#			>&2 echo -e "        Changed Module name from \"$__M\" -> \"$_M\" based on r=$r, s1=$s1, s2=$s2"
+#		else
+#			[[ "0" == "1" ]] && >&2 echo -e "       module \"$_M\" does not match s1 \"$s1\" "
+#		fi
+#	done
+#	echo "$_M"
+#}
+
+
 limitAnsibleVersions(){
     if [[ "$LIMIT_ANSIBLE_VERSIONS" == "" ]]; then
         egrep "2.8.8"
@@ -437,31 +444,9 @@ limitAnsibleVersions(){
         egrep "$LIMIT_ANSIBLE_VERSIONS"
     fi
 }
-findModules(){
-	_M="$1"
-	_M="$(replaceModuleName $_M)"
-   (
-	set -e
-        cd $2/
-	if [[ ! -d "$_M" ]]; then
-		>&2  echo -e "\n\n    Module \"$_M\" Find Failed ->    Directory \"$_M\" Does not exist in $(pwd) !\n\n"
-        echo $_M
-	else
-        find $_M \
-                | grep '\.py$'|grep '/'  | sed 's/\.py//g' | sed 's/\/__init__//g'
-
-        find $_M \
-                | grep '\.py$'| grep __init__.py$ |grep '/'| grep '/' | sed 's/\/__init__.py$//g'
-    fi
-   ) | sort | uniq
-}
 
 excludeAnsibleModules(){
 	egrep -v "$(echo $EXCLUDED_ANSIBLE_MODULES | tr ' ' '|')"
-}
-
-mangleModules(){
-    sed 's/\//./g'| xargs -I % echo -e "         --hidden-import=\"%\" "
 }
 
 
