@@ -32,8 +32,8 @@ retry_nuked_venv(){
     if [[ "$RETRIED" != "1" ]]; then
         eval $cmd
     else
-        ansi --red Already retried!
-        exit 1
+        >&2 ansi --red "Already retried.."
+        exit 998
     fi
 }
 
@@ -87,6 +87,10 @@ for x in $BUILD_SCRIPTS; do
     gm_e=$(mktemp)
     getModules >$gm_o 2>$gm_e
 
+    >&2 ansi --yellow $gm_e
+    >&2 ansi --green $gm_o
+#    exit 100
+
     echo -e "\n\n$gm_o $gm_e\n\n"
 
     HIDDEN_IMPORT_LINES="$(cat $gm_o|grep 'hidden-import=')"
@@ -95,9 +99,9 @@ for x in $BUILD_SCRIPTS; do
     cmd="pyi-makespec \
         -p $VENV_DIR/lib64/python3.6/site-packages \
            ${_BS}.py > .${_BS}-makespec.stdout"
-    eval $cmd 2> .${_BS}-makespec.stderr # || retry_nuked_venv
+    eval $cmd 2> .${_BS}-makespec.stderr
     exit_code=$?
-    if [[ "$exit_code" != "0" ]]; then cat ${_BS}-makespec.stderr; exit $exit_code; fi
+    if [[ "$exit_code" != "0" ]]; then cat ${_BS}-makespec.stderr; >&2 ansi --red "pyi-makespec failed"; exit $exit_code; fi
     ansi --green "     OK"
 
 
@@ -117,7 +121,7 @@ for x in $BUILD_SCRIPTS; do
         eval $mangle_cmd > $mangle_stdout 2>$mangle_stderr
         exit_code=$?
         if [[ "$exit_code" != "0" ]]; then
-            ansi --red "    Command \"$mangle_cmd\" failed to mangle $x_orig (exited $exit_code). stdout=$mangle_stdout, stderr=$mangle_stderr"
+            >&2 ansi --red "    Command \"$mangle_cmd\" failed to mangle $x_orig (exited $exit_code). stdout=$mangle_stdout, stderr=$mangle_stderr"
             exit $exit_code
         else
             cp $mangle_stdout $x_mangle_vars
@@ -125,7 +129,7 @@ for x in $BUILD_SCRIPTS; do
         fi
     else
         ansi --red Undefined behavior
-        exit 1
+        exit 999
     fi
 done 
 

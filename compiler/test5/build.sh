@@ -7,28 +7,24 @@ export -n VENV_DIRECTORY
 
 export MODULES BUILD_SCRIPTS MODULE_REPOS
 
-
-
-
-m=$(mktemp)
+m_o=$(mktemp)
 m_e=$(mktemp)
 set +e
 if [[ "$DEBUG_MODE" == "1" ]]; then
-    ./combineSpecFiles.sh > $m 2>$m_e
+    ./combineSpecFiles.sh > $m_o 2>$m_e
 else
-    ./combineSpecFiles.sh > $m 2>$m_e
+    ./combineSpecFiles.sh > $m_o 2>$m_e
 fi
 exit_code=$?
 if [[ "$exit_code" != "0" ]]; then echo combineSpecFiles.sh failed $exit_code; ansi --red $(cat $m_e); ansi --yellow $(cat $m_o); exit $exit_code; fi
 set -e
-COMBINED_SPEC_FILE=$(cat $m|tail -n1)
+COMBINED_SPEC_FILE=$(cat $m_o|tail -n1)
 
 ansi --yellow COMBINED_SPEC_FILE=$COMBINED_SPEC_FILE
 
 BUILD_SCRIPTS="$(echo $BUILD_SCRIPTS|tr ',' ' '|sed 's/[[:space:]]/ /g')"
 MODULES="$(echo $MODULES|tr ',' ' '|sed 's/[[:space:]]/ /g')"
 MODULES="$(echo pyinstaller $MODULES|sed 's/[[:space:]]/ /'|tr ' ' '\n'|grep -v '^$'|tr '\n' ' ')"
-# $(getVenvModules|tr '\n' ' ')"
 MODULES="$(echo $MODULES|tr ' ' '\n'|grep -v '^$'|sort -u|tr '\n' ' ')"
 COMBINED_DIR=".COMBINED-$(date +%s)"
 
@@ -125,7 +121,9 @@ for x in $BUILD_SCRIPTS; do
         exit_code=$?
         set -e
         if [[ "$exit_code" != "0" && "$exit_code" != "999255" ]]; then
-            ansi --red "  $x Failed Test. Test Command \"$test_cmd\" exited with code $exit_code"
+            ansi --yellow "  $x Failed Test. Test Command \"$test_cmd\" exited with code $exit_code"
+            ansi --green $of
+            ansi --red $ef
             exit 1
         fi
         ansi --green "  $x_orig => $x => $x_combined"

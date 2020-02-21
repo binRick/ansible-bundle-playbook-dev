@@ -31,6 +31,7 @@ export _MODULES="\
 " 
 export MODULES="\
     setproctitle \
+    configparser \
     json2yaml \
     paramiko \
     psutil \

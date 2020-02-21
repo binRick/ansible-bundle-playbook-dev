@@ -5,10 +5,12 @@ getVenvModules(){
 }
 
 getModules(){
+  (
     for x in $MODULES; do
         pip install $x -q
         findModules_venv $x | mangleModules
     done
+  ) | egrep -v '^$' | tr '\n' ' '
 }
 
 replaceModuleName(){
@@ -38,7 +40,8 @@ mangleModules_sed(){
 }
 
 mangleModules(){
-    mangleModules_sed $@
+    mangleModules_sed $@ | tr ' ' '\n' | egrep -iv 'pyinstaller' \
+       | grep -v '^$'
 }
 
 findModules(){
