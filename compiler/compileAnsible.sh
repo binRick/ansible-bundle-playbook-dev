@@ -55,7 +55,7 @@ _ADD_DATAS="--add-data $VENV_PATH/lib/python3.6/site-packages/ansible/config/bas
 		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/modules:ansible/modules \
 		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/executor/discovery/python_target.py:ansible/executor/discovery \
 "
-_ADD_DATAS=""
+#_ADD_DATAS=""
 MANUAL_HIDDEN_IMPORTS="--hidden-import=\"configparser\" \
 		    --hidden-import=\"distutils.spawn\" \
 		    --hidden-import=\"xml.etree\" \
@@ -66,7 +66,7 @@ MANUAL_HIDDEN_IMPORTS="--hidden-import=\"configparser\" \
 		    --hidden-import=\"smtplib\" \
 		    --hidden-import=\"logging.handlers\" \
 "
-MANUAL_HIDDEN_IMPORTS=""
+#MANUAL_HIDDEN_IMPORTS=""
 
 #ADDITIONAL_COMPILED_MODULES="json2yaml"
 ADDITIONAL_COMPILED_MODULES="simplejson terminaltables psutil loguru json2yaml setproctitle speedtest-cli pyyaml netaddr configparser urllib3 jmespath paramiko pyaml docopt"

@@ -22,13 +22,13 @@ export _MODULES="\
     pexpect \
     tcconfig \
     libtmux \
-    requests \
     halo \
-    pyaml \
     tmuxp \
     tcconfig \
 " 
 export MODULES="\
+    requests \
+    pyaml \
     setproctitle \
     configparser \
     json2yaml \

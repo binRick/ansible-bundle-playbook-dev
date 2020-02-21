@@ -44,29 +44,32 @@ retry_nuked_venv(){
 
 ansi --yellow "Compiling spec file $COMBINED_SPEC_FILE"
 
-
-
 cmd="pyinstaller \
   --clean -y \
     $(findAllVenvModules|mangleModules|tr '\n' ' ') \
+    $_ADD_DATAS \
     $COMBINED_SPEC_FILE"
-cmd_file=$(mktemp)
-echo "$cmd" > $cmd_file
-chmod +x $cmd_file
+echo "$cmd" > $combined_cmd
+chmod +x $combined_cmd
 >&2 ansi --yellow "$cmd"
-set +e && bash $cmd_file > $combined_stdout 2> $combined_stderr
+
+watch_cmd="tail -f $combined_stdout $combined_stderr"
+>&2 ansi --cyan "          combined_cmd=$combined_cmd"
+>&2 ansi --cyan "          watch_cmd=$watch_cmd"
+
+set +e
+./$combined_cmd > $combined_stdout 2> $combined_stderr
 exit_code=$?
-set -e
 if [[ "$exit_code" != "0" ]]; then
     ansi --red "    Command \"$cmd\" failed to compile $COMBINED_SPEC_FILE (exited $exit_code). stdout=$combined_stdout, stderr=$combined_stderr"
     cat $combined_stdout
     cat $combined_stderr
-    ansi --yellow Retry file: $cmd_file
+    ansi --yellow Retry file: $combined_cmd
     exit $exit_code
 else
     ansi --green "     OK"
-
 fi
+set -e
 
 ansi --cyan Testing Compiled Binaries
 for x in $BUILD_SCRIPTS; do 
