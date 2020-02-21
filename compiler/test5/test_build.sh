@@ -29,6 +29,7 @@ export MODULES="\
     pyaml \
     setproctitle \
     tmuxp \
+    tcconfig \
     json2yaml \
     paramiko \
     psutil \
