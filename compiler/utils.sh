@@ -1,4 +1,11 @@
+[[ -f .ansi ]] && source .ansi || source ~/.ansi
 
+getModules(){
+    for x in $MODULES; do
+        pip install $x -q
+        findModules_venv $x | mangleModules
+    done
+}
 
 replaceModuleName(){
     _M="$1"
@@ -30,11 +37,6 @@ findModules(){
     _M="$1"
     _M="$(replaceModuleName $_M)"
    (
-#    if [[ -d "$VIRTUAL_ENV" ]]; then
-#        _VENV_M_DIR="$VIRTUAL_ENV/lib/python3.6/site-packages/$_M"
-#        >&2 ansi --yellow "Checking Virtual Enviroment for $1 / $_M => $_VENV_M_DIR"
-
-#    fi
     set -e
         cd $2/
     if [[ ! -d "$_M" ]]; then
