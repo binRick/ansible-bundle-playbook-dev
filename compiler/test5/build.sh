@@ -52,7 +52,11 @@ ansi --yellow "Compiling spec file $COMBINED_SPEC_FILE"
 
 cmd="pyinstaller \
   --clean -y \
+    $(findAllVenvModules|mangleModules) \
     $COMBINED_SPEC_FILE"
+
+>&2 ansi --yellow "$cmd"
+#exit 123
 
 set +e && eval $cmd > $combined_stdout 2> $combined_stderr
 exit_code=$?

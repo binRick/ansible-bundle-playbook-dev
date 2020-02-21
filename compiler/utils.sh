@@ -41,11 +41,6 @@ mangleModules(){
     mangleModules_sed $@
 }
 
-
-
-
-
-
 findModules(){
     _M="$1"
     _M="$(replaceModuleName $_M)"
@@ -62,14 +57,18 @@ findModules(){
         find $_M \
                 | grep '\.py$'| grep __init__.py$ |grep '/'| grep '/' | sed 's/\/__init__.py$//g'
     fi
-   ) | sort | uniq
+   ) | sort | uniq | sed 's/\//./g'
 }
 
 findModules_venv(){
     findModules $1 $VIRTUAL_ENV/lib/python3.6/site-packages
 }
 
-
+findAllVenvModules(){
+    for m in $(getVenvModules); do
+        findModules_venv $m
+    done
+}
 
 
 
