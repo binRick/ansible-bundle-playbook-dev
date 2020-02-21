@@ -6,10 +6,10 @@ export MODULE_REPOS="
 "
 
 export BUILD_SCRIPTS="\
+    paramiko_test.py \
     ansible-config.py \
 " 
 export _BUILD_SCRIPTS="\
-    paramiko_test.py \
     test-hyphen.py \
     test.py \
     nagios_parser_test.py \

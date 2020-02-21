@@ -1,5 +1,3 @@
-#!/home/whmcs/public_html/whmcs/modules/addons/vpntech/submodules/ansible-bundle-playbook-dev/compiler/test5/.venv-1/bin/python
-
 # (c) 2012, Michael DeHaan <michael.dehaan@gmail.com>
 #
 # This file is part of Ansible
@@ -24,6 +22,7 @@ __metaclass__ = type
 __requires__ = ['ansible']
 
 
+import configparser
 import os
 import shutil
 import sys
