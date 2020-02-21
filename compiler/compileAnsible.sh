@@ -2,7 +2,7 @@
 umask 002
 cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source .ansi
-origDir="$(pwd)"
+export origDir="$(pwd)"
 export START_DIR=$(mktemp -d)
 cd $START_DIR
 ANSIBLE_CONFIG_FILE="$origDir/files/ansible.cfg"
@@ -71,7 +71,7 @@ MANUAL_HIDDEN_IMPORTS=""
 #ADDITIONAL_COMPILED_MODULES="json2yaml"
 ADDITIONAL_COMPILED_MODULES="simplejson terminaltables psutil loguru json2yaml setproctitle speedtest-cli pyyaml netaddr configparser urllib3 jmespath paramiko pyaml docopt"
 
-. constants.sh
+source $origDir/constants.sh
 #ADDITIONAL_COMPILED_MODULES_REPLACEMENTS="pyyaml|yaml python-jose|jose python_jose|jose pyopenssl|OpenSSL mysql-connector-python|mysql mysql_connector_python|mysql linode-cli|linodecli linode_cli|linodecli speedtest-cli|speedtest websocket-client|websocket"
 
 
@@ -418,7 +418,8 @@ installJo(){
 }
 
 
-. $origCwd/utils.sh
+echo $origDir/utils.sh
+source $origDir/utils.sh
 
 #replaceModuleName(){
 #	_ ="$1"

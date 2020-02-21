@@ -7,7 +7,7 @@ export BUILD_SCRIPTS="\
     test1.py \
     tmuxp.py \
     tcshow.py \
-    parse_nagios.py \
+    nagios_parser_test.py \
     paramiko_test.py \
 " 
 export _BUILD_SCRIPTS="\
@@ -20,6 +20,9 @@ export _MODULES="\
     libtmux \
 " 
 export MODULES="\
+    requests \
+    halo \
+    ansible \
     pyaml \
     setproctitle \
     tmuxp \
