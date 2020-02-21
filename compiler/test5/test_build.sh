@@ -17,7 +17,7 @@ export _BUILD_SCRIPTS="\
     nagios_parser_test.py \
     paramiko_test.py \
 " 
-#    python3-parse-nagios-status-dat
+
 export _MODULES="\
     pexpect \
     tcconfig \
