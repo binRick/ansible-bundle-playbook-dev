@@ -1,4 +1,4 @@
-[[ -f .ansi ]] && source .ansi || source ~/.ansi
+[[ -f ~/.ansi ]] && source ~/.ansi
 
 getVenvModules(){
     (cd  $VIRTUAL_ENV && find . |grep __init__.py$|cut -d'/' -f5|sort -u) 2>/dev/null
@@ -27,10 +27,19 @@ replaceModuleName(){
     echo "$_M"
 }
 
-mangleModules(){
+mangleModules_xargs(){
     sed 's/\//./g'| xargs -I % echo -e "         --hidden-import=\"%\" "
 }
 
+mangleModules_sed(){
+    sed 's/^/     --hidden-import="/' \
+        | sed 's/$/"/g' \
+        | sed 's/\//./g'
+}
+
+mangleModules(){
+    mangleModules_sed $@
+}
 
 
 
