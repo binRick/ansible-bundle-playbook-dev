@@ -122,8 +122,8 @@ for x in $BUILD_SCRIPTS; do
         set -e
         if [[ "$exit_code" != "0" && "$exit_code" != "999255" ]]; then
             ansi --yellow "  $x Failed Test. Test Command \"$test_cmd\" exited with code $exit_code"
-            ansi --green $of
-            ansi --red $ef
+            ansi --green $(cat $of)
+            ansi --red $(cat $ef)
             exit 1
         fi
         ansi --green "  $x_orig => $x => $x_combined"
