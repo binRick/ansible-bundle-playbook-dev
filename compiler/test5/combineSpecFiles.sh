@@ -240,5 +240,9 @@ if [[ "x" == "y" ]]; then
     ansi --green " OK"
 fi
 
+sed -i  's/^test-hyphen/test_hyphen/g' $COMBINED_SPEC_FILE
+sed -i  's/test-hyphen_/test_hyphen_/g' $COMBINED_SPEC_FILE
+
+
 echo $COMBINED_SPEC_FILE
 exit 0
