@@ -1,7 +1,21 @@
 [[ -f ~/.ansi ]] && source ~/.ansi
 
 getVenvModules(){
-    (cd  $VIRTUAL_ENV && find . |grep __init__.py$|cut -d'/' -f5|sort -u) 2>/dev/null
+
+    (
+	(cd $VIRTUAL_ENV/lib/python3.6/site-packages && ls *.py|xargs -I % echo %|sed 's/.py$//g'|sort -u)
+
+cmd="    	cd  $VIRTUAL_ENV && \
+		find . \
+\
+\
+		| egrep '__init__.py$' \
+		| cut -d'/' -f5 \
+		| sort -u \
+"
+	eval $cmd		
+	
+    ) 2>/dev/null
 }
 
 getModules(){

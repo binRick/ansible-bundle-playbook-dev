@@ -454,6 +454,13 @@ excludeAnsibleModules(){
 buildPyInstallerCommand(){
     _MAIN_BINARY="$1"
 	if [[ "$INCLUDE_ALL_ANSIBLE_MODULES" == "1" ]]; then
+	    am=$(mktemp)
+	    fm=$(mktemp)
+	    findModules_venv ansible > $fm
+	    #echo fm=$fm
+	    #echo $ANSIBLE_MODULES > $am
+	    #echo am=$am
+	    #exit
 	    export ANSIBLE_MODULES="$(findModules ansible $(getSitePackagesPath) | mangleModules)"
 	    export _ANSIBLE_MODULES="$(echo $ANSIBLE_MODULES | tr ' ' '\n'| excludeAnsibleModules|tr '\n' ' ')"
     else
@@ -465,6 +472,8 @@ buildPyInstallerCommand(){
 	>&2 echo ANSIBLE_MODULES=$ANSIBLE_MODULES
 	>&2 echo _ANSIBLE_MODULES=$_ANSIBLE_MODULES
 
+
+	exit 232
 
 	HIDDEN_ADDITIONAL_COMPILED_MODULES=""
 	for m in $(echo $ADDITIONAL_COMPILED_MODULES|sed 's/-/_/g' | tr -s ' ' '\n'); do 

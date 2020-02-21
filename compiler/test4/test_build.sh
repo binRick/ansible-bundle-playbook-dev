@@ -34,4 +34,4 @@ export MODULES="\
     psutil \
 " 
 
-exec time ./build.sh
+time ./build.sh
