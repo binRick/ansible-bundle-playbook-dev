@@ -52,19 +52,20 @@ ansi --yellow "Compiling spec file $COMBINED_SPEC_FILE"
 
 cmd="pyinstaller \
   --clean -y \
-    $(findAllVenvModules|mangleModules) \
+    $(findAllVenvModules|mangleModules|tr '\n' ' ') \
     $COMBINED_SPEC_FILE"
-
+cmd_file=$(mktemp)
+echo "$cmd" > $cmd_file
+chmod +x $cmd_file
 >&2 ansi --yellow "$cmd"
-#exit 123
-
-set +e && eval $cmd > $combined_stdout 2> $combined_stderr
+set +e && bash $cmd_file > $combined_stdout 2> $combined_stderr
 exit_code=$?
 set -e
 if [[ "$exit_code" != "0" ]]; then
     ansi --red "    Command \"$cmd\" failed to compile $COMBINED_SPEC_FILE (exited $exit_code). stdout=$combined_stdout, stderr=$combined_stderr"
     cat $combined_stdout
     cat $combined_stderr
+    ansi --yellow Retry file: $cmd_file
     exit $exit_code
 else
     ansi --green "     OK"

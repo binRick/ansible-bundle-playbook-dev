@@ -1,4 +1,3 @@
-#!/home/whmcs/public_html/whmcs/modules/addons/vpntech/submodules/ansible-bundle-playbook-dev/compiler/test4/.venv/bin/python3
 # -*- coding: utf-8 -*-
 # (c) 2012, Michael DeHaan <michael.dehaan@gmail.com>
 #

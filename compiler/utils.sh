@@ -65,7 +65,7 @@ findModules_venv(){
 }
 
 findAllVenvModules(){
-    for m in $(getVenvModules); do
+    for m in $(getVenvModules|egrep -v 'pyinstaller'); do
         findModules_venv $m
     done
 }
