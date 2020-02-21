@@ -20,7 +20,9 @@ NUKE_VENV=0
 MANGLE_SCRIPT="./mangleSpec.sh"
 combined_stdout=.combined-compile.stdout
 combined_stderr=.combined-compile.stderr
-MODULES="$(echo pyinstaller $MODULES|sed 's/[[:space:]]/ /'|tr ' ' '\n'|grep -v '^$'|tr ' ' '\n')"
+MODULES="$(echo pyinstaller $MODULES|sed 's/[[:space:]]/ /'|tr ' ' '\n'|grep -v '^$'|tr '\n' ' ')"
+# $(getVenvModules|tr '\n' ' ')"
+MODULES="$(echo $MODULES|tr ' ' '\n'|grep -v '^$'|sort -u|tr '\n' ' ')"
 
 
 retry_nuked_venv(){
@@ -51,6 +53,11 @@ source $VENV_DIR/bin/activate || retry_nuked_venv
 
 >&2 ansi --cyan Installing Python Requirements
 >&2 pip -q install $MODULES || retry_nuked_venv
+
+>&2 ansi --cyan Installing Module Repos
+for x in $(echo $MODULE_REPOS|tr ' ' '\n'|grep -v '^$'|sort -u); do
+    >&2 pip install -q $x
+done
 
 >&2 ansi --green "   OK"
 

@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+export MODULE_REPOS="
+    git+https://github.com/binRick/python3-parse-nagios-status-dat \
+"
 
 export BUILD_SCRIPTS="\
     test.py \

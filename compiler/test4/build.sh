@@ -5,19 +5,31 @@ export -n VENV_DIRECTORY
 . ../constants.sh
 . ../utils.sh
 
-export MODULES BUILD_SCRIPTS
+export MODULES BUILD_SCRIPTS MODULE_REPOS
+
+
+
+
 m=$(mktemp)
 m_e=$(mktemp)
-./combineSpecFiles.sh > $m 2>$m_e
+set +e
+if [[ "$DEBUG_MODE" == "1" ]]; then
+    ./combineSpecFiles.sh > $m 2>$m_e
+else
+    ./combineSpecFiles.sh > $m 2>$m_e
+fi
 exit_code=$?
-if [[ "$exit_code" != "0" ]]; then echo combineSpecFiles.sh failed $exit_code; cat $m_e; exit $exit_code; fi
+if [[ "$exit_code" != "0" ]]; then echo combineSpecFiles.sh failed $exit_code; ansi --red $(cat $m_e); ansi --yellow $(cat $m_o); exit $exit_code; fi
+set -e
 COMBINED_SPEC_FILE=$(cat $m|tail -n1)
 
 ansi --yellow COMBINED_SPEC_FILE=$COMBINED_SPEC_FILE
 
 BUILD_SCRIPTS="$(echo $BUILD_SCRIPTS|tr ',' ' '|sed 's/[[:space:]]/ /g')"
 MODULES="$(echo $MODULES|tr ',' ' '|sed 's/[[:space:]]/ /g')"
-MODULES="$(echo pyinstaller $MODULES|sed 's/[[:space:]]/ /'|tr ' ' '\n'|grep -v '^$'|tr ' ' '\n')"
+MODULES="$(echo pyinstaller $MODULES|sed 's/[[:space:]]/ /'|tr ' ' '\n'|grep -v '^$'|tr '\n' ' ')"
+# $(getVenvModules|tr '\n' ' ')"
+MODULES="$(echo $MODULES|tr ' ' '\n'|grep -v '^$'|sort -u|tr '\n' ' ')"
 COMBINED_DIR=".COMBINED-$(date +%s)"
 
 source $VENV_DIR/bin/activate || retry_nuked_venv
