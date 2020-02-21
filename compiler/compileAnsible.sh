@@ -485,10 +485,21 @@ buildPyInstallerCommand(){
 		HIDDEN_ADDITIONAL_COMPILED_MODULES="$HIDDEN_ADDITIONAL_COMPILED_MODULES $(findModules $m $(getSitePackagesPath) | mangleModules)"
 	done
 	(
-	 	echo HIDDEN_ADDITIONAL_COMPILED_MODULES=$HIDDEN_ADDITIONAL_COMPILED_MODULES
+	 	echo HIDDEN_ADDITIONAL_COMPILED_MODULES=HIDDEN_ADDITIONAL_COMPILED_MODULES
 	) >&2
 
-    PYARMOR_CMD_E="-p ~/.venv-ansible-bundler/lib/python3.6/site-packages $(echo $HIDDEN_ADDITIONAL_COMPILED_MODULES $_ANSIBLE_MODULES $_ADD_DATAS $MANUAL_HIDDEN_IMPORTS|tr '\n' ' '|sed 's/"//g')"
+    _tf1="$(mktemp)"
+    PYARMOR_CMD_E="-p ~/.venv-ansible-bundler/lib/python3.6/site-packages $HIDDEN_ADDITIONAL_COMPILED_MODULES $_ANSIBLE_MODULES $_ADD_DATAS $MANUAL_HIDDEN_IMPORTS"
+    echo "$PYARMOR_CMD_E" > $_tf1
+    sed -i 's/\\n/ /g' $_tf1
+    sed -i 's/"//g' $_tf1
+    #cat $_tf1
+    #echo $_tf1
+    PYARMOR_CMD_E="$(cat $_tf1)"
+    echo "PYARMOR_CMD_E=\"$PYARMOR_CMD_E\""
+    #exit 123
+
+
     PYARMOR_CMD="cp $_MAIN_BINARY ${_MAIN_BINARY}.py && pyarmor pack --debug -t PyInstaller --clean -O $PYARMOR_OUTPUT_PATH -e \" $PYARMOR_CMD_E \" ${_MAIN_BINARY}.py"
     echo $PYARMOR_CMD > $PYARMOR_CMD_FILE
 
