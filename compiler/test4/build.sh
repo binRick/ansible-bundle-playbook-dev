@@ -17,16 +17,10 @@ ansi --yellow COMBINED_SPEC_FILE=$COMBINED_SPEC_FILE
 
 BUILD_SCRIPTS="$(echo $BUILD_SCRIPTS|tr ',' ' '|sed 's/[[:space:]]/ /g')"
 MODULES="$(echo $MODULES|tr ',' ' '|sed 's/[[:space:]]/ /g')"
-COMBINED_DIR=".COMBINED-$(date +%s)"
-VENV_DIR=".venv-1"
-NUKE_VENV=0
-MANGLE_SCRIPT="./mangleSpec.sh"
-combined_stdout=.combined-compile.stdout
-combined_stderr=.combined-compile.stderr
 MODULES="$(echo pyinstaller $MODULES|sed 's/[[:space:]]/ /'|tr ' ' '\n'|grep -v '^$'|tr ' ' '\n')"
+COMBINED_DIR=".COMBINED-$(date +%s)"
 
 source $VENV_DIR/bin/activate || retry_nuked_venv
-
 
 retry_nuked_venv(){
     cmd="RETRIED=1 NUKE_VENV=1 exec ${BASH_SOURCE[0]} $@"
@@ -60,8 +54,6 @@ else
     ansi --green "     OK"
 
 fi
-
-
 
 ansi --cyan Testing Compiled Binaries
 for x in $BUILD_SCRIPTS; do 

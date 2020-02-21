@@ -14,17 +14,18 @@ export _BUILD_SCRIPTS="\
 " 
 #    python3-parse-nagios-status-dat
 export _MODULES="\
+    ansible \
+    pexpect \
+    tcconfig \
+    libtmux \
 " 
 export MODULES="\
     pyaml \
-    ansible \
+    setproctitle \
     tmuxp \
     json2yaml \
-    pexpect \
     paramiko \
     psutil \
-    tcconfig \
-    libtmux \
 " 
 
 exec time ./build.sh
