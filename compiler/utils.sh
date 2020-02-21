@@ -10,7 +10,7 @@ getModules(){
         pip install $x -q
         findModules_venv $x | mangleModules
     done
-  ) | egrep -v '^$' | tr '\n' ' '
+  ) | egrep -v '^$' | sort -u | tr '\n' ' '
 }
 
 replaceModuleName(){
