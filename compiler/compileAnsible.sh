@@ -479,13 +479,6 @@ buildPyInstallerCommand(){
 	>&2 echo ANSIBLE_MODULES=$ANSIBLE_MODULES
 	>&2 echo _ANSIBLE_MODULES=$_ANSIBLE_MODULES
 
-	(
-		echo -n "ANSIBLE_MODULES chars: ";  echo $ANSIBLE_MODULES  |tr ' ' '\n' | wc -l
-		echo -n "_ANSIBLE_MODULES chars: "; echo $_ANSIBLE_MODULES |tr ' ' '\n' | wc -l
-
-		echo -n "ANSIBLE_MODULES chars: "; (echo $ANSIBLE_MODULES|wc -c)
-		echo -n "_ANSIBLE_MODULES chars: "; (echo $_ANSIBLE_MODULES|wc -c)
-	) >&2
 
 	HIDDEN_ADDITIONAL_COMPILED_MODULES=""
 	for m in $(echo $ADDITIONAL_COMPILED_MODULES|sed 's/-/_/g' | tr -s ' ' '\n'); do 
