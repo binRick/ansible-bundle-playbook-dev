@@ -20,8 +20,7 @@ NUKE_VENV=0
 MANGLE_SCRIPT="./mangleSpec.sh"
 combined_stdout=.combined-compile.stdout
 combined_stderr=.combined-compile.stderr
-MODULES="pyinstaller $MODULES"
-#setproctitle pyaml psutil paramiko"
+MODULES="$(echo pyinstaller $MODULES|sed 's/[[:space:]]/ /'|tr ' ' '\n'|grep -v '^$'|tr ' ' '\n')"
 
 . ../constants.sh
 . ../utils.sh
@@ -32,10 +31,6 @@ getModules(){
         findModules_venv $x | mangleModules
     done
 }
-
-
-
-
 
 
 
@@ -89,7 +84,6 @@ for x in $BUILD_SCRIPTS; do
     _BS_ORIG="$x"
     x="$(basename $x .py)"
     _BS="$x"
-    DO_COMPILE=0
     x_spec="${_BS}.spec"
     x_mangle_vars="$(get_mangle_vars_file $x_orig)"
     mangle_cmd="$MANGLE_SCRIPT $x_spec"
@@ -103,40 +97,20 @@ for x in $BUILD_SCRIPTS; do
 
     HIDDEN_IMPORT_LINES="$(cat $gm_o|grep 'hidden-import=')"
 
-    >&2 ansi --green "$(wc -l $gm_o) HIDDEN   IMPORT LINES!!!"
-
-#ansi --yellow "x=\"$x\", _BS=\"$_BS\""
-#exit 232
+    >&2 ansi --green "     $(wc -l $gm_o) Hidden Imports"
     cmd="pyi-makespec \
         -p $VENV_DIR/lib64/python3.6/site-packages \
            ${_BS}.py > .${_BS}-makespec.stdout"
-
-    bf=$(mktemp)
-    echo "$cmd" > $bf
-    chmod +x $bf
-    >&2 ansi --yellow "   pyi-makespec build file: $bf"
-    >&2 ansi --yellow "     $(cat $bf)"
-
-    #exit 234
-
     eval $cmd 2> .${_BS}-makespec.stderr # || retry_nuked_venv
     exit_code=$?
     if [[ "$exit_code" != "0" ]]; then cat ${_BS}-makespec.stderr; exit $exit_code; fi
-
-
     ansi --green "     OK"
 
 
     if [[ "$DO_COMPILE" == "1" ]]; then
         ansi --yellow "  Compiling file \"$x_orig\" using spec file $x_spec"
         pyinstaller \
-        \
-        \
-        \
         $HIDDEN_IMPORT_LINES \
-        \
-        \
-        \
             --clean -y \
                 $x_spec > .${_BS}-compile.stdout 2> .${_BS}-compile.stderr || retry_nuked_venv
         exit_code=$?
@@ -196,7 +170,7 @@ for x in $BUILD_SCRIPTS; do
 
     if ! grep -q '^block_cipher' $COMBINED_SPEC_FILE; then
         cat "$(get_mangled_var $x_mangle_vars BLOCK_CIPHER)" >> $COMBINED_SPEC_FILE
-#        ansi --green "   Added block Cipher!"
+        >&2 ansi --cyan "    Added Block Cipher to combined spec file"
     fi
 done 
 ansi --green " OK"
@@ -219,7 +193,6 @@ echo -ne "\n\n" >> $COMBINED_SPEC_FILE
 
 ansi --magenta " [Merge Statement]"
 echo -ne "\n" >> $COMBINED_SPEC_FILE
-merge_line="MERGE( (test_a, 'test', 'test'), (test1_a, 'test1', 'test1') )"
 merge_line="MERGE("
 for x in $BUILD_SCRIPTS; do 
     x="$(basename $x .py)"
