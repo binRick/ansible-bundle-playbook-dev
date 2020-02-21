@@ -192,7 +192,6 @@ for x in $BUILD_SCRIPTS; do
     x="$(basename $x .py)"
     script_line=" (${x}_a, '$x', '$x'),"
     merge_line="${merge_line}${script_line}"
-    
 done
 
 merge_line="$(echo $merge_line|sed 's/,$//g')"
@@ -201,9 +200,6 @@ echo $merge_line >> $COMBINED_SPEC_FILE
 echo -ne "\n\n" >> $COMBINED_SPEC_FILE
 
 
-#cat $COMBINED_SPEC_FILE
-#exit
-
 echo -ne "\n\n" >> $COMBINED_SPEC_FILE
 for x in $BUILD_SCRIPTS; do 
     x_orig="$x"
@@ -211,38 +207,23 @@ for x in $BUILD_SCRIPTS; do
     x_spec="${x}.spec"
     x_mangle_vars="$(get_mangle_vars_file $x_orig)"
     for k in PYZ EXE COLLECT; do 
-#        ansi --magenta " [$k]"
+        >&2 ansi --magenta " [$k]"
         cat "$(get_mangled_var $x_mangle_vars $k)" >> $COMBINED_SPEC_FILE
         echo -ne "\n" >> $COMBINED_SPEC_FILE
-#        ansi --green "   OK"
+        >&2 ansi --green "   OK"
     done
     echo -ne "\n\n" >> $COMBINED_SPEC_FILE
 done
 echo -ne "\n\n" >> $COMBINED_SPEC_FILE
 
-#cat $COMBINED_SPEC_FILE
-#exit
 
-if [[ "x" == "y" ]]; then
-    ansi --magenta " [Analysis]"
-    for x in $BUILD_SCRIPTS; do 
-        x_orig="$x"
-        x="$(basename $x .py)"
-        x_spec="${x}.spec"
-        mangle_cmd="$MANGLE_SCRIPT $x_spec"
-        x_mangle_vars="$(get_mangle_vars_file $x_orig)"
-        PYZ_file="$(get_mangled_var $x_mangle_vars PYZ)"
-        EXE_file="$(get_mangled_var $x_mangle_vars EXE)"
-
-        cat "$(get_mangled_var $x_mangle_vars ANALYSIS)" >> $COMBINED_SPEC_FILE
-            ansi --green "   OK"
-    done 
-    ansi --green " OK"
-fi
-
-sed -i  's/^test-hyphen/test_hyphen/g' $COMBINED_SPEC_FILE
-sed -i  's/test-hyphen_/test_hyphen_/g' $COMBINED_SPEC_FILE
-
+for x in $BUILD_SCRIPTS; do 
+    x="$(basename $x .py)"
+    cmd="sed -i \"s/^$x/$(echo $x|tr '-' '_')/g\" $COMBINED_SPEC_FILE"
+    eval $cmd
+    cmd="sed -i \"s/${x}_/$(echo $x|tr '-' '_')_/g\" $COMBINED_SPEC_FILE"
+    eval $cmd
+done
 
 echo $COMBINED_SPEC_FILE
 exit 0
