@@ -16,3 +16,5 @@ test2/BUILD*
 */.venv*
 */*.spec
 test*/.status.dat
+test*/.*.txt
+test*/.*.sh
