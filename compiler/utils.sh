@@ -106,8 +106,8 @@ getExcludedAnsibleModules(){
 addAdditionalAnsibleModules(){
     MODULE_TYPE=$1
     MODULE_TYPE_DIR=$2
-    MODULES="$3"
-    for m in $(echo "$MODULES"|tr ' ' '\n'); do
+    __MODULES="$3"
+    for m in $(echo "$__MODULES"|tr ' ' '\n'); do
         mFile="$(basename $m)"
         if [[ $m == http* ]]; then
 #            if [ "$DEBUG_CMD" == "1" ]; then
