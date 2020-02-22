@@ -45,17 +45,6 @@ _RM_PATHS="\
 "
 MODULE_LAUNCHERS_FILE=$(mktemp)
 
-_ADD_DATAS="--add-data $VENV_PATH/lib/python3.6/site-packages/ansible/config/base.yml:ansible/config \
-		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/config/module_defaults.yml:ansible/config \
-		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/utils/shlex.py:ansible/utils \
-		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/plugins/cache:ansible/plugins/cache \
-		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/module_utils:ansible/module_utils \
-		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/plugins/inventory:ansible/plugins/inventory \
-		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/plugins:ansible/plugins \
-		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/modules:ansible/modules \
-		    --add-data $VENV_PATH/lib/python3.6/site-packages/ansible/executor/discovery/python_target.py:ansible/executor/discovery \
-"
-#_ADD_DATAS=""
 MANUAL_HIDDEN_IMPORTS="--hidden-import=\"configparser\" \
 		    --hidden-import=\"distutils.spawn\" \
 		    --hidden-import=\"xml.etree\" \
@@ -66,33 +55,18 @@ MANUAL_HIDDEN_IMPORTS="--hidden-import=\"configparser\" \
 		    --hidden-import=\"smtplib\" \
 		    --hidden-import=\"logging.handlers\" \
 "
-#MANUAL_HIDDEN_IMPORTS=""
 
-#ADDITIONAL_COMPILED_MODULES="json2yaml"
 ADDITIONAL_COMPILED_MODULES="simplejson terminaltables psutil loguru json2yaml setproctitle speedtest-cli pyyaml netaddr configparser urllib3 jmespath paramiko pyaml docopt"
 
 source $origDir/constants.sh
-#ADDITIONAL_COMPILED_MODULES_REPLACEMENTS="pyyaml|yaml python-jose|jose python_jose|jose pyopenssl|OpenSSL mysql-connector-python|mysql mysql_connector_python|mysql linode-cli|linodecli linode_cli|linodecli speedtest-cli|speedtest websocket-client|websocket"
 
 
-#MODULE_BIN_INCLUDES="json2yaml"
-#MODULE_BIN_INCLUDES="json2yaml ansible-playbook"
 MODULE_BIN_INCLUDES="ansible-playbook json2yaml yaml2json speedtest-cli ansible ansible-config"
 COMPILE_MODULE_BIN_INCLUDES="1"
 MODULE_BIN_INCLUDES_DEFAULT="ansible-playbook"
 MODULE_BIN_INCLUDES_FILE=~/.MODULE_BIN_INCLUDES.txt
 MODULE_BIN_TOTAL_INCLUDES_FILE=~/.MODULE_BIN_TITAL_INCLUDES.txt
 
-EXCLUDED_PYARMOR_MODULES="ansible.modules.database.mongodb ansible.modules.database.mongodb.mongodb_parameter ansible.modules.database.mongodb.mongodb_replicaset ansible.modules.database.mongodb.mongodb_shard ansible.modules.database.mongodb.mongodb_user \
-    ansible.plugins.cache.mongodb \
-    ansible.plugins.lookup.mongodb \
-    ansible.plugins.filter.k8s \
-    ansible.plugins.cache.jsonfile ansible.plugins.cache.memcached ansible.plugins.cache.mongodb ansible.plugins.cache.pickle ansible.plugins.cache.redis ansible.plugins.cache.yaml \
-    ansible.plugins.callback.jabber ansible.plugins.callback.grafana_annotations ansible.plugins.callback.aws_resource_actions \
-"
-EXCLUDED_ADDITIONAL_MODULES="watchdog.utils.win32stat ansible.plugins.callback.detailed $EXCLUDED_PYARMOR_MODULES"
-
-EXCLUDED_ANSIBLE_MODULES="$EXCLUDED_ADDITIONAL_MODULES ansible.modules.network ansible.modules.cloud ansible.modules.remote_management ansible.modules.storage ansible.modules.web_infrastructure ansible.modules.windows ansible.module_utils.network ansible.plugins.doc_fragments ansible.plugins.terminal ansible.modules.net_tools ansible.modules.monitoring.zabbix ansible.modules.messaging ansible.modules.identity ansible.modules.database.postgresql ansible.modules.database.proxysql ansible.modules.database.vertica ansible.modules.database.influxdb ansible.modules.clustering ansible.modules.source_control.bitbucket ansible.module_utils.aws ansible.plugins.cliconf"
 
 
 #ADDITIONAL_ANSIBLE_CALLLBACK_MODULES=""

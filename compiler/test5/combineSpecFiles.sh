@@ -21,7 +21,6 @@ MANGLE_SCRIPT="./mangleSpec.sh"
 combined_stdout=.combined-compile.stdout
 combined_stderr=.combined-compile.stderr
 MODULES="$(echo pyinstaller $MODULES|sed 's/[[:space:]]/ /'|tr ' ' '\n'|grep -v '^$'|tr '\n' ' ')"
-# $(getVenvModules|tr '\n' ' ')"
 MODULES="$(echo $MODULES|tr ' ' '\n'|grep -v '^$'|sort -u|tr '\n' ' ')"
 
 
@@ -72,7 +71,6 @@ get_mangle_vars_file(){
 ansi --cyan Processing Python Scripts
 for x in $BUILD_SCRIPTS; do 
     _BS="$x"
-    DO_COMPILE=0
     DO_MANGLE=1
     x_orig="$x"
     _BS_ORIG="$x"
@@ -91,30 +89,44 @@ for x in $BUILD_SCRIPTS; do
     >&2 ansi --green $gm_o
 #    exit 100
 
-    echo -e "\n\n$gm_o $gm_e\n\n"
 
-    HIDDEN_IMPORT_LINES="$(cat $gm_o|grep 'hidden-import=')"
+_ADD_DATAS="--add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/base.yml:ansible/config \
+                    --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/module_defaults.yml:ansible/config \
+                    --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/utils/shlex.py:ansible/utils \
+                    --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins/cache:ansible/plugins/cache \
+                    --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/module_utils:ansible/module_utils \
+                    --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins/inventory:ansible/plugins/inventory \
+                    --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins:ansible/plugins \
+                    --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/modules:ansible/modules \
+                    --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/executor/discovery/python_target.py:ansible/executor/discovery \
+"
+
+    echo -e "\n\n$gm_o $gm_e\n\n"
 
     >&2 ansi --green "     $(wc -l $gm_o) Hidden Imports"
     cmd="pyi-makespec \
-        -p $VENV_DIR/lib64/python3.6/site-packages \
-           ${_BS}.py > .${_BS}-makespec.stdout"
-    eval $cmd 2> .${_BS}-makespec.stderr
+            $(findAllVenvModules|mangleModules|tr '\n' ' ') \
+            $_ADD_DATAS \
+        -p $VIRTUAL_ENV/lib64/python3.6/site-packages \
+           ${_BS}.py > $spec_combined_stdout_mkspec 2> $spec_combined_stderr_mkspec"
+    echo "$cmd" > $spec_combined_cmd
+    __x=$(mktemp)
+    cat $spec_combined_cmd |tr ' ' '\n'| sed 's/$/ \\/g'|sed 's/^/    /g' > $__x
+    cat $__x > $spec_combined_cmd
+
+
+    chmod +x $spec_combined_cmd
+    >&2 ansi --yellow "spec_combined_cmd=$spec_combined_cmd"
+    >&2 ansi --yellow "spec_combined_stdout_mkspec=$spec_combined_stdout_mkspec"
+    >&2 ansi --yellow "spec_combined_stderr_mkspec=$spec_combined_stderr_mkspec"
+#    exit 666
+    ./$spec_combined_cmd 2> .${_BS}-makespec.stderr
     exit_code=$?
     if [[ "$exit_code" != "0" ]]; then cat ${_BS}-makespec.stderr; >&2 ansi --red "pyi-makespec failed"; exit $exit_code; fi
     ansi --green "     OK"
 
 
-    if [[ "$DO_COMPILE" == "1" ]]; then
-        ansi --yellow "  Compiling file \"$x_orig\" using spec file $x_spec"
-        pyinstaller \
-        $HIDDEN_IMPORT_LINES \
-            --clean -y \
-                $x_spec > .${_BS}-compile.stdout 2> .${_BS}-compile.stderr || retry_nuked_venv
-        exit_code=$?
-
-        ansi --green "     OK"
-    elif [[ "$DO_MANGLE" == "1" ]]; then
+    if [[ "$DO_MANGLE" == "1" ]]; then
         ansi --yellow "  Mangling file \"$x_orig\" using spec file $x_spec with cmd \"$mangle_cmd\""
         mangle_stdout=$(mktemp)
         mangle_stderr=$(mktemp)

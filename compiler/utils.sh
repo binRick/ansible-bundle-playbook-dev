@@ -81,11 +81,26 @@ findModules_venv(){
     findModules $1 $VIRTUAL_ENV/lib/python3.6/site-packages
 }
 
-findAllVenvModules(){
-    for m in $(getVenvModules|egrep -v 'pyinstaller'); do
+
+_findAllVenvModules(){    
+   ( for m in $(getVenvModules|egrep -v 'pyinstaller'); do
         findModules_venv $m
     done
+   ) | sort -u
+}
+
+findAllVenvModules(){    
+    a=$(mktemp)
+    b=$(mktemp)
+    c=$(mktemp)
+    _findAllVenvModules  > $a
+    getExcludedAnsibleModules > $b
+    comm -23 $a $b
 }
 
 
+getExcludedAnsibleModules(){
+   echo $EXCLUDED_ANSIBLE_MODULES | tr ' ' '\n' | grep -v '^$' | sort -u
+}
+    
 

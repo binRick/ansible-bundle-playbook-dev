@@ -7,8 +7,8 @@ export -n VENV_DIRECTORY
 
 export MODULES BUILD_SCRIPTS MODULE_REPOS
 
-m_o=$(mktemp)
-m_e=$(mktemp)
+m_o=$_combined_stdout
+m_e=$_combined_stderr
 set +e
 if [[ "$DEBUG_MODE" == "1" ]]; then
     ./combineSpecFiles.sh > $m_o 2>$m_e
@@ -30,6 +30,16 @@ COMBINED_DIR=".COMBINED-$(date +%s)"
 
 source $VENV_DIR/bin/activate || retry_nuked_venv
 
+_ADD_DATAS="--add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/base.yml:ansible/config \
+                    --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/module_defaults.yml:ansible/config \
+                    --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/utils/shlex.py:ansible/utils \
+                    --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins/cache:ansible/plugins/cache \
+                    --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/module_utils:ansible/module_utils \
+                    --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins/inventory:ansible/plugins/inventory \
+                    --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins:ansible/plugins \
+                    --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/modules:ansible/modules \
+                    --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/executor/discovery/python_target.py:ansible/executor/discovery \
+"
 retry_nuked_venv(){
     cmd="RETRIED=1 NUKE_VENV=1 exec ${BASH_SOURCE[0]} $@"
     ansi --yellow retrying with cmd:
@@ -46,12 +56,17 @@ ansi --yellow "Compiling spec file $COMBINED_SPEC_FILE"
 
 cmd="pyinstaller \
   --clean -y \
-    $(findAllVenvModules|mangleModules|tr '\n' ' ') \
-    $_ADD_DATAS \
     $COMBINED_SPEC_FILE"
 echo "$cmd" > $combined_cmd
+
+__x=$(mktemp)
+cat $combined_cmd |tr ' ' '\n'| sed 's/$/ \\/g'|sed 's/^/    /g' > $__x
+cat $__x > $combined_cmd
 chmod +x $combined_cmd
->&2 ansi --yellow "$cmd"
+
+
+#>&2 ansi --yellow "$cmd"
+#exit 123
 
 watch_cmd="tail -f $combined_stdout $combined_stderr"
 >&2 ansi --cyan "          combined_cmd=$combined_cmd"
