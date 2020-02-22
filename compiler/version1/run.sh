@@ -73,6 +73,10 @@ export MODULES="\
 exit_code=$?
 
 DIST_PATH="$(pwd)/$(grep '^.COMBINED-' .stdout|tail -n1)"
+mv $DIST_PATH ${DIST_PATH}.t
+mkdir $DIST_PATH
+mv ${DIST_PATH}.t $DIST_PATH/ansible-playbook
+
 
 echo "DIST_PATH=$DIST_PATH"
 exit $exit_code
