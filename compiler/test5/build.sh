@@ -7,6 +7,30 @@ export -n VENV_DIRECTORY
 
 export MODULES BUILD_SCRIPTS MODULE_REPOS
 
+
+export -n VENV_DIRECTORY
+VENV_DIR=".venv-1"
+NUKE_VENV=0
+if [[ "$NUKE_VENV" == "1" ]]; then
+        if [[ -d $VENV_DIR ]]; then rm -rf $VENV_DIR; fi
+fi
+
+if [[ ! -f $VENV_DIR/bin/activate ]]; then
+            python3 -m venv $VENV_DIR
+fi
+
+source $VENV_DIR/bin/activate || retry_nuked_venv
+
+
+
+### customizations ###
+
+customize_ansible_environment
+
+
+
+
+
 m_o=$_combined_stdout
 m_e=$_combined_stderr
 set +e
@@ -51,6 +75,8 @@ retry_nuked_venv(){
         exit 1
     fi
 }
+
+
 
 ansi --yellow "Compiling spec file $COMBINED_SPEC_FILE"
 
@@ -160,5 +186,9 @@ mv *spec .specs
 for d in build dist __pycache__ build; do 
     if [[ -d $d ]]; then rm -rf $d; fi
 done
+
+
+#$PLAYBOOK_BINARY_PATH --version | grep '^ansible-playbook $ANSIBLE_VERSION' && >&2 echo Valid Version
+#file $PLAYBOOK_BINARY_PATH | grep '^ansible-playbook' | grep ': ELF 64-bit LSB executable, x86-64' && >&2 echo Valid File
 
 echo $COMBINED_DIR

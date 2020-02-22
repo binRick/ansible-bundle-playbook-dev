@@ -103,4 +103,56 @@ getExcludedAnsibleModules(){
    echo $EXCLUDED_ANSIBLE_MODULES | tr ' ' '\n' | grep -v '^$' | sort -u
 }
     
+addAdditionalAnsibleModules(){
+    MODULE_TYPE=$1
+    MODULE_TYPE_DIR=$2
+    MODULES="$3"
+    for m in $(echo "$MODULES"|tr ' ' '\n'); do
+        mFile="$(basename $m)"
+        if [[ $m == http* ]]; then
+#            if [ "$DEBUG_CMD" == "1" ]; then
+#              echo url detected $m
+#       fi
+            mT=$(mktemp -d)
+            (cd $mT && curl -s $m > $mFile)
+            _m=$mT/$(basename $m)
+#            if [ "$DEBUG_CMD" == "1" ]; then
+#              echo _m=$_m
+#              echo m=$m
+#       fi
+            m=$_m
+        fi
+        mDir="$(dirname $m)"
+        mCmdDir="$(getAnsiblePath)/${MODULE_TYPE}/${MODULE_TYPE_DIR}"
+        if [[ ! -d "$mCmdDir" ]]; then mkdir -p $mCmdDir; fi
+        mCmd="cp $mDir/$mFile $mCmdDir/$mFile"
+#       if [ "$DEBUG_CMD" == "1" ]; then
+#           echo mCmdDir=$mCmdDir
+#           echo mCmd=$mCmd
+#       fi
+        eval $mCmd
+    done
+}
+
+getSitePackagesPath(){
+    pip show ansible|grep ^Location:|cut -d' ' -f2| grep "^\/"|head -n 1
+}
+getAnsiblePath(){
+    echo $(getSitePackagesPath)/ansible
+}
+getAnsiblePluginsPath(){
+    echo $(getAnsiblePath)/plugins
+}
+getAnsibleModulesPath(){
+    echo $(getAnsiblePath)/modules
+}
+
+
+
+customize_ansible_environment(){
+    addAdditionalAnsibleModules plugins callback "$ADDITIONAL_ANSIBLE_CALLLBACK_MODULES"
+    addAdditionalAnsibleModules modules library "$ADDITIONAL_ANSIBLE_LIBRARY_MODULES"
+}
+
+
 

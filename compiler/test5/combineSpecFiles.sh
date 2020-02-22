@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
 cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-export -n VENV_DIRECTORY
 . ../constants.sh
 . ../utils.sh
 
@@ -15,8 +14,6 @@ BUILD_SCRIPTS="$(echo $BUILD_SCRIPTS|tr ',' ' '|sed 's/[[:space:]]/ /g')"
 MODULES="$(echo $MODULES|tr ',' ' '|sed 's/[[:space:]]/ /g')"
 
 COMBINED_DIR=".COMBINED-$(date +%s)"
-VENV_DIR=".venv-1"
-NUKE_VENV=0
 MANGLE_SCRIPT="./mangleSpec.sh"
 combined_stdout=.combined-compile.stdout
 combined_stderr=.combined-compile.stderr
@@ -36,19 +33,9 @@ retry_nuked_venv(){
     fi
 }
 
-if [[ "$NUKE_VENV" == "1" ]]; then
-    if [[ -d $VENV_DIR ]]; then rm -rf $VENV_DIR; fi
-fi
-
 for d in build dist __pycache__ $COMBINED_DIR; do 
     if [[ -d $d ]]; then rm -rf $d; fi
 done
-
-if [[ ! -f $VENV_DIR/bin/activate ]]; then
-    python3 -m venv $VENV_DIR
-fi
-
-source $VENV_DIR/bin/activate || retry_nuked_venv
 
 >&2 ansi --cyan Installing Python Requirements
 >&2 pip -q install $MODULES || retry_nuked_venv
