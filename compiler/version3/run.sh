@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+export ORIG_DIR="$(pwd)"
 source ../.ansi
 ANSIBLE_VERSION=2.8.8
 [[ "$_BORG_BUILD_NAME" == "" ]] && export _BORG_BUILD_NAME=MYBORG
@@ -104,10 +105,8 @@ mv $DIST_PATH ${DIST_PATH}.t
 mkdir $DIST_PATH
 mv ${DIST_PATH}.t $DIST_PATH/ansible-playbook
 
-mv ../files/ansible.cfg $DIST_PATH/ansible-playbook/.
+mv $ORIG_DIR/../files/ansible.cfg $DIST_PATH/ansible-playbook/.
 
 
 echo "DIST_PATH=$DIST_PATH"
 exit $exit_code
-
-
