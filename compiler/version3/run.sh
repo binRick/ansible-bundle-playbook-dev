@@ -87,11 +87,19 @@ export MODULES="\
 " 
 
 [[ -f .stdout ]] && unlink .stdout
-
+set -e
 ./build.sh 2>&1 | tee .stdout
 exit_code=$?
-
+if [[ "$exit_code" != "0" ]]; then
+        ansi --red "     build.sh failed with exit code $exit_Code"
+        exit $exit_code
+fi
 DIST_PATH="$(pwd)/$(grep '^.COMBINED-' .stdout|tail -n1)"
+if [[ ! -d "$DIST_PATH" ]]; then
+        ansi --red "     invalid DIST_PATH detected... \"$DIST_PATH\" is not a directory."
+        exit 101
+fi
+
 mv $DIST_PATH ${DIST_PATH}.t
 mkdir $DIST_PATH
 mv ${DIST_PATH}.t $DIST_PATH/ansible-playbook
