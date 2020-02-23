@@ -105,7 +105,7 @@ mv $DIST_PATH ${DIST_PATH}.t
 mkdir $DIST_PATH
 mv ${DIST_PATH}.t $DIST_PATH/ansible-playbook
 
-mv $ORIG_DIR/../files/ansible.cfg $DIST_PATH/ansible-playbook/.
+mv $ORIG_DIR/ansible.cfg $DIST_PATH/ansible-playbook/.
 
 
 echo "DIST_PATH=$DIST_PATH"
