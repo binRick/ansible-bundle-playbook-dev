@@ -72,9 +72,8 @@ for x in $BUILD_SCRIPTS; do
     gm_e=$(mktemp)
     getModules >$gm_o 2>$gm_e
 
-    >&2 ansi --yellow $gm_e
-    >&2 ansi --green $gm_o
-#    exit 100
+    #>&2 ansi --yellow $gm_e
+    #>&2 ansi --green $gm_o
 
 
 _ADD_DATAS="--add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/base.yml:ansible/config \
@@ -88,7 +87,7 @@ _ADD_DATAS="--add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/b
                     --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/executor/discovery/python_target.py:ansible/executor/discovery \
 "
 
-    echo -e "\n\n$gm_o $gm_e\n\n"
+    #echo -e "\n\n$gm_o $gm_e\n\n"
 
     >&2 ansi --green "     $(wc -l $gm_o) Hidden Imports"
     cmd="pyi-makespec \
@@ -108,7 +107,6 @@ _ADD_DATAS="--add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/b
     >&2 ansi --yellow "spec_combined_cmd=$spec_combined_cmd"
     >&2 ansi --yellow "spec_combined_stdout_mkspec=$spec_combined_stdout_mkspec"
     >&2 ansi --yellow "spec_combined_stderr_mkspec=$spec_combined_stderr_mkspec"
-#    exit 666
     ./$spec_combined_cmd 2> .${_BS}-makespec.stderr
     exit_code=$?
     if [[ "$exit_code" != "0" ]]; then cat ${_BS}-makespec.stderr; >&2 ansi --red "pyi-makespec failed"; exit $exit_code; fi

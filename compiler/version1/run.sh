@@ -3,6 +3,7 @@ set -e
 cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source ../.ansi
 ANSIBLE_VERSION=2.8.8
+[[ "$_BORG_BUILD_NAME" == "" ]] && export _BORG_BUILD_NAME=MYBORG
 #if [[ -d .venv-1 ]]; then rm -rf .venv-1; fi
 
 python3 -m venv .venv-1
@@ -39,8 +40,6 @@ python BORG.py --help >/dev/null 2>&1
 
 deactivate
 
-export ADDITIONAL_SPECS="BORG.spec"
-
 export MODULE_REPOS="
     git+https://github.com/binRick/python3-parse-nagios-status-dat \
 "
@@ -49,7 +48,7 @@ export _MODULE_REPOS="
 
 export BUILD_SCRIPTS="\
     paramiko_test.py \
-    BORG.py \
+    ${_BORG_BUILD_NAME}.py \
     ansible-playbook.py \
     ansible-config.py \
     ansible-vault.py \
