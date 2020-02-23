@@ -47,13 +47,13 @@ export _MODULE_REPOS="
 "
 
 export BUILD_SCRIPTS="\
-    paramiko_test.py \
     ${_BORG_BUILD_NAME}.py \
     ansible-playbook.py \
     ansible-config.py \
-    ansible-vault.py \
 " 
 export _BUILD_SCRIPTS="\
+    paramiko_test.py \
+    ansible-vault.py \
     nagios_parser_test.py \
     test-hyphen.py \
     test.py \
@@ -90,13 +90,18 @@ export MODULES="\
 
 ./build.sh 2>&1 | tee .stdout
 exit_code=$?
-
+if [[ "$exit_code" != "0" ]]; then
+    ansi --red build.sh exited $exit_code
+    exit $exit_code
+fi
 DIST_PATH="$(pwd)/$(grep '^.COMBINED-' .stdout|tail -n1)"
 mv $DIST_PATH ${DIST_PATH}.t
 mkdir $DIST_PATH
 mv ${DIST_PATH}.t $DIST_PATH/ansible-playbook
 
 mv ../files/ansible.cfg $DIST_PATH/ansible-playbook/.
+
+echo -e "\n\n"; du --max-depth=1 -h $DIST_PATH; find $DIST_PATH -type -f | wc -l; echo -e "\n\n";
 
 
 echo "DIST_PATH=$DIST_PATH"
