@@ -99,7 +99,7 @@ mv $DIST_PATH ${DIST_PATH}.t
 mkdir $DIST_PATH
 mv ${DIST_PATH}.t $DIST_PATH/ansible-playbook
 
-mv ../files/ansible.cfg $DIST_PATH/ansible-playbook/.
+#mv ../files/ansible.cfg $DIST_PATH/ansible-playbook/.
 
 echo -e "\n\n"; du --max-depth=1 -h $DIST_PATH; find $DIST_PATH -type -f | wc -l; echo -e "\n\n";
 
