@@ -89,6 +89,14 @@ _findAllVenvModules(){
    ) | sort -u
 }
 
+findBorgModules(){
+    if [[ -f borg/__init__.py ]]; then
+        >&2 ansi --green BORG FOUND
+        findModules borg .
+    else
+        >&2 ansi --yellow BORG MISSING
+    fi
+}
 findAllVenvModules(){    
     a=$(mktemp)
     b=$(mktemp)

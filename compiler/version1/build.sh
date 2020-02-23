@@ -27,10 +27,6 @@ source $VENV_DIR/bin/activate || retry_nuked_venv
 
 customize_ansible_environment
 
-
-
-
-
 m_o=$_combined_stdout
 m_e=$_combined_stderr
 set +e

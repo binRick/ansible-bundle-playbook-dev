@@ -92,9 +92,11 @@ _ADD_DATAS="--add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/b
 
     >&2 ansi --green "     $(wc -l $gm_o) Hidden Imports"
     cmd="pyi-makespec \
+            $(findBorgModules|mangleModules|tr '\n' ' ') \
             $(findAllVenvModules|mangleModules|tr '\n' ' ') \
             $_ADD_DATAS \
         -p $VIRTUAL_ENV/lib64/python3.6/site-packages \
+        -p _borg \
            ${_BS}.py > $spec_combined_stdout_mkspec 2> $spec_combined_stderr_mkspec"
     echo "$cmd" > $spec_combined_cmd
     __x=$(mktemp)
