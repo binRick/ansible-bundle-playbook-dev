@@ -46,7 +46,7 @@ if [[ "$exit_code" != "0" ]]; then
         exit $exit_code
 fi
 DIST_PATH="$(pwd)/$(grep '^.COMBINED-' .stdout|tail -n1)"
-if [[ "$DIST_PATH" != "" || ! -d "$DIST_PATH" ]]; then
+if [[ "$DIST_PATH" == "" || ! -d "$DIST_PATH" ]]; then
     ansi --red "     invalid DIST_PATH detected... \"$DIST_PATH\" is not a directory."
 	ansi --green "$(cat .stdout)"
 	ansi --red "$(cat .stderr)"
