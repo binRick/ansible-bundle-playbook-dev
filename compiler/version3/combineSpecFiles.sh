@@ -4,6 +4,8 @@ cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 . /etc/.ansi
 . ../constants.sh
 . ../utils.sh
+. run-constants.sh
+. run-utils.sh
 
 [[ "$MODULES" == "" ]] && \
     export MODULES="paramiko ansible json2yaml"
@@ -55,6 +57,16 @@ get_mangle_vars_file(){
     x_mangle_vars=".${x}_mangled_vars.txt"
     echo $x_mangle_vars
 }
+export _ADD_DATAS="--add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/base.yml:ansible/config \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/module_defaults.yml:ansible/config \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/utils/shlex.py:ansible/utils \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins/cache:ansible/plugins/cache \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/module_utils:ansible/module_utils \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins/inventory:ansible/plugins/inventory \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins:ansible/plugins \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/modules:ansible/modules \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/executor/discovery/python_target.py:ansible/executor/discovery \
+"
 
 ansi --cyan Processing Python Scripts
 for x in $BUILD_SCRIPTS; do 
@@ -66,70 +78,67 @@ for x in $BUILD_SCRIPTS; do
     _BS="$x"
     x_spec="${_BS}.spec"
     x_mangle_vars="$(get_mangle_vars_file $x_orig)"
+    spec_saved_path="$(get_spec_saved_path $_BS)"
+    mangled_saved_path="$(get_mangled_saved_path $_BS)"
     mangle_cmd="$MANGLE_SCRIPT $x_spec"
-    ansi --yellow "  Creating Spec from file \"$x_orig\""
-
-    gm_o=$(mktemp)
-    gm_e=$(mktemp)
-    getModules >$gm_o 2>$gm_e
-
-    #>&2 ansi --yellow $gm_e
-    #>&2 ansi --green $gm_o
-
-
-_ADD_DATAS="--add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/base.yml:ansible/config \
-                    --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/module_defaults.yml:ansible/config \
-                    --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/utils/shlex.py:ansible/utils \
-                    --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins/cache:ansible/plugins/cache \
-                    --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/module_utils:ansible/module_utils \
-                    --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins/inventory:ansible/plugins/inventory \
-                    --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins:ansible/plugins \
-                    --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/modules:ansible/modules \
-                    --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/executor/discovery/python_target.py:ansible/executor/discovery \
-"
-
-    #echo -e "\n\n$gm_o $gm_e\n\n"
-
-    >&2 ansi --green "     $(wc -l $gm_o) Hidden Imports"
-    cmd="pyi-makespec \
-            $(findBorgModules|mangleModules|tr '\n' ' ') \
-            $(findAllVenvModules|mangleModules|tr '\n' ' ') \
-            $_ADD_DATAS \
-        -p $VIRTUAL_ENV/lib64/python3.6/site-packages \
-        -p _borg \
-           ${_BS}.py > $spec_combined_stdout_mkspec 2> $spec_combined_stderr_mkspec"
-    echo "$cmd" > $spec_combined_cmd
-    __x=$(mktemp)
-    cat $spec_combined_cmd |tr ' ' '\n'| sed 's/$/ \\/g'|sed 's/^/    /g' > $__x
-    cat $__x > $spec_combined_cmd
-
-
-    chmod +x $spec_combined_cmd
-    >&2 ansi --yellow "spec_combined_cmd=$spec_combined_cmd"
-    >&2 ansi --yellow "spec_combined_stdout_mkspec=$spec_combined_stdout_mkspec"
-    >&2 ansi --yellow "spec_combined_stderr_mkspec=$spec_combined_stderr_mkspec"
-    ./$spec_combined_cmd 2> .${_BS}-makespec.stderr
-    exit_code=$?
-    if [[ "$exit_code" != "0" ]]; then cat ${_BS}-makespec.stderr; >&2 ansi --red "pyi-makespec failed"; exit $exit_code; fi
-    ansi --green "     OK"
-
-
-    if [[ "$DO_MANGLE" == "1" ]]; then
-        ansi --yellow "  Mangling file \"$x_orig\" using spec file $x_spec with cmd \"$mangle_cmd\""
-        mangle_stdout=$(mktemp)
-        mangle_stderr=$(mktemp)
-        eval $mangle_cmd > $mangle_stdout 2>$mangle_stderr
-        exit_code=$?
-        if [[ "$exit_code" != "0" ]]; then
-            >&2 ansi --red "    Command \"$mangle_cmd\" failed to mangle $x_orig (exited $exit_code). stdout=$mangle_stdout, stderr=$mangle_stderr"
-            exit $exit_code
-        else
-            cp $mangle_stdout $x_mangle_vars
-            ansi --green "    OK - $x_mangle_vars"
-        fi
+    save_path=$(get_module_saved_path $_BS)
+    ansi --cyan "     Checking if Build Script $x exists in cache => $save_path => spec_saved_path=$spec_saved_path :: mangled_saved_path=$mangled_saved_path"
+    if [[ -f "$spec_saved_path" && -f "$mangled_saved_path" ]]; then
+        cp_cmd="cp $mangled_saved_path $x_mangle_vars && cp $spec_saved_path $x_spec"
+        ansi --green "     Found Cached file @ $spec_saved_path => cp_cmd=$cp_cmd"
+        eval $cp_cmd
+        exit 200
     else
-        ansi --red Undefined behavior
-        exit 999
+        ansi --yellow "  Creating Spec from file \"$x_orig\""
+
+        gm_o=$(mktemp)
+        gm_e=$(mktemp)
+        getModules >$gm_o 2>$gm_e
+
+        >&2 ansi --green "     $(wc -l $gm_o) Hidden Imports"
+        cmd="pyi-makespec \
+                $(findBorgModules|mangleModules|tr '\n' ' ') \
+                $(findAllVenvModules|mangleModules|tr '\n' ' ') \
+                $_ADD_DATAS \
+            -p $VIRTUAL_ENV/lib64/python3.6/site-packages \
+            -p _borg \
+               ${_BS}.py > $spec_combined_stdout_mkspec 2> $spec_combined_stderr_mkspec"
+        echo "$cmd" > $spec_combined_cmd
+        __x=$(mktemp)
+        cat $spec_combined_cmd |tr ' ' '\n'| sed 's/$/ \\/g'|sed 's/^/    /g' > $__x
+        cat $__x > $spec_combined_cmd
+
+
+        chmod +x $spec_combined_cmd
+        >&2 ansi --yellow "spec_combined_cmd=$spec_combined_cmd"
+        >&2 ansi --yellow "spec_combined_stdout_mkspec=$spec_combined_stdout_mkspec"
+        >&2 ansi --yellow "spec_combined_stderr_mkspec=$spec_combined_stderr_mkspec"
+        ./$spec_combined_cmd 2> .${_BS}-makespec.stderr
+        exit_code=$?
+        if [[ "$exit_code" != "0" ]]; then cat ${_BS}-makespec.stderr; >&2 ansi --red "pyi-makespec failed"; exit $exit_code; fi
+        ansi --green "     OK"
+
+
+        if [[ "$DO_MANGLE" == "1" ]]; then
+            ansi --yellow "  Mangling file \"$x_orig\" using spec file $x_spec with cmd \"$mangle_cmd\""
+            mangle_stdout=$(mktemp)
+            mangle_stderr=$(mktemp)
+            eval $mangle_cmd > $mangle_stdout 2>$mangle_stderr
+            exit_code=$?
+            if [[ "$exit_code" != "0" ]]; then
+                >&2 ansi --red "    Command \"$mangle_cmd\" failed to mangle $x_orig (exited $exit_code). stdout=$mangle_stdout, stderr=$mangle_stderr"
+                exit $exit_code
+            else
+                cp $mangle_stdout $x_mangle_vars
+                cp_cmd="cp $x_mangle_vars $spec_saved_path && cp $x_spec $spec_saved_path"
+                ansi --green "    OK - $x_mangle_vars => cp_cmd=$cp_cmd"
+                eval $cp_cmd
+                exit 300
+            fi
+        else
+            ansi --red Undefined behavior
+            exit 999
+        fi
     fi
 done 
 
@@ -175,17 +184,22 @@ ansi --green " OK"
 
 echo -ne "\n\n" >> $COMBINED_SPEC_FILE
 for x in $BUILD_SCRIPTS; do 
-    x_orig="$x"
-    x="$(basename $x .py)"
-    x_spec="${x}.spec"
-    x_mangle_vars="$(get_mangle_vars_file $x_orig)"
-    for k in ANALYSIS; do 
-#        ansi --magenta " [$x_orig => $k]"
-        cat "$(get_mangled_var $x_mangle_vars $k)" >> $COMBINED_SPEC_FILE
-        echo -ne "\n" >> $COMBINED_SPEC_FILE
-#        ansi --green "   OK"
-    done
-    echo -ne "\n\n" >> $COMBINED_SPEC_FILE
+    if [[ "$VALID_CACHED_BUILD_SCRIPT" == "1" ]]; then
+        >&2 ansi --cyan "       VALID_CACHED_BUILD_SCRIPT $x"
+        exit 201
+    else
+        x_orig="$x"
+        x="$(basename $x .py)"
+        x_spec="${x}.spec"
+        x_mangle_vars="$(get_mangle_vars_file $x_orig)"
+        for k in ANALYSIS; do 
+    #        ansi --magenta " [$x_orig => $k]"
+            cat "$(get_mangled_var $x_mangle_vars $k)" >> $COMBINED_SPEC_FILE
+            echo -ne "\n" >> $COMBINED_SPEC_FILE
+    #        ansi --green "   OK"
+        done
+        echo -ne "\n\n" >> $COMBINED_SPEC_FILE
+    fi
 done
 echo -ne "\n\n" >> $COMBINED_SPEC_FILE
 

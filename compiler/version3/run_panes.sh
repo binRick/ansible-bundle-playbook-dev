@@ -2,12 +2,13 @@
 set -e
 cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 ORIG_DIR="$(pwd)"
+INITIAL_SLEEP=.1
 
 setupWhile(){
-    echo "while [ 1 ]; do $@; done"
+    echo "sleep $INITIAL_SLEEP && while [ 1 ]; do $@; done"
 }
 setupTail(){
-    echo "tail -f $@"
+    echo "tail -n0 -f $@"
 }
 
 
@@ -18,8 +19,8 @@ CMD3="$(setupWhile $(setupTail .combined.stderr))"
 CMD4="$(setupWhile $(setupTail .combined.stdout))"
 CMD5="$(setupWhile $(setupTail .combined-compile.stdout))"
 CMD6="$(setupWhile $(setupTail .combined-compile.stderr))"
-CMD7="dstat -alp 5 500"
-CMD8="time ./run.sh"
+CMD7="sleep 5 && dstat -alp 5 500"
+CMD8="time ./run.sh; echo run.sh exited $?"
 
 xpanes \
     -t \
