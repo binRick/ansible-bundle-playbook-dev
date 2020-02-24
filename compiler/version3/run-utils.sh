@@ -15,7 +15,7 @@ get_spec_saved_path(){
 get_module_saved_path(){
     _MODULE=$1
     _MODULE_MD5=$(echo $_MODULE|md5sum | cut -d' ' -f1)
-    echo "$SAVE_MODULE_PATH/$_MODULE_MD5"
+    echo "$SAVE_MODULE_PATH/${_MODULE}_$_MODULE_MD5.binary"
 }
 
 setup_venv(){
@@ -52,7 +52,7 @@ save_modules(){
     for m in $BUILD_SCRIPTS; do
         _m="$(basename $m .py)"
         save_path=$(get_module_saved_path $m)
-        cp_cmd="cp $DIST_PATH/ansible-playbook/$_m $save_path"
+        cp_cmd="cp $DIST_PATH/$_m $save_path"
         >&2 ansi --yellow "      Saving Build Script $_m to $save_path with cmd:$(echo -e "\n\n           \"$cp_cmd\"\n\n")"
         >&2 pwd
         eval $cp_cmd

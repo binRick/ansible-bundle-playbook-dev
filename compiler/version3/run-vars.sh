@@ -20,8 +20,9 @@ export _BUILD_SCRIPTS="\
     tcshow.py \
 "
 
-BASE_MODS="simplejson psutil loguru json2yaml setproctitle pyyaml pyaml"
-ADDTL_MODS="terminaltables speedtest-cli netaddr configparser urllib3 jmespath paramiko docopt python-jose pycryptodome"
+BASE_MODS="psutil loguru json2yaml setproctitle pyyaml pyaml requests json2yaml psutil paramiko"
+ANSIBLE_MODULES="ansible simplejson terminaltables netaddr configparser jmespath urllib3"
+ADDTL_MODS="speedtest-cli docopt python-jose pycryptodome"
 
 export _MODULES="\
     pexpect \
@@ -30,16 +31,9 @@ export _MODULES="\
     halo \
     tmuxp \
     tcconfig \
-    ansible \
+    $ANSIBLE_MODULES \
+    $ADDTL_MODS \
 "
 export MODULES="\
     $BASE_MODS \
-    $ADDTL_MODS \
-    requests \
-    pyaml \
-    setproctitle \
-    configparser \
-    json2yaml \
-    paramiko \
-    psutil \
 "

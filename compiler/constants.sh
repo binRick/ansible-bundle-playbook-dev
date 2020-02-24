@@ -37,3 +37,6 @@ ADDITIONAL_ANSIBLE_CALLLBACK_MODULES=""
 
 ADDITIONAL_ANSIBLE_LIBRARY_MODULES="https://raw.githubusercontent.com/binRick/ansible-mysql-query/master/library/mysql_query.py https://raw.githubusercontent.com/ageis/ansible-module-ping/master/modules/icmp_ping.py https://raw.githubusercontent.com/cleargray/git_commit/master/git_commit.py https://raw.githubusercontent.com/binRick/mysql_database_query/master/mysql_database_query.py"
 ADDITIONAL_ANSIBLE_LIBRARY_MODULES=""
+
+CACHED_MODULES_DIR=$(mktemp -d)
+CP_OPTIONS="-fv"

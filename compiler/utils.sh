@@ -1,5 +1,19 @@
 [[ -f ~/.ansi ]] && source ~/.ansi
+get_cached_module_dir(){
+    _DIR="$CACHED_MODULES_DIR/$1"
+    [[ ! -d "$_DIR" ]] && mkdir -p $_DIR
+    echo $_DIR
+}
 
+get_mangle_vars_file(){
+    x="$(basename $1 .py)"
+    x_mangle_vars=".${x}_mangled_vars.txt"
+    echo $x_mangle_vars
+}
+
+get_mangled_var(){
+    (source $1 && echo ${!2})
+}
 
 load_vars(){
     >&2 ansi --cyan "  Loading $(wc -l vars.sh) Vars.."
@@ -96,11 +110,15 @@ _findAllVenvModules(){
 }
 
 findBorgModules(){
-    if [[ -f borg/__init__.py ]]; then
-        >&2 ansi --green BORG FOUND
-        findModules borg .
+    if [[ "$BUILD_BORG" == "1" ]]; then
+        if [[ -f borg/__init__.py ]]; then
+            >&2 ansi --green BORG FOUND
+            findModules borg .
+        else
+            >&2 ansi --yellow BORG MISSING
+        fi
     else
-        >&2 ansi --yellow BORG MISSING
+         >&2 ansi --yellow BORG Excluded from build
     fi
 }
 findAllVenvModules(){    

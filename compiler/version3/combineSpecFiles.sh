@@ -15,7 +15,6 @@ cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 BUILD_SCRIPTS="$(echo $BUILD_SCRIPTS|tr ',' ' '|sed 's/[[:space:]]/ /g')"
 MODULES="$(echo $MODULES|tr ',' ' '|sed 's/[[:space:]]/ /g')"
-
 COMBINED_DIR=".COMBINED-$(date +%s)"
 MANGLE_SCRIPT="./mangleSpec.sh"
 combined_stdout=.combined-compile.stdout
@@ -49,15 +48,10 @@ for x in $(echo $MODULE_REPOS|tr ' ' '\n'|grep -v '^$'|sort -u); do
 done
 
 >&2 ansi --green "   OK"
-
 >&2 echo -ne "\n"
 
-get_mangle_vars_file(){
-    x="$(basename $1 .py)"
-    x_mangle_vars=".${x}_mangled_vars.txt"
-    echo $x_mangle_vars
-}
-export _ADD_DATAS="--add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/base.yml:ansible/config \
+if [[ "$BUILD_ANSIBLE" == "1" ]]; then
+    export _ADD_DATAS="--add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/base.yml:ansible/config \
                         --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/module_defaults.yml:ansible/config \
                         --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/utils/shlex.py:ansible/utils \
                         --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins/cache:ansible/plugins/cache \
@@ -67,6 +61,10 @@ export _ADD_DATAS="--add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/c
                         --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/modules:ansible/modules \
                         --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/executor/discovery/python_target.py:ansible/executor/discovery \
 "
+else
+    export _ADD_DATAS=""
+fi
+
 
 ansi --cyan Processing Python Scripts
 for x in $BUILD_SCRIPTS; do 
@@ -82,12 +80,12 @@ for x in $BUILD_SCRIPTS; do
     mangled_saved_path="$(get_mangled_saved_path $_BS)"
     mangle_cmd="$MANGLE_SCRIPT $x_spec"
     save_path=$(get_module_saved_path $_BS)
-    ansi --cyan "     Checking if Build Script $x exists in cache => $save_path => spec_saved_path=$spec_saved_path :: mangled_saved_path=$mangled_saved_path"
+    cached_module_dir=$(get_cached_module_dir $_BS)
+    ansi --cyan "     Checking if Build Script $x exists in cache => $save_path=$save_path => spec_saved_path=$spec_saved_path :: mangled_saved_path=$mangled_saved_path"
     if [[ -f "$spec_saved_path" && -f "$mangled_saved_path" ]]; then
-        cp_cmd="cp $mangled_saved_path $x_mangle_vars && cp $spec_saved_path $x_spec"
-        ansi --green "     Found Cached file @ $spec_saved_path => cp_cmd=$cp_cmd"
+        cp_cmd="cp $CP_OPTIONS $mangled_saved_path $x_mangle_vars && cp $CP_OPTIONS $spec_saved_path $x_spec"
+        ansi --green "     Found Cached file @ $spec_saved_path and cached mangled file @ mangled_saved_path=> cp_cmd=$cp_cmd"
         eval $cp_cmd
-        exit 200
     else
         ansi --yellow "  Creating Spec from file \"$x_orig\""
 
@@ -130,10 +128,9 @@ for x in $BUILD_SCRIPTS; do
                 exit $exit_code
             else
                 cp $mangle_stdout $x_mangle_vars
-                cp_cmd="cp $x_mangle_vars $spec_saved_path && cp $x_spec $spec_saved_path"
+                cp_cmd="cp $x_mangle_vars $mangled_saved_path && cp $x_spec $spec_saved_path"
                 ansi --green "    OK - $x_mangle_vars => cp_cmd=$cp_cmd"
                 eval $cp_cmd
-                exit 300
             fi
         else
             ansi --red Undefined behavior
@@ -141,10 +138,6 @@ for x in $BUILD_SCRIPTS; do
         fi
     fi
 done 
-
-get_mangled_var(){
-    (source $1 && echo ${!2})
-}
 
 echo -ne "\n"
 ansi --cyan Create Compined Spec File
@@ -217,7 +210,6 @@ merge_line="${merge_line} )"
 echo $merge_line >> $COMBINED_SPEC_FILE
 echo -ne "\n\n" >> $COMBINED_SPEC_FILE
 
-
 echo -ne "\n\n" >> $COMBINED_SPEC_FILE
 for x in $BUILD_SCRIPTS; do 
     x_orig="$x"
@@ -233,7 +225,6 @@ for x in $BUILD_SCRIPTS; do
     echo -ne "\n\n" >> $COMBINED_SPEC_FILE
 done
 echo -ne "\n\n" >> $COMBINED_SPEC_FILE
-
 
 for x in $BUILD_SCRIPTS; do 
     x="$(basename $x .py)"
