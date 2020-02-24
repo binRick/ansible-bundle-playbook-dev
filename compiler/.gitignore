@@ -18,3 +18,8 @@ test2/BUILD*
 test*/.status.dat
 test*/.*.txt
 test*/.*.sh
+*/_borg
+*/.std*
+*/.*spec*
+*/.combined*
+*/.*mangled_vars.txt
