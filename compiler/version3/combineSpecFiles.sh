@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+. /etc/.ansi
 . ../constants.sh
 . ../utils.sh
 

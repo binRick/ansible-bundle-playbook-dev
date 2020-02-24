@@ -128,7 +128,7 @@ addAdditionalAnsibleModules(){
 #              echo url detected $m
 #       fi
             mT=$(mktemp -d)
-            (cd $mT && curl -s $m > $mFile)
+            (cd $mT && curl -ks $m > $mFile)
             _m=$mT/$(basename $m)
 #            if [ "$DEBUG_CMD" == "1" ]; then
 #              echo _m=$_m

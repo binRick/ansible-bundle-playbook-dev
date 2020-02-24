@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+source /etc/.ansi
 export -n VENV_DIRECTORY
 . ../constants.sh
 . ../utils.sh
