@@ -2,24 +2,14 @@
 set -e
 cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 export ORIG_DIR="$(pwd)"
-source ../.ansi
+source /etc/ansi
 ANSIBLE_VERSION=2.8.8
 [[ "$_BORG_BUILD_NAME" == "" ]] && export _BORG_BUILD_NAME=MYBORG
 #if [[ -d .venv-1 ]]; then rm -rf .venv-1; fi
-
-python3 -m venv .venv-1
+[[ -d .venv-1 ]] || python3 -m venv .venv-1
 source .venv-1/bin/activate
 pip -q install pip --upgrade
-set +e
-#pip -q uninstall -y ansible >/dev/null 2>&1
-set -e
 pip -q install ansible==$ANSIBLE_VERSION
-
-[[ -f ansible-playbook.py ]] && unlink ansible-playbook.py
-[[ -f ansible-config.py ]] && unlink ansible-config.py
-cp $(which ansible-playbook) ansible-playbook.py
-cp $(which ansible-config) ansible-config.py
-
 
 for x in playbook config vault; do
   [[ -f ansible-${x}.py ]] && unlink ansible-${x}.py
@@ -28,63 +18,20 @@ for x in playbook config vault; do
   head -n 1 ansible-${x}.py | grep -q '^#!' && sed -i 1d ansible-${x}.py
 done
 
-
 [[ -d _borg ]] || git clone https://github.com/binRick/borg _borg
 (cd _borg && git pull)
-pip -q install python-jose pycryptodome
 pip install -q -r _borg/requirements.d/development.txt
 pip install -q -e _borg
 cp -f _borg/src/borg/__main__.py BORG.py
+head -n 1 BORG.py | grep -q '^#!' && sed -i 1d BORG.py
 python BORG.py --help >/dev/null 2>&1
 >&2 ansi --green Pre compile BORG.py validated OK
 
 deactivate
 
-export MODULE_REPOS="
-    git+https://github.com/binRick/python3-parse-nagios-status-dat \
-"
-export _MODULE_REPOS="
-"
+source vars.sh
 
-export BUILD_SCRIPTS="\
-    paramiko_test.py \
-" 
-export _BUILD_SCRIPTS="\
-    ${_BORG_BUILD_NAME}.py \
-    ansible-playbook.py \
-    ansible-config.py \
-    ansible-vault.py \
-    nagios_parser_test.py \
-    test-hyphen.py \
-    test.py \
-    test1.py \
-    tmuxp.py \
-    tcshow.py \
-" 
 
-BASE_MODS="simplejson psutil loguru json2yaml setproctitle pyyaml pyaml"
-ADDTL_MODS="terminaltables speedtest-cli netaddr configparser urllib3 jmespath paramiko docopt"
-
-export _MODULES="\
-    pexpect \
-    tcconfig \
-    libtmux \
-    halo \
-    tmuxp \
-    tcconfig \
-    ansible \
-" 
-export MODULES="\
-    $BASE_MODS \
-    $ADDTL_MODS \
-    requests \
-    pyaml \
-    setproctitle \
-    configparser \
-    json2yaml \
-    paramiko \
-    psutil \
-" 
 
 SAVE_MODULE_PATH=/tmp/SAVED_MODULES
 [[ ! -d $SAVE_MODULE_PATH ]] && mkdir -p $SAVE_MODULE_PATH
@@ -105,25 +52,32 @@ save_modules(){
 }
 
 
-save_modules
-
-exit 123
 
 
 
 [[ -f .stdout ]] && unlink .stdout
+[[ -f .stderr ]] && unlink .stderr
+[[ -f .exit_code ]] && unlink .exit_code
 set -e
-./build.sh 2>&1 | tee .stdout
+bash -x ./build.sh > .stdout 2> .stderr
 exit_code=$?
+echo $exit_code > .exit_code
+
 if [[ "$exit_code" != "0" ]]; then
-        ansi --red "     build.sh failed with exit code $exit_Code"
+        ansi --red "     build.sh failed with exit code $exit_code"
         exit $exit_code
 fi
 DIST_PATH="$(pwd)/$(grep '^.COMBINED-' .stdout|tail -n1)"
-if [[ ! -d "$DIST_PATH" ]]; then
-        ansi --red "     invalid DIST_PATH detected... \"$DIST_PATH\" is not a directory."
+if [[ "$DIST_PATH" != "" || ! -d "$DIST_PATH" ]]; then
+    ansi --red "     invalid DIST_PATH detected... \"$DIST_PATH\" is not a directory."
+	ansi --green "$(cat .stdout)"
+	ansi --red "$(cat .stderr)"
         exit 101
 fi
+
+>&2 ansi --green Validated DIST_PATH $DIST_PATH
+
+save_modules
 
 mv $DIST_PATH ${DIST_PATH}.t
 mkdir $DIST_PATH
@@ -136,7 +90,6 @@ echo $ANSIBLE_CFG_B64|base64 -d > $DIST_PATH/ansible-playbook/ansible.cfg
 
 echo "DIST_PATH=$DIST_PATH"
 
-save_modules
 
 
 exit $exit_code
