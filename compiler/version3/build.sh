@@ -21,6 +21,11 @@ fi
 
 source $VENV_DIR/bin/activate || retry_nuked_venv
 
+BUILD_SCRIPTS="$(echo $BUILD_SCRIPTS|tr ',' ' '|sed 's/[[:space:]]/ /g')"
+MODULES="$(echo $MODULES|tr ',' ' '|sed 's/[[:space:]]/ /g')"
+MODULES="$(echo pyinstaller $MODULES|sed 's/[[:space:]]/ /'|tr ' ' '\n'|grep -v '^$'|tr '\n' ' ')"
+MODULES="$(echo $MODULES|tr ' ' '\n'|grep -v '^$'|sort -u|tr '\n' ' ')"
+COMBINED_DIR=".COMBINED-$(date +%s)"
 
 
 ### customizations ###
@@ -42,11 +47,6 @@ COMBINED_SPEC_FILE=$(cat $m_o|tail -n1)
 
 ansi --yellow COMBINED_SPEC_FILE=$COMBINED_SPEC_FILE
 
-BUILD_SCRIPTS="$(echo $BUILD_SCRIPTS|tr ',' ' '|sed 's/[[:space:]]/ /g')"
-MODULES="$(echo $MODULES|tr ',' ' '|sed 's/[[:space:]]/ /g')"
-MODULES="$(echo pyinstaller $MODULES|sed 's/[[:space:]]/ /'|tr ' ' '\n'|grep -v '^$'|tr '\n' ' ')"
-MODULES="$(echo $MODULES|tr ' ' '\n'|grep -v '^$'|sort -u|tr '\n' ' ')"
-COMBINED_DIR=".COMBINED-$(date +%s)"
 
 source $VENV_DIR/bin/activate || retry_nuked_venv
 

@@ -29,12 +29,11 @@ for x in playbook config vault; do
 done
 
 
-
 [[ -d _borg ]] || git clone https://github.com/binRick/borg _borg
 (cd _borg && git pull)
 pip -q install python-jose pycryptodome
-pip install -r _borg/requirements.d/development.txt
-pip install -e _borg
+pip install -q -r _borg/requirements.d/development.txt
+pip install -q -e _borg
 cp -f _borg/src/borg/__main__.py BORG.py
 python BORG.py --help >/dev/null 2>&1
 >&2 ansi --green Pre compile BORG.py validated OK
@@ -49,12 +48,12 @@ export _MODULE_REPOS="
 
 export BUILD_SCRIPTS="\
     paramiko_test.py \
+" 
+export _BUILD_SCRIPTS="\
     ${_BORG_BUILD_NAME}.py \
     ansible-playbook.py \
     ansible-config.py \
     ansible-vault.py \
-" 
-export _BUILD_SCRIPTS="\
     nagios_parser_test.py \
     test-hyphen.py \
     test.py \
@@ -73,19 +72,44 @@ export _MODULES="\
     halo \
     tmuxp \
     tcconfig \
+    ansible \
 " 
 export MODULES="\
     $BASE_MODS \
     $ADDTL_MODS \
     requests \
     pyaml \
-    ansible \
     setproctitle \
     configparser \
     json2yaml \
     paramiko \
     psutil \
 " 
+
+SAVE_MODULE_PATH=/tmp/SAVED_MODULES
+[[ ! -d $SAVE_MODULE_PATH ]] && mkdir -p $SAVE_MODULE_PATH
+
+get_module_saved_path(){
+    _MODULE=$1
+    _MODULE_MD5=$(echo $_MODULE|md5sum | cut -d' ' -f1)
+    echo "$SAVE_MODULE_PATH/$_MODULE_MD5"
+}
+
+save_modules(){
+    for m in $BUILD_SCRIPTS; do
+        save_path=$(get_module_saved_path $m)
+        cp_cmd="cp $DIST_PATH/ansible-playbook/$m $save_path"
+        >&2 ansi --yellow "      Saving Build Script $m to $save_path with cmd:$(echo -e "\n\n           \"$cp_cmd\"\n\n")"
+        >&2 pwd
+    done
+}
+
+
+save_modules
+
+exit 123
+
+
 
 [[ -f .stdout ]] && unlink .stdout
 set -e
@@ -111,4 +135,8 @@ echo $ANSIBLE_CFG_B64|base64 -d > $DIST_PATH/ansible-playbook/ansible.cfg
 
 
 echo "DIST_PATH=$DIST_PATH"
+
+save_modules
+
+
 exit $exit_code
