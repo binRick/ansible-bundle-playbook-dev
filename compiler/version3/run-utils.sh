@@ -40,13 +40,22 @@ get_cached_build_script_repo_env_name(){
     echo $_K
 }
 get_cached_build_script_repo_name(){
-    _K="$(get_module_md5 $1)-$1-cached-build_script"
+    #_K="$(get_module_md5 $1)-$1-cached-build_script"
+    _K="$1-cached-build_script"
+    >&2 ansi --red  "        [get_cached_build_script_repo_name]           $1=$_K"
     echo $_K
 }
 get_cached_build_script(){
     set +e
     REPO_NAME=$(get_cached_build_script_repo_name $1)
     cmd="borg list ::$REPO_NAME"
+    eval $cmd > .o 2>&1
+    ec=$?
+    >&2 ansi --yellow "     $(echo -e "\n\n")     [cached_build_script] 1=$1 REPO_NAME=$REPO_NAME cmd=$cmd exit_code=$ec $(echo -e "\n\n") "
+    cat .o
+    set -e
+}
+xxxx(){
     cmd_out=$(mktemp)
     cmd_err=$(mktemp)
     eval $cmd >$cmd_out 2>$cmd_err
@@ -62,6 +71,8 @@ get_cached_build_script(){
 
 }
 save_build_script_to_repo(){
+    ansi --red "[save_build_script_to_repo] 1=\"$1\""
+    >&2 ansi --red "[save_build_script_to_repo] 1=\"$1\""
     REPO_NAME=$(get_cached_build_script_repo_name $1)
     REPO_ENV_NAME=$(get_cached_build_script_repo_env_name $1)
     file_save_cmd="(cd $(dirname $2) && borg $BORG_ARGS create -x -v --stats --progress  ::$REPO_NAME $(basename $2))"

@@ -89,6 +89,8 @@ for x in $BUILD_SCRIPTS; do
     exit_code1=$?
     ansi --yellow  cached_build_script=$cached_build_script exit_code=$exit_code1
 
+    #exit 200
+
     cached_build_script_repo_env_name=$(get_cached_build_script_repo_env_name $_BS_ORIG)
     exit_code2=$?
     ansi --yellow cache_build_script_repo_name=$cache_build_script_repo_name exit_code=$exit_code2
@@ -96,10 +98,8 @@ for x in $BUILD_SCRIPTS; do
     if [[ "$cached_build_script" != "" ]]; then #&& -f $cached_build_script ]]; then
         ansi --green found cached repo @ $cached_build_script
         exit 200
-#    else
-#        save_build_script_to_repo $_BS passwd
-#        ansi --green saving dummy file to $cache_build_script_repo_name    
-#        exit 201
+    else
+        ansi --green "Did not find cached build script for file=$_BS_ORIG repo_name=$cache_build_script_repo_name"
     fi
 
 
