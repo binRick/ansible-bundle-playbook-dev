@@ -5,10 +5,10 @@ export _MODULE_REPOS="
 "
 
 export BUILD_SCRIPTS="\
-    scripts/_ansible.py \
     ansible-playbook.py \
 "
 export _BUILD_SCRIPTS="\
+    cripts/_ansible.py \
     paramiko_test.py \
     ansible-config.py \
     ansible-vault.py \
@@ -20,7 +20,7 @@ export _BUILD_SCRIPTS="\
     tcshow.py \
 "
 
-BASE_MODS="psutil loguru json2yaml setproctitle pyyaml pyaml requests json2yaml"
+BASE_MODS="psutil loguru json2yaml setproctitle pyyaml pyaml requests json2yaml setproctitle Cython"
 ANSIBLE_MODULES="simplejson terminaltables netaddr configparser jmespath urllib3"
 ADDTL_MODS="speedtest-cli docopt python-jose pycryptodome paramiko psutil"
 

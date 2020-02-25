@@ -15,6 +15,9 @@ ensure_borg(){
  borg check $BORG_ARGS
  borg prune $BORG_ARGS -v -p --keep-within ${BORG_KEEP_WITHIN_DAYS}d 2>/dev/null
 }
+cleanup_COMPILEDS(){
+    find . -maxdepth 2 -name ".COMBINED-*" -type d -amin +6|xargs -I % rm -rf %
+}
 save_build_to_borg(){
   set +e
   BUILD_DIR=$1
@@ -52,7 +55,7 @@ get_cached_build_script_repo_env_name(){
 get_cached_build_script_repo_name(){
     #_K="$(get_module_md5 $1)-$1-cached-build_script"
     _K="$(get_setup_hash)-$1-cached-build_script"
-    >&2 ansi --red  "        [get_cached_build_script_repo_name]           $1=$_K"
+    >&2 ansi --yellow  "        [get_cached_build_script_repo_name]           $1=$_K"
     echo $_K
 }
 get_cached_build_script(){
@@ -86,8 +89,8 @@ xxxx(){
 
 }
 save_build_script_to_repo(){
-    ansi --red "[save_build_script_to_repo] 1=\"$1\""
-    >&2 ansi --red "[save_build_script_to_repo] 1=\"$1\""
+    ansi --yellow "[save_build_script_to_repo] 1=\"$1\""
+    >&2 ansi --yellow "[save_build_script_to_repo] 1=\"$1\""
     REPO_NAME=$(get_cached_build_script_repo_name $1)
     REPO_ENV_NAME=$(get_cached_build_script_repo_env_name $1)
     file_save_cmd="(borg $BORG_ARGS delete ::$REPO_NAME >/dev/null 2>&1; cd $(dirname $2) && borg $BORG_ARGS create -x -v --stats --progress  ::$REPO_NAME $(basename $2))"
@@ -209,4 +212,52 @@ run_build(){
     fi
 
     >&2 ansi --green Validated DIST_PATH $DIST_PATH
+}
+normalize_dist_path(){
+    set -e
+    mv $DIST_PATH ${DIST_PATH}.t
+    mkdir $DIST_PATH
+    mv ${DIST_PATH}.t $DIST_PATH/$_DIR_PATH_PREFIX
+    echo $ANSIBLE_CFG_B64|base64 -d > $DIST_PATH/$_DIR_PATH_PREFIX/ansible.cfg
+}
+test_dist_path(){
+    >&2 ansi --cyan  "DIST_PATH=$DIST_PATH"
+    cmd="BUILD_SCRIPTS=\"$BUILD_SCRIPTS\" \
+        ./test.sh $DIST_PATH/$_DIR_PATH_PREFIX"
+    eval $cmd
+}
+relocate_path(){
+    if [[ "$_RELOCATE_PATH" == "1" ]]; then
+        >&2 ansi --yellow "   [_RELOCATE_PATH]  _RELOCATE_PATH_PREFIX=$_RELOCATE_PATH_PREFIX"
+        mv $DIST_PATH/$_DIR_PATH_PREFIX $DIST_PATH/${_DIR_PATH_PREFIX}.dir
+        mkdir -p $DIST_PATH/$_DIR_PATH_PREFIX
+        [[ -d $DIST_PATH/$_DIR_PATH_PREFIX/$_RELOCATE_PATH_PREFIX ]] && rmdir $DIST_PATH/$_DIR_PATH_PREFIX/$_RELOCATE_PATH_PREFIX
+        mv $DIST_PATH/${_DIR_PATH_PREFIX}.dir $DIST_PATH/$_DIR_PATH_PREFIX/$_RELOCATE_PATH_PREFIX
+        BIN_PATH="$DIST_PATH/$_DIR_PATH_PREFIX/bin"
+        LIB_PATH="$DIST_PATH/$_DIR_PATH_PREFIX/$_RELOCATE_PATH_PREFIX"
+        mkdir -p $BIN_PATH
+        pip install 'j2cli[yaml]' json2yaml
+        for B in $BUILD_SCRIPTS; do
+            _tf=$(mktemp)
+            _tf_bin_path_py="$BIN_PATH/$(basename $B .py).py"
+            >&2 ansi --yellow "Creating bin script for Build Script $B in path $BIN_PATH to rendered file $_tf"
+            JINJA_VARS="\
+    __J2__PROC_NAME=\"$(basename $B .py)\" \
+    __J2__PROC_FILE=\"$(basename $B .py)\" \
+    __J2__PROC_PATH=\"$LIB_PATH\" \
+    "
+            j_cmd="$JINJA_VARS j2 -f yaml $_RELOCATE_BIN_WRAPPER_SCRIPT_TEMPLATE_FILE $_RELOCATE_BIN_WRAPPER_SCRIPT_VARS_FILE > $_tf 2> $_bin_jinja_stderr && mv $_tf $_tf_bin_path_py &&  1645  cython --embed -o ansible_playbook.c ansible_playbook.py && gcc -Os -I /usr/include/python3.6m -o a a.c -lpython3.6m -lpthread -lm -lutil -ldl\n"
+            >&2 ansi --cyan "            j_cmd=$j_cmd"
+            jf=$(mktemp)
+            echo $j_cmd > $jf
+            bash $jf
+            exit_code=$?
+            if [[ "$exit_code" != "0" ]]; then
+                >&2 ansi --red "$(cat $_bin_jinja_stderr)"
+                exit $exit_code
+            fi
+            chmod 755 $_tf_bin_path_py
+            >&2 ansi --green "  ****   Rendered $B to $_tf using bash script $jf and moved it to $_tf_bin_path_py ****   "
+        done
+    fi
 }

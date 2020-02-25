@@ -123,6 +123,7 @@ for x in $BUILD_SCRIPTS; do
         cmd="pyi-makespec \
                 $(findBorgModules|mangleModules|tr '\n' ' ') \
                 $(findAllVenvModules|mangleModules|tr '\n' ' ') \
+                $(echo -e "$(echo $_ADDITIONAL_HIDDEN_MODULES|tr ' ' '\n')"|mangleModules|tr '\n' ' ') \
                 $_ADD_DATAS \
             -p $VIRTUAL_ENV/lib64/python3.6/site-packages \
             --runtime-hook=hook-file1.py \
