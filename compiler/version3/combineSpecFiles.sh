@@ -117,8 +117,9 @@ for x in $BUILD_SCRIPTS; do
         getModules >$gm_o 2>$gm_e
 
         >&2 ansi --green "     $(wc -l $gm_o) Hidden Imports"
-
-
+        if [[ -f scripts/${_BS}.py ]]; then
+            _BS_PREFIX=scripts/
+        fi                
         cmd="pyi-makespec \
                 $(findBorgModules|mangleModules|tr '\n' ' ') \
                 $(findAllVenvModules|mangleModules|tr '\n' ' ') \
@@ -127,7 +128,7 @@ for x in $BUILD_SCRIPTS; do
             --runtime-hook=hook-file1.py \
             -p _borg \
             -p _ansible \
-               ${_BS}.py > $spec_combined_stdout_mkspec 2> $spec_combined_stderr_mkspec"
+               ${_BS_PREFIX}${_BS}.py > $spec_combined_stdout_mkspec 2> $spec_combined_stderr_mkspec"
 
 
         echo "$cmd" > $spec_combined_cmd

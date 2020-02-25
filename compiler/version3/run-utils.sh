@@ -114,17 +114,17 @@ get_module_md5(){
       | md5sum | cut -d' ' -f1
 }
 get_mangled_saved_path(){
-    _MODULE=$1
+    _MODULE=$(basename $1)
     _MODULE_MD5=$(get_module_md5 $_MODULE)
     echo "$SAVE_MODULE_PATH/${_MODULE}_${_MODULE_MD5}.mangled"
 }
 get_spec_saved_path(){
-    _MODULE=$1
+    _MODULE=$(basename $1)
     _MODULE_MD5=$(get_module_md5 $_MODULE)
     echo "$SAVE_MODULE_PATH/${_MODULE}_${_MODULE_MD5}.spec"
 }
 get_module_saved_path(){
-    _MODULE=$1
+    _MODULE=$(basename $1)
     _MODULE_MD5=$(get_module_md5 $_MODULE)
     echo "$SAVE_MODULE_PATH/${_MODULE}_$_MODULE_MD5.binary"
 }

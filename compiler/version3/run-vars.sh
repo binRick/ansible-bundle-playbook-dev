@@ -5,9 +5,10 @@ export _MODULE_REPOS="
 "
 
 export BUILD_SCRIPTS="\
-    ansible-playbook.py \
+    scripts/_ansible.py \
 "
 export _BUILD_SCRIPTS="\
+    ansible-playbook.py \
     paramiko_test.py \
     ansible-config.py \
     ansible-vault.py \
@@ -33,7 +34,8 @@ export _MODULES="\
     $BASE_MODS \
 "
 export MODULES="\
-    $ANSIBLE_MODULES
+    $BASE_MODES \
+    $ANSIBLE_MODULES \
     $ADDTL_MODS \
 "
 
