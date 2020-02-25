@@ -271,10 +271,13 @@ class ConfigManager(object):
     def _read_config_yaml_file(self, yml_file):
         # TODO: handle relative paths as relative to the directory containing the current playbook instead of CWD
         # Currently this is only used with absolute paths to the `ansible/config` directory
-        print('         [yml_file]     {} {}'.format(yml_file, type(yml_file)))
+        #print('         [yml_file]     {} {}'.format(yml_file, type(yml_file)))
         _yml_file = yml_file.replace('/ansible/','/data/ansible/')    
-        print('         [_yml_file]     {} {}'.format(_yml_file, type(_yml_file)))
-        print('         [yml_file]     os.environ[\'__GLOBAL_PATHS\']={}'.format(os.environ.get('__GLOBAL_PATHS','unknown')))
+        #print('         [_yml_file]     {} {}'.format(_yml_file, type(_yml_file)))
+#        print('         [yml_file]     os.environ[\'__GLOBAL_PATHS\']={}'.format(os.environ.get('__GLOBAL_PATHS','unknown')))
+        if os.path.exists(_yml_file):
+            #print('         [_yml_file OVERRIDE!] {} => {}     '.format(_yml_file,yml_file))
+            yml_file = _yml_file
         yml_file = to_bytes(yml_file)
         if os.path.exists(yml_file):
             with open(yml_file, 'rb') as config_def:

@@ -143,14 +143,17 @@ setup_venv(){
 
         [[ "$_RELOCATE_ANSIBLE" == "1" ]] && cp -prf $VIRTUAL_ENV/lib/python3.6/site-packages/ansible $VIRTUAL_ENV/lib/python3.6/site-packages/_ansible
         for x in playbook config vault; do
-          #[[ -f ansible-${x}.py ]] && unlink ansible-${x}.py
-          [[ -f ansible-${x} ]] && unlink ansible-${x}
-          #cp $(which ansible-${x}) ansible-${x}.py
-          head -n 1 ansible-${x}.py | grep -q '^#!' && sed -i 1d ansible-${x}.py
+          if [[ "$_OVERWRITE_ANSIBLE_CLI_SCRIPTS" == "1" ]]; then
+            [[ -f ansible-${x}.py ]] && unlink ansible-${x}.py
+            [[ -f ansible-${x} ]] && unlink ansible-${x}
+            cp $(which ansible-${x}) ansible-${x}.py
+          fi
+
+          [[ "$_REMOVE_SHEBANG_LINE_FROM_ANSIBLE_CLI_SCRIPTS" == "1" ]] && head -n 1 ansible-${x}.py | grep -q '^#!' && sed -i 1d ansible-${x}.py
         done
         if [[ "$_OVERWRITE_MANAGER_FILE" == "1" ]]; then
+            python -m py_compile manager.py
             cp -f manager.py $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/manager.py
-            python -m py_compile .$VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/manager.py
         fi        
     fi
     
