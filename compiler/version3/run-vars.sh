@@ -5,14 +5,14 @@ export _MODULE_REPOS="
 "
 
 export BUILD_SCRIPTS="\
+    test.py \
     ansible-playbook.py \
-    ${_BORG_BUILD_NAME}.py \
     paramiko_test.py \
     ansible-config.py \
     ansible-vault.py \
 "
 export _BUILD_SCRIPTS="\
-    test.py \
+    ${_BORG_BUILD_NAME}.py \
     nagios_parser_test.py \
     test-hyphen.py \
     test1.py \
@@ -20,9 +20,9 @@ export _BUILD_SCRIPTS="\
     tcshow.py \
 "
 
-BASE_MODS="psutil loguru json2yaml setproctitle pyyaml pyaml requests json2yaml psutil paramiko"
+BASE_MODS="psutil loguru json2yaml setproctitle pyyaml pyaml requests json2yaml"
 ANSIBLE_MODULES="ansible simplejson terminaltables netaddr configparser jmespath urllib3"
-ADDTL_MODS="speedtest-cli docopt python-jose pycryptodome"
+ADDTL_MODS="speedtest-cli docopt python-jose pycryptodome paramiko psutil"
 
 export _MODULES="\
     pexpect \
@@ -33,7 +33,7 @@ export _MODULES="\
     halo \
 "
 export MODULES="\
-    $ANSIBLE_MODULES \
     $ADDTL_MODS \
+    $ANSIBLE_MODULES \
     $BASE_MODS \
 "

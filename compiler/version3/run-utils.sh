@@ -1,5 +1,8 @@
 
 
+get_setup_hash(){
+    (cd $ORIG_DIR && ls run-vars.sh run-constants.sh ../constants.sh|xargs md5sum|md5sum|cut -d' ' -f1)
+}
 ensure_borg(){
  [[ -d $BORG_REPO ]] || command borg $BORG_ARGS init -e repokey
  borg check $BORG_ARGS
@@ -18,7 +21,7 @@ save_build_to_borg(){
   jo dist_path=$REPO_NAME modules=@$modules_file build_scripts=@$bs_file |base64 -w0> .COMMENT
   cat .COMMENT
   COMMENT=$(cat .COMMENT)
-  cmd="cd $(dirname $BUILD_DIR) && borg $BORG_ARGS create -x -v --stats --progress --comment '$COMMENT' ::$REPO_NAME $REPO_NAME"
+  cmd="borg $BORG_ARGS delete ::$REPO_NAME >/dev/null 2>&1; cd $(dirname $BUILD_DIR) && borg $BORG_ARGS create -x -v --stats --progress --comment '$COMMENT' ::$REPO_NAME $REPO_NAME"
   ansi --yellow $cmd
   eval $cmd
 
@@ -41,7 +44,7 @@ get_cached_build_script_repo_env_name(){
 }
 get_cached_build_script_repo_name(){
     #_K="$(get_module_md5 $1)-$1-cached-build_script"
-    _K="$1-cached-build_script"
+    _K="$(get_setup_hash)-$1-cached-build_script"
     >&2 ansi --red  "        [get_cached_build_script_repo_name]           $1=$_K"
     echo $_K
 }
@@ -80,10 +83,10 @@ save_build_script_to_repo(){
     >&2 ansi --red "[save_build_script_to_repo] 1=\"$1\""
     REPO_NAME=$(get_cached_build_script_repo_name $1)
     REPO_ENV_NAME=$(get_cached_build_script_repo_env_name $1)
-    file_save_cmd="(cd $(dirname $2) && borg $BORG_ARGS create -x -v --stats --progress  ::$REPO_NAME $(basename $2))"
+    file_save_cmd="(borg $BORG_ARGS delete ::$REPO_NAME >/dev/null 2>&1; cd $(dirname $2) && borg $BORG_ARGS create -x -v --stats --progress  ::$REPO_NAME $(basename $2))"
     _DIR="$(dirname $2)"
     _FILES="$(cd $_DIR && find .|tr '\n' ' ')"
-    env_save_cmd="cd $_DIR && borg $BORG_ARGS create -x -v --stats --progress  ::$REPO_ENV_NAME $_FILES"
+    env_save_cmd="borg $BORG_ARGS delete ::$REPO_ENV_NAME >/dev/null 2>&1; cd $_DIR && borg $BORG_ARGS create -x -v --stats --progress  ::$REPO_ENV_NAME $_FILES"
     echo $file_save_cmd > .file_save_cmd
     echo $env_save_cmd > .env_save_cmd
     >&2 ansi --yellow "file_save_cmd saved, env_save_cmd saved to .file_save_cmd .env_save_cmd"
@@ -139,8 +142,8 @@ setup_venv(){
     if [[ "$BUILD_BORG" == "1" ]]; then
         [[ -d _borg ]] || git clone https://github.com/binRick/borg _borg
         (cd _borg && git pull)
-        pip install -q -r _borg/requirements.d/development.txt
-        pip install -q -e _borg
+        pip install -q -r _borg/requirements.d/development.txt --force
+        pip install -q -e _borg --force
         cp -f _borg/src/borg/__main__.py BORG.py
         head -n 1 BORG.py | grep -q '^#!' && sed -i 1d BORG.py
         python BORG.py --help >/dev/null 2>&1

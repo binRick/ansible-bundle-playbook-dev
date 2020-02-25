@@ -103,7 +103,7 @@ findModules_venv(){
 
 
 _findAllVenvModules(){    
-   ( for m in $(getVenvModules|egrep -v 'pyinstaller'); do
+   ( for m in $(getVenvModules|egrep -v '^pyinstaller|^pytest|^pygments|^py._|^importlib_metadata|^importlib_resources|^docutils|^coverage|^bleach|^PyInstaller|^_pytest'); do
         findModules_venv $m
     done
    ) | sort -u

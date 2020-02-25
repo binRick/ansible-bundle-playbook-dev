@@ -97,7 +97,7 @@ for x in $BUILD_SCRIPTS; do
 
     if [[ "$cached_build_script" != "" ]]; then #&& -f $cached_build_script ]]; then
         ansi --green found cached repo @ $cached_build_script
-        #exit 200
+        exit 200
     else
         ansi --green "Did not find cached build script for file=$_BS_ORIG repo_name=$cache_build_script_repo_name"
     fi

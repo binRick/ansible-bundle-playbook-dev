@@ -6,8 +6,8 @@ source /etc/.ansi
 source run-constants.sh
 source run-utils.sh
 
-ensure_borg
 setup_venv
+#ensure_borg
 deactivate
 load_vars
 run_build
