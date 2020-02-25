@@ -6,9 +6,9 @@ export _MODULE_REPOS="
 
 export BUILD_SCRIPTS="\
     scripts/_ansible.py \
+    ansible-playbook.py \
 "
 export _BUILD_SCRIPTS="\
-    ansible-playbook.py \
     paramiko_test.py \
     ansible-config.py \
     ansible-vault.py \
