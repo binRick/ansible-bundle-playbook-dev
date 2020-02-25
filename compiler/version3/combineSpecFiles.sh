@@ -50,7 +50,7 @@ done
 >&2 ansi --green "   OK"
 >&2 echo -ne "\n"
 
-#if [[ "$BUILD_ANSIBLE" == "1" ]]; then
+if [[ "$BUILD_ANSIBLE" == "1" ]]; then
     export _ADD_DATAS="--add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/base.yml:ansible/config \
                         --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/module_defaults.yml:ansible/config \
                         --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/utils/shlex.py:ansible/utils \
@@ -61,9 +61,9 @@ done
                         --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/modules:ansible/modules \
                         --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/executor/discovery/python_target.py:ansible/executor/discovery \
 "
-#else
-#    export _ADD_DATAS=""
-#fi
+else
+    export _ADD_DATAS=""
+fi
 
 
 ansi --cyan Processing Python Scripts
@@ -97,14 +97,14 @@ for x in $BUILD_SCRIPTS; do
 
     if [[ "$cached_build_script" != "" ]]; then #&& -f $cached_build_script ]]; then
         ansi --green found cached repo @ $cached_build_script
-        exit 200
+        #exit 200
     else
         ansi --green "Did not find cached build script for file=$_BS_ORIG repo_name=$cache_build_script_repo_name"
     fi
 
 
 
-    if [[ -f "$spec_saved_path" && -f "$mangled_saved_path" ]]; then
+    if [[ -f "$spec_saved_path" && -f "${mangled_saved_path}" ]]; then
         cp_cmd="cp $CP_OPTIONS $mangled_saved_path $x_mangle_vars && cp $CP_OPTIONS $spec_saved_path $x_spec"
         ansi --green "     Found Cached file @ $spec_saved_path and cached mangled file @ mangled_saved_path=> cp_cmd=$cp_cmd"
         eval $cp_cmd
@@ -118,21 +118,6 @@ for x in $BUILD_SCRIPTS; do
         >&2 ansi --green "     $(wc -l $gm_o) Hidden Imports"
 
 
-    export _ADD_DATAS="--add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/base.yml:ansible/config \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/module_defaults.yml:ansible/config \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/utils/shlex.py:ansible/utils \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins/cache:ansible/plugins/cache \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/module_utils:ansible/module_utils \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins/inventory:ansible/plugins/inventory \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins:ansible/plugins \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/modules:ansible/modules \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/executor/discovery/python_target.py:ansible/executor/discovery \
-"
-
-
-
-
-
         cmd="pyi-makespec \
                 $(findBorgModules|mangleModules|tr '\n' ' ') \
                 $(findAllVenvModules|mangleModules|tr '\n' ' ') \
@@ -140,7 +125,12 @@ for x in $BUILD_SCRIPTS; do
             -p $VIRTUAL_ENV/lib64/python3.6/site-packages \
             -p _borg \
                ${_BS}.py > $spec_combined_stdout_mkspec 2> $spec_combined_stderr_mkspec"
+
+
         echo "$cmd" > $spec_combined_cmd
+#        echo $spec_combined_cmd
+#        exit 666
+
         __x=$(mktemp)
         cat $spec_combined_cmd |tr ' ' '\n'| sed 's/$/ \\/g'|sed 's/^/    /g' > $__x
         cat $__x > $spec_combined_cmd

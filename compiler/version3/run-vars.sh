@@ -6,12 +6,12 @@ export _MODULE_REPOS="
 
 export BUILD_SCRIPTS="\
     ansible-playbook.py \
-"
-export _BUILD_SCRIPTS="\
     ${_BORG_BUILD_NAME}.py \
     paramiko_test.py \
     ansible-config.py \
     ansible-vault.py \
+"
+export _BUILD_SCRIPTS="\
     test.py \
     nagios_parser_test.py \
     test-hyphen.py \
