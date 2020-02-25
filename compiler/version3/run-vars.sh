@@ -5,14 +5,14 @@ export _MODULE_REPOS="
 "
 
 export BUILD_SCRIPTS="\
-    test.py \
+    ansible-playbook.py \
 "
 export _BUILD_SCRIPTS="\
-    paramiko_test.py \
     ${_BORG_BUILD_NAME}.py \
-    ansible-playbook.py \
+    paramiko_test.py \
     ansible-config.py \
     ansible-vault.py \
+    test.py \
     nagios_parser_test.py \
     test-hyphen.py \
     test1.py \
@@ -31,9 +31,9 @@ export _MODULES="\
     tmuxp \
     tcconfig \
     halo \
+"
+export MODULES="\
     $ANSIBLE_MODULES \
     $ADDTL_MODS \
     $BASE_MODS \
-"
-export MODULES="\
 "

@@ -52,7 +52,12 @@ get_cached_build_script(){
     eval $cmd > .o 2>&1
     ec=$?
     >&2 ansi --yellow "     $(echo -e "\n\n")     [cached_build_script] 1=$1 REPO_NAME=$REPO_NAME cmd=$cmd exit_code=$ec $(echo -e "\n\n") "
-    cat .o
+    if [[ "$ec" == "0" ]]; then
+        cat .o
+    else
+        echo ""
+    fi
+
     set -e
 }
 xxxx(){

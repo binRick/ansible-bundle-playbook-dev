@@ -50,7 +50,7 @@ done
 >&2 ansi --green "   OK"
 >&2 echo -ne "\n"
 
-if [[ "$BUILD_ANSIBLE" == "1" ]]; then
+#if [[ "$BUILD_ANSIBLE" == "1" ]]; then
     export _ADD_DATAS="--add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/base.yml:ansible/config \
                         --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/module_defaults.yml:ansible/config \
                         --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/utils/shlex.py:ansible/utils \
@@ -61,9 +61,9 @@ if [[ "$BUILD_ANSIBLE" == "1" ]]; then
                         --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/modules:ansible/modules \
                         --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/executor/discovery/python_target.py:ansible/executor/discovery \
 "
-else
-    export _ADD_DATAS=""
-fi
+#else
+#    export _ADD_DATAS=""
+#fi
 
 
 ansi --cyan Processing Python Scripts
@@ -116,6 +116,23 @@ for x in $BUILD_SCRIPTS; do
         getModules >$gm_o 2>$gm_e
 
         >&2 ansi --green "     $(wc -l $gm_o) Hidden Imports"
+
+
+    export _ADD_DATAS="--add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/base.yml:ansible/config \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/module_defaults.yml:ansible/config \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/utils/shlex.py:ansible/utils \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins/cache:ansible/plugins/cache \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/module_utils:ansible/module_utils \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins/inventory:ansible/plugins/inventory \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins:ansible/plugins \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/modules:ansible/modules \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/executor/discovery/python_target.py:ansible/executor/discovery \
+"
+
+
+
+
+
         cmd="pyi-makespec \
                 $(findBorgModules|mangleModules|tr '\n' ' ') \
                 $(findAllVenvModules|mangleModules|tr '\n' ' ') \
