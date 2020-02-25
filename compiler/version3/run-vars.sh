@@ -30,11 +30,10 @@ export _MODULES="\
     tmuxp \
     tcconfig \
     halo \
-    $ADDTL_MODS \
-    $ANSIBLE_MODULES \
     $BASE_MODS \
 "
 export MODULES="\
     $ANSIBLE_MODULES
+    $ADDTL_MODS \
 "
 

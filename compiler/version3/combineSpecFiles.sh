@@ -124,6 +124,7 @@ for x in $BUILD_SCRIPTS; do
                 $(findAllVenvModules|mangleModules|tr '\n' ' ') \
                 $_ADD_DATAS \
             -p $VIRTUAL_ENV/lib64/python3.6/site-packages \
+            --runtime-hook=hook-file1.py \
             -p _borg \
             -p _ansible \
                ${_BS}.py > $spec_combined_stdout_mkspec 2> $spec_combined_stderr_mkspec"
