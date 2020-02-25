@@ -51,15 +51,16 @@ done
 >&2 echo -ne "\n"
 
 if [[ "$BUILD_ANSIBLE" == "1" ]]; then
-    export _ADD_DATAS="--add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/base.yml:ansible/config \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/module_defaults.yml:ansible/config \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/utils/shlex.py:ansible/utils \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins/cache:ansible/plugins/cache \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/module_utils:ansible/module_utils \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins/inventory:ansible/plugins/inventory \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins:ansible/plugins \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/modules:ansible/modules \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/executor/discovery/python_target.py:ansible/executor/discovery \
+    export _ADD_DATAS="\
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/base.yml:lib/ansible/config \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/module_defaults.yml:lib/ansible/config \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/utils/shlex.py:lib/ansible/utils \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins/cache:lib/ansible/plugins/cache \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/module_utils:lib/ansible/module_utils \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins/inventory:lib/ansible/plugins/inventory \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins:lib/ansible/plugins \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/modules:lib/ansible/modules \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/executor/discovery/python_target.py:lib/ansible/executor/discovery \
 "
 else
     export _ADD_DATAS=""
@@ -104,7 +105,7 @@ for x in $BUILD_SCRIPTS; do
 
 
 
-    if [[ -f "$spec_saved_path" && -f "${mangled_saved_path}" ]]; then
+    if [[ -f "$spec_saved_path" && -f "${mangled_saved_path}-xxxxxxxx" ]]; then
         cp_cmd="cp $CP_OPTIONS $mangled_saved_path $x_mangle_vars && cp $CP_OPTIONS $spec_saved_path $x_spec"
         ansi --green "     Found Cached file @ $spec_saved_path and cached mangled file @ mangled_saved_path=> cp_cmd=$cp_cmd"
         eval $cp_cmd

@@ -20,12 +20,53 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-__requires__ = ['ansible']
 
+
+import os
+import sys
+import os.path as op
+try:
+    this_file = __file__
+except NameError:
+    this_file = sys.argv[0]
+this_file = op.abspath(this_file)
+if getattr(sys, 'frozen', False):
+    application_path = getattr(sys, '_MEIPASS', op.dirname(sys.executable))
+else:
+    application_path = op.dirname(this_file)
+
+sys.path.append(os.path.dirname('{}/lib/file'.format(application_path)))
+
+
+
+print('\n         [0]  application_path={}\n'.format(application_path))
+print('\n         [0]  sys.path={}\n'.format(sys.path))
 
 import os
 import shutil
 import sys
+
+if 'LIB_PATH' in os.environ.keys():
+    sys.path.append(os.path.dirname(os.environ['LIB_PATH']))
+
+print('         sys.path={}'.format(sys.path))
+
+
+
+
+if getattr(sys, 'frozen', False):
+    # If the application is run as a bundle, the pyInstaller bootloader
+    # extends the sys module by a flag frozen=True and sets the app 
+    # path into variable _MEIPASS'.
+    application_path = sys._MEIPASS
+else:
+    application_path = os.path.dirname(os.path.abspath(__file__))
+
+print('        [application_path]={}'.format(application_path))
+
+#sys.path.insert(0, 'lib')
+
+__requires__ = ['ansible']
 import traceback
 
 from ansible import context

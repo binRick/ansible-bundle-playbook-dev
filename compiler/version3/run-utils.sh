@@ -132,9 +132,9 @@ setup_venv(){
     if [[ "$BUILD_ANSIBLE" == "1" ]]; then
         pip -q install ansible==$ANSIBLE_VERSION
         for x in playbook config vault; do
-          [[ -f ansible-${x}.py ]] && unlink ansible-${x}.py
+          #[[ -f ansible-${x}.py ]] && unlink ansible-${x}.py
           [[ -f ansible-${x} ]] && unlink ansible-${x}
-          cp $(which ansible-${x}) ansible-${x}.py
+          #cp $(which ansible-${x}) ansible-${x}.py
           head -n 1 ansible-${x}.py | grep -q '^#!' && sed -i 1d ansible-${x}.py
         done
     fi
