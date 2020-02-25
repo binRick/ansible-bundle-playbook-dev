@@ -52,15 +52,15 @@ done
 
 if [[ "$BUILD_ANSIBLE" == "1" ]]; then
     export _ADD_DATAS="\
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/base.yml:${_DATA_PREFIX}/ansible/config \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/module_defaults.yml:${_DATA_PREFIX}/ansible/config \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/utils/shlex.py:${_DATA_PREFIX}/ansible/utils \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins/cache:${_DATA_PREFIX}/ansible/plugins/cache \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/module_utils:${_DATA_PREFIX}/ansible/module_utils \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins/inventory:${_DATA_PREFIX}/ansible/plugins/inventory \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins:${_DATA_PREFIX}/ansible/plugins \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/modules:${_DATA_PREFIX}/ansible/modules \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/executor/discovery/python_target.py:${_DATA_PREFIX}/ansible/executor/discovery \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/${_ADD_DATA_ANSIBLE_PATH}/config/base.yml:${_DATA_PREFIX}/config \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/${_ADD_DATA_ANSIBLE_PATH}/config/module_defaults.yml:${_DATA_PREFIX}/config \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/${_ADD_DATA_ANSIBLE_PATH}/utils/shlex.py:${_DATA_PREFIX}/utils \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/${_ADD_DATA_ANSIBLE_PATH}/plugins/cache:${_DATA_PREFIX}/plugins/cache \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/${_ADD_DATA_ANSIBLE_PATH}/module_utils:${_DATA_PREFIX}/module_utils \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/${_ADD_DATA_ANSIBLE_PATH}/plugins/inventory:${_DATA_PREFIX}/plugins/inventory \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/${_ADD_DATA_ANSIBLE_PATH}/plugins:${_DATA_PREFIX}/plugins \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/${_ADD_DATA_ANSIBLE_PATH}/modules:${_DATA_PREFIX}/modules \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/${_ADD_DATA_ANSIBLE_PATH}/executor/discovery/python_target.py:${_DATA_PREFIX}/executor/discovery \
 "
 else
     export _ADD_DATAS=""

@@ -139,7 +139,9 @@ setup_venv(){
     if [[ "$BUILD_ANSIBLE" == "1" ]]; then
         pip -q install ansible==$ANSIBLE_VERSION
         [[ -d _ansible ]] && rm -rf _ansible
-        [[ "$_RELOCATE_ANSIBLE" == "1" ]] && mv $VIRTUAL_ENV/lib/python3.6/site-packages/ansible $VIRTUAL_ENV/lib/python3.6/site-packages/_ansible
+        [[ -d $VIRTUAL_ENV/lib/python3.6/site-packages/_ansible ]] && rm -rf $VIRTUAL_ENV/lib/python3.6/site-packages/_ansible
+
+        [[ "$_RELOCATE_ANSIBLE" == "1" ]] && cp -prf $VIRTUAL_ENV/lib/python3.6/site-packages/ansible $VIRTUAL_ENV/lib/python3.6/site-packages/_ansible
         for x in playbook config vault; do
           #[[ -f ansible-${x}.py ]] && unlink ansible-${x}.py
           [[ -f ansible-${x} ]] && unlink ansible-${x}

@@ -103,10 +103,23 @@ findModules_venv(){
 
 
 _findAllVenvModules(){    
+    M=$(mktemp)
    ( for m in $(getVenvModules|egrep -v '^pyinstaller|^pytest|^pygments|^py._|^importlib_metadata|^importlib_resources|^docutils|^coverage|^bleach|^PyInstaller|^_pytest'); do
         findModules_venv $m
     done
    ) | sort -u
+# > $M
+
+#    if [[ "$_EXCLUDE_ANSIBLE_MODULES" == "1" ]]; then
+#        cat $M | excludeRawAnsibleModules
+#    else
+#        cat $M
+#    if 
+#    unlink $M
+}
+
+excludeRawAnsibleModules(){
+    egrep -v '^ansible\.'
 }
 
 findBorgModules(){
