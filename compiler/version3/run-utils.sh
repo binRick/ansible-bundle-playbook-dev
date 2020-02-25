@@ -1,20 +1,105 @@
+
+
+ensure_borg(){
+ [[ -d $BORG_REPO ]] || command borg $BORG_ARGS init -e repokey
+ borg check $BORG_ARGS
+ borg prune $BORG_ARGS -v -p --keep-within ${BORG_KEEP_WITHIN_DAYS}d 2>/dev/null
+}
+save_build_to_borg(){
+  set +e
+  BUILD_DIR=$1
+  [[ ! -d $BUILD_DIR ]] && ansi --red Invalid Build Dir && exit 1
+  REPO_NAME="$(basename $BUILD_DIR)"
+  FILES="$(cd $BUILD_DIR && find .)"
+  modules_file=$(mktemp)
+  bs_file=$(mktemp)
+  echo "$MODULES"|tr ' ' '\n'|grep -v '^$' > $modules_file
+  echo "$BUILD_SCRIPTS"|tr ' ' '\n'|grep -v '^$' > $bs_file
+  jo dist_path=$REPO_NAME modules=@$modules_file build_scripts=@$bs_file |base64 -w0> .COMMENT
+  cat .COMMENT
+  COMMENT=$(cat .COMMENT)
+  cmd="cd $(dirname $BUILD_DIR) && borg $BORG_ARGS create -x -v --stats --progress --comment '$COMMENT' ::$REPO_NAME $REPO_NAME"
+  ansi --yellow $cmd
+  eval $cmd
+
+  set -e
+}
+parse_get_borg_repo_comment(){
+    cmd="borg $BORG_ARGS info ::$1|grep '^Comment: '|cut -d' ' -f2|base64 -d"
+    eval $cmd
+}
+get_borg_repo_modules(){
+    parse_get_borg_repo_comment |jq '.modules' -Mrc
+}
 load_vars(){
     >&2 ansi --cyan "  Loading $(wc -l run-vars.sh) Vars.."
     source run-vars.sh
 }
+get_cached_build_script_repo_env_name(){
+    _K="$(get_module_md5 $1)-$1-cached-build_script-env"
+    echo $_K
+}
+get_cached_build_script_repo_name(){
+    _K="$(get_module_md5 $1)-$1-cached-build_script"
+    echo $_K
+}
+get_cached_build_script(){
+    set +e
+    REPO_NAME=$(get_cached_build_script_repo_name $1)
+    cmd="borg list ::$REPO_NAME"
+    cmd_out=$(mktemp)
+    cmd_err=$(mktemp)
+    eval $cmd >$cmd_out 2>$cmd_err
+    cmd_exit_code=$?
+    if [[ "$cmd_exit_code" == "0" ]]; then
+        >&2 ansi --green $(cat $cmd_out)
+        cat $cmd_out
+    else
+        >&2 ansi --red $(cat $cmd_out $cmd_err)
+        echo ""
+    fi
+    set -e
+
+}
+save_build_script_to_repo(){
+    REPO_NAME=$(get_cached_build_script_repo_name $1)
+    REPO_ENV_NAME=$(get_cached_build_script_repo_env_name $1)
+    file_save_cmd="(cd $(dirname $2) && borg $BORG_ARGS create -x -v --stats --progress  ::$REPO_NAME $(basename $2))"
+    _DIR="$(dirname $2)"
+    _FILES="$(cd $_DIR && find .|tr '\n' ' ')"
+    env_save_cmd="cd $_DIR && borg $BORG_ARGS create -x -v --stats --progress  ::$REPO_ENV_NAME $_FILES"
+    echo $file_save_cmd > .file_save_cmd
+    echo $env_save_cmd > .env_save_cmd
+    >&2 ansi --yellow "file_save_cmd saved, env_save_cmd saved to .file_save_cmd .env_save_cmd"
+    set +e
+    bash .file_save_cmd
+    file_save_exit_code=$?
+    bash .env_save_cmd
+    env_save_exit_code=$?
+    >&2 ansi --yellow "     file_save_exit_code=$file_save_exit_code env_save_exit_code=$env_save_exit_code"
+    set -e
+}
+get_module_md5(){
+    (
+      md5sum $1 
+      echo $1 |md5sum
+      echo $MODULES|md5sum
+    ) \
+      | md5sum | cut -d' ' -f1
+}
 get_mangled_saved_path(){
     _MODULE=$1
-    _MODULE_MD5=$(echo $_MODULE|md5sum | cut -d' ' -f1)
+    _MODULE_MD5=$(get_module_md5 $_MODULE)
     echo "$SAVE_MODULE_PATH/${_MODULE}_${_MODULE_MD5}.mangled"
 }
 get_spec_saved_path(){
     _MODULE=$1
-    _MODULE_MD5=$(echo $_MODULE|md5sum | cut -d' ' -f1)
+    _MODULE_MD5=$(get_module_md5 $_MODULE)
     echo "$SAVE_MODULE_PATH/${_MODULE}_${_MODULE_MD5}.spec"
 }
 get_module_saved_path(){
     _MODULE=$1
-    _MODULE_MD5=$(echo $_MODULE|md5sum | cut -d' ' -f1)
+    _MODULE_MD5=$(get_module_md5 $_MODULE)
     echo "$SAVE_MODULE_PATH/${_MODULE}_$_MODULE_MD5.binary"
 }
 
@@ -49,7 +134,11 @@ setup_venv(){
 
 
 save_modules(){
+    set +e
     for m in $BUILD_SCRIPTS; do
+        >&2 ansi --green saving Build Script $m to repo
+        save_build_script_to_repo $m $DIST_PATH/$m
+        #        exit 201
         _m="$(basename $m .py)"
         save_path=$(get_module_saved_path $m)
         cp_cmd="cp $DIST_PATH/$_m $save_path"
@@ -57,12 +146,13 @@ save_modules(){
         >&2 pwd
         eval $cp_cmd
     done
+    set -e
 }
 
 run_build(){
-    [[ -f .stdout ]] && unlink .stdout
-    [[ -f .stderr ]] && unlink .stderr
-    [[ -f .exit_code ]] && unlink .exit_code
+    [[ -f .stdout ]] && ansi --yellow "Starting build" > .stdout
+    [[ -f .stderr ]] && ansi --yellow "Starting build" > .stderr
+    [[ -f .exit_code ]] && echo "" > .exit_code
     set +e
     bash -x ./build.sh > .stdout 2> .stderr
     exit_code=$?

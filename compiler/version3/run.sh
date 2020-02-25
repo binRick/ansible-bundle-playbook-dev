@@ -6,15 +6,19 @@ source /etc/.ansi
 source run-constants.sh
 source run-utils.sh
 
+ensure_borg
 setup_venv
 deactivate
 load_vars
 run_build
-
-
-echo DIST_PATH=$DIST_PATH
-
 save_modules
+save_build_to_borg "$DIST_PATH"
+
+COMMENT="$(parse_get_borg_repo_comment "$(basename $DIST_PATH)")"
+echo "COMMENT=$COMMENT"
+
+echo REPO_MODULES=
+get_borg_repo_modules "$(basename $DIST_PATH)"
 
 mv $DIST_PATH ${DIST_PATH}.t
 mkdir $DIST_PATH

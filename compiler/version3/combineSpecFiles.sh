@@ -75,13 +75,35 @@ for x in $BUILD_SCRIPTS; do
     x="$(basename $x .py)"
     _BS="$x"
     x_spec="${_BS}.spec"
-    x_mangle_vars="$(get_mangle_vars_file $x_orig)"
-    spec_saved_path="$(get_spec_saved_path $_BS)"
-    mangled_saved_path="$(get_mangled_saved_path $_BS)"
+    x_mangle_vars="$(get_mangle_vars_file $_BS_ORIG)"
+    spec_saved_path="$(get_spec_saved_path $_BS_ORIG)"
+    mangled_saved_path="$(get_mangled_saved_path $_BS_ORIG)"
     mangle_cmd="$MANGLE_SCRIPT $x_spec"
-    save_path=$(get_module_saved_path $_BS)
-    cached_module_dir=$(get_cached_module_dir $_BS)
+    save_path=$(get_module_saved_path $_BS_ORIG)
+    cached_module_dir=$(get_cached_module_dir $_BS_ORIG)
     ansi --cyan "     Checking if Build Script $x exists in cache => $save_path=$save_path => spec_saved_path=$spec_saved_path :: mangled_saved_path=$mangled_saved_path"
+    cache_build_script_repo_name=$(get_cached_build_script_repo_name $_BS_ORIG)
+    ansi --yellow cache_build_script_repo_name=$cache_build_script_repo_name
+
+    cached_build_script=$(get_cached_build_script $_BS_ORIG)
+    exit_code1=$?
+    ansi --yellow  cached_build_script=$cached_build_script exit_code=$exit_code1
+
+    cached_build_script_repo_env_name=$(get_cached_build_script_repo_env_name $_BS_ORIG)
+    exit_code2=$?
+    ansi --yellow cache_build_script_repo_name=$cache_build_script_repo_name exit_code=$exit_code2
+
+    if [[ "$cached_build_script" != "" ]]; then #&& -f $cached_build_script ]]; then
+        ansi --green found cached repo @ $cached_build_script
+        exit 200
+#    else
+#        save_build_script_to_repo $_BS passwd
+#        ansi --green saving dummy file to $cache_build_script_repo_name    
+#        exit 201
+    fi
+
+
+
     if [[ -f "$spec_saved_path" && -f "$mangled_saved_path" ]]; then
         cp_cmd="cp $CP_OPTIONS $mangled_saved_path $x_mangle_vars && cp $CP_OPTIONS $spec_saved_path $x_spec"
         ansi --green "     Found Cached file @ $spec_saved_path and cached mangled file @ mangled_saved_path=> cp_cmd=$cp_cmd"
@@ -140,7 +162,7 @@ for x in $BUILD_SCRIPTS; do
 done 
 
 echo -ne "\n"
-ansi --cyan Create Compined Spec File
+ansi --cyan Create Combined Spec File
 COMBINED_SPEC_FILE=""
 for x in $BUILD_SCRIPTS; do 
     x="$(basename $x .py)"
@@ -150,7 +172,7 @@ done
 COMBINED_SPEC_FILE="${COMBINED_SPEC_FILE}.spec"
 COMBINED_SPEC_FILE="$(echo $COMBINED_SPEC_FILE | sed 's/^_//g')"
 
-[[ -f $COMBINED_SPEC_FILE ]] && rm $COMBINED_SPEC_FILE
+[[ -f $COMBINED_SPEC_FILE ]] && echo "" > $COMBINED_SPEC_FILE
 touch $COMBINED_SPEC_FILE
 ansi --green "OK - $COMBINED_SPEC_FILE"
 

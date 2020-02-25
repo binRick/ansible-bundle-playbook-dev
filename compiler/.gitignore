@@ -23,3 +23,5 @@ test*/.*.sh
 */.*spec*
 */.combined*
 */.*mangled_vars.txt
+*/.exit_code
+*/.COMMENT
