@@ -220,10 +220,8 @@ for x in $BUILD_SCRIPTS; do
         x_spec="${x}.spec"
         x_mangle_vars="$(get_mangle_vars_file $x_orig)"
         for k in ANALYSIS; do 
-    #        ansi --magenta " [$x_orig => $k]"
             cat "$(get_mangled_var $x_mangle_vars $k)" >> $COMBINED_SPEC_FILE
             echo -ne "\n" >> $COMBINED_SPEC_FILE
-    #        ansi --green "   OK"
         done
         echo -ne "\n\n" >> $COMBINED_SPEC_FILE
     fi

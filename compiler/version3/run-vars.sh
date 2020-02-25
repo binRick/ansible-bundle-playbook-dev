@@ -1,28 +1,34 @@
 export MODULE_REPOS="
-"
-export _MODULE_REPOS="
     git+https://github.com/binRick/python3-parse-nagios-status-dat \
 "
+export _MODULE_REPOS="
+"
+
+
+BUILD_SCRIPT_REPLACEMENTS="_ansible.py|ansible.py"
+_BUILD_SCRIPT_REPLACEMENTS=""
 
 export BUILD_SCRIPTS="\
-    ansible-playbook.py \
+    _ansible.py \
 "
 export _BUILD_SCRIPTS="\
-    cripts/_ansible.py \
-    paramiko_test.py \
+    test.py \
+    ansible-playbook.py \
     ansible-config.py \
+    scripts/_ansible.py \
+    j2.py \
+    paramiko_test.py \
     ansible-vault.py \
     ${_BORG_BUILD_NAME}.py \
     nagios_parser_test.py \
     test-hyphen.py \
-    test1.py \
     tmuxp.py \
     tcshow.py \
 "
-
-BASE_MODS="psutil loguru json2yaml setproctitle pyyaml pyaml requests json2yaml setproctitle Cython"
+REQUIRED_MODULES="python-prctl setproctitle Cython psutil"
+BASE_MODS="loguru json2yaml jinja2 pyyaml pyaml requests json2yaml"
 ANSIBLE_MODULES="simplejson terminaltables netaddr configparser jmespath urllib3"
-ADDTL_MODS="speedtest-cli docopt python-jose pycryptodome paramiko psutil"
+ADDTL_MODS="speedtest-cli docopt python-jose pycryptodome paramiko"
 
 export _MODULES="\
     pexpect \
@@ -32,10 +38,11 @@ export _MODULES="\
     tcconfig \
     halo \
     $BASE_MODS \
-"
-export MODULES="\
-    $BASE_MODES \
     $ANSIBLE_MODULES \
     $ADDTL_MODS \
+"
+export MODULES="\
+    $REQUIRED_MODULES \
+    $ANSIBLE_MODULES \
 "
 

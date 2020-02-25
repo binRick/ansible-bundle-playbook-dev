@@ -27,3 +27,4 @@ test*/.*.sh
 */.COMMENT
 */package-lock.json 
 version*/.*_save_cmd
+version*/.bin*sh

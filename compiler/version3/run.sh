@@ -7,7 +7,7 @@ source ../constants.sh
 source run-constants.sh
 source run-utils.sh
 
-cleanup_COMPILEDS
+cleanup_compileds
 setup_venv
 install_borg
 ensure_borg
@@ -19,5 +19,8 @@ save_build_to_borg "$DIST_PATH"
 
 normalize_dist_path
 test_dist_path
+setup_venv
 relocate_path
 
+
+echo "DIST_PATH=$DIST_PATH"

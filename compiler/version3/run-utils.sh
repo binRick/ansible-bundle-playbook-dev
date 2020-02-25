@@ -7,6 +7,19 @@ install_borg(){
     export PATH=~/.local/bin:$PATH
 
 }
+getBuildScriptReplacement(){
+    __BS="$1"
+    for r in $(echo "$BUILD_SCRIPT_REPLACEMENTS"|tr ' ' '\n'); do
+        s1="$(echo $r|cut -d'|' -f1)"
+        s2="$(echo $r|cut -d'|' -f2)"
+        if [[ "$(basename $__BS .py)" == "$(basename $s1 .py)" ]]; then
+            >&2 ansi --yellow "     [getBuildScriptReplacement] $s1 => $s2"
+            echo $s2
+        else
+            echo ""
+        fi
+    done
+}
 get_setup_hash(){
     (cd $ORIG_DIR && ls run-vars.sh run-constants.sh ../constants.sh|xargs md5sum|md5sum|cut -d' ' -f1)
 }
@@ -15,27 +28,29 @@ ensure_borg(){
  borg check $BORG_ARGS
  borg prune $BORG_ARGS -v -p --keep-within ${BORG_KEEP_WITHIN_DAYS}d 2>/dev/null
 }
-cleanup_COMPILEDS(){
+cleanup_compileds(){
     find . -maxdepth 2 -name ".COMBINED-*" -type d -amin +6|xargs -I % rm -rf %
 }
 save_build_to_borg(){
-  set +e
-  BUILD_DIR=$1
-  [[ ! -d $BUILD_DIR ]] && ansi --red Invalid Build Dir && exit 1
-  REPO_NAME="$(basename $BUILD_DIR)"
-  FILES="$(cd $BUILD_DIR && find .)"
-  modules_file=$(mktemp)
-  bs_file=$(mktemp)
-  echo "$MODULES"|tr ' ' '\n'|grep -v '^$' > $modules_file
-  echo "$BUILD_SCRIPTS"|tr ' ' '\n'|grep -v '^$' > $bs_file
-  jo dist_path=$REPO_NAME modules=@$modules_file build_scripts=@$bs_file |base64 -w0> .COMMENT
-  cat .COMMENT
-  COMMENT=$(cat .COMMENT)
-  cmd="borg $BORG_ARGS delete ::$REPO_NAME >/dev/null 2>&1; cd $(dirname $BUILD_DIR) && borg $BORG_ARGS create -x -v --stats --progress --comment '$COMMENT' ::$REPO_NAME $REPO_NAME"
-  ansi --yellow $cmd
-  eval $cmd
+  if [[ "$SAVE_BUILD_TO_BORG" == "1" ]]; then
+      set +e
+      BUILD_DIR=$1
+      [[ ! -d $BUILD_DIR ]] && ansi --red Invalid Build Dir && exit 1
+      REPO_NAME="$(basename $BUILD_DIR)"
+      FILES="$(cd $BUILD_DIR && find .)"
+      modules_file=$(mktemp)
+      bs_file=$(mktemp)
+      echo "$MODULES"|tr ' ' '\n'|grep -v '^$' > $modules_file
+      echo "$BUILD_SCRIPTS"|tr ' ' '\n'|grep -v '^$' > $bs_file
+      jo dist_path=$REPO_NAME modules=@$modules_file build_scripts=@$bs_file |base64 -w0> .COMMENT
+      cat .COMMENT
+      COMMENT=$(cat .COMMENT)
+      cmd="borg $BORG_ARGS delete ::$REPO_NAME >/dev/null 2>&1; cd $(dirname $BUILD_DIR) && borg $BORG_ARGS create -x -v --stats --progress --comment '$COMMENT' ::$REPO_NAME $REPO_NAME"
+      ansi --yellow $cmd
+      eval $cmd
 
-  set -e
+      set -e
+   fi
 }
 parse_get_borg_repo_comment(){
     cmd="borg $BORG_ARGS info ::$1|grep '^Comment: '|cut -d' ' -f2|base64 -d"
@@ -89,6 +104,7 @@ xxxx(){
 
 }
 save_build_script_to_repo(){
+  if [[ "$SAVE_BUILD_TO_BORG" == "1" ]]; then
     ansi --yellow "[save_build_script_to_repo] 1=\"$1\""
     >&2 ansi --yellow "[save_build_script_to_repo] 1=\"$1\""
     REPO_NAME=$(get_cached_build_script_repo_name $1)
@@ -107,6 +123,7 @@ save_build_script_to_repo(){
     env_save_exit_code=$?
     >&2 ansi --yellow "     file_save_exit_code=$file_save_exit_code env_save_exit_code=$env_save_exit_code"
     set -e
+  fi
 }
 get_module_md5(){
     (
@@ -144,7 +161,6 @@ setup_venv(){
         [[ -d _ansible ]] && rm -rf _ansible
         [[ -d $VIRTUAL_ENV/lib/python3.6/site-packages/_ansible ]] && rm -rf $VIRTUAL_ENV/lib/python3.6/site-packages/_ansible
 
-        [[ "$_RELOCATE_ANSIBLE" == "1" ]] && cp -prf $VIRTUAL_ENV/lib/python3.6/site-packages/ansible $VIRTUAL_ENV/lib/python3.6/site-packages/_ansible
         for x in playbook config vault; do
           if [[ "$_OVERWRITE_ANSIBLE_CLI_SCRIPTS" == "1" ]]; then
             [[ -f ansible-${x}.py ]] && unlink ansible-${x}.py
@@ -236,29 +252,43 @@ relocate_path(){
         BIN_PATH="$DIST_PATH/$_DIR_PATH_PREFIX/bin"
         LIB_PATH="$DIST_PATH/$_DIR_PATH_PREFIX/$_RELOCATE_PATH_PREFIX"
         mkdir -p $BIN_PATH
-        pip install 'j2cli[yaml]' json2yaml cython --upgrade
+        pip install $_RELOCATE_MODULES --upgrade -q
         for B in $BUILD_SCRIPTS; do
             _tf=$(mktemp)
+            REPLACED_BUILD_SCRIPT="$(getBuildScriptReplacement $B)"
             _tf_bin_path_py="$BIN_PATH/$(basename $B .py).py"
-            _tf_bin_path_py_clean="$(echo $BIN_PATH/$(basename $B .py).py|tr '-' '_')"
-            >&2 ansi --yellow "Creating bin script for Build Script $B in path $BIN_PATH to rendered file $_tf _tf_bin_path_py_clean=$_tf_bin_path_py_clean"
+            _tf_bin_path_py_clean="${BIN_PATH}/$(echo $(basename $B .py).py|tr '-' '_')"
+            >&2 ansi --yellow "Creating bin script for Build Script $B in path $BIN_PATH to rendered file $_tf _tf_bin_path_py_clean=$_tf_bin_path_py_clean REPLACED_BUILD_SCRIPT=$REPLACED_BUILD_SCRIPT"
+            destination_file_name="$(basename $B .py)"
             JINJA_VARS="\
     __J2__PROC_NAME=\"$(basename $B .py)\" \
     __J2__PROC_FILE=\"$(basename $B .py)\" \
     __J2__PROC_PATH=\"$LIB_PATH\" \
-    "
-            j_cmd="$JINJA_VARS j2 -f yaml $_RELOCATE_BIN_WRAPPER_SCRIPT_TEMPLATE_FILE $_RELOCATE_BIN_WRAPPER_SCRIPT_VARS_FILE > $_tf 2> $_bin_jinja_stderr && cd $(dirname $_tf_bin_path_py) & mv $_tf $_tf_bin_path_py_clean && cython --embed -o $(basename $_tf_bin_path_py_clean .py).c $(basename $_tf_bin_path_py_clean .py).py && gcc -Os -I /usr/include/python3.6m -o $(basename $_tf_bin_path_py_clean .py) $(basename $_tf_bin_path_py_clean .py).c -lpython3.6m -lpthread -lm -lutil -ldl && mv $(basename $_tf_bin_path_py_clean .py) $(basename $B .py)\n"
+    __J2__PROC_PATH_SUFFIX=\"$_RELOCATE_PATH_PREFIX\" \
+"
+            j_cmd="$JINJA_VARS \
+                j2 -f yaml \
+                $_RELOCATE_BIN_WRAPPER_SCRIPT_TEMPLATE_FILE $_RELOCATE_BIN_WRAPPER_SCRIPT_VARS_FILE > $_tf 2> $_bin_jinja_stderr \
+                    && cd $(dirname $_tf_bin_path_py) && \
+                    mv $_tf $_tf_bin_path_py_clean && \
+                    cython --embed -o $(basename $_tf_bin_path_py_clean .py).c \
+                        $(basename $_tf_bin_path_py_clean .py).py && \
+                    gcc -Os -I /usr/include/python3.6m \
+                        -o $destination_file_name $(basename $_tf_bin_path_py_clean .py).c \
+                        -lpython3.6m -lpthread -lm -lutil -ldl && \
+                    unlink $(basename $_tf_bin_path_py_clean .py).py && \
+                    unlink $(basename $_tf_bin_path_py_clean .py).c && \
+                    if [[ \"$REPLACED_BUILD_SCRIPT\" != \"\" ]]; then mv $destination_file_name $REPLACED_BUILD_SCRIPT; fi \
+\n"
             >&2 ansi --cyan "            j_cmd=$j_cmd"
-            jf=$(mktemp)
-            echo $j_cmd > $jf
-            bash $jf
+            echo -e $j_cmd > $_bin_jinja_cmd
+            bash -x $_bin_jinja_cmd
             exit_code=$?
             if [[ "$exit_code" != "0" ]]; then
                 >&2 ansi --red "$(cat $_bin_jinja_stderr)"
                 exit $exit_code
             fi
-            chmod 755 $_tf_bin_path_py
-            >&2 ansi --green "  ****   Rendered $B to $_tf using bash script $jf and moved it to $_tf_bin_path_py ****   "
+            >&2 ansi --green "  ****   Rendered $B to $_tf using bash script $_bin_jinja_cmd and moved it to $destination_file_name ****   "
         done
     fi
 }
