@@ -6,7 +6,7 @@ export BORG_REPO=~/.bundler.borg
 export BORG_PASSPHRASE=456729372362
 [[ "$_BORG_BUILD_NAME" == "" ]] && export _BORG_BUILD_NAME=MYBORG
 
-export BUILD_BORG=0
+export BUILD_BORG=1
 export BUILD_ANSIBLE=1
 export BORG_KEEP_WITHIN_DAYS=30
 
