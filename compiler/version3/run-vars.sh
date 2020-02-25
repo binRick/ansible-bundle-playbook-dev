@@ -10,12 +10,11 @@ _BUILD_SCRIPT_REPLACEMENTS=""
 
 export BUILD_SCRIPTS="\
     _ansible.py \
-"
-export _BUILD_SCRIPTS="\
     test.py \
     ansible-playbook.py \
     ansible-config.py \
-    scripts/_ansible.py \
+"
+export _BUILD_SCRIPTS="\
     j2.py \
     paramiko_test.py \
     ansible-vault.py \

@@ -126,8 +126,11 @@ save_build_script_to_repo(){
   fi
 }
 get_module_md5(){
+    if [[ -f "scripts/$1 " ]]; then
+        _F=scripts/$1
+    fi
     (
-      md5sum $1 
+      md5sum $_F
       echo $1 |md5sum
       echo $MODULES|md5sum
     ) \
@@ -266,19 +269,22 @@ relocate_path(){
     __J2__PROC_PATH=\"$LIB_PATH\" \
     __J2__PROC_PATH_SUFFIX=\"$_RELOCATE_PATH_PREFIX\" \
 "
+            rename_cmd="echo not renaming"
+            if [[ "$REPLACED_BUILD_SCRIPT" != "" ]]; then 
+                rename_cmd="mv $(basename $destination_file_name .py) $(basename $REPLACED_BUILD_SCRIPT .py)"
+            fi
             j_cmd="$JINJA_VARS \
                 j2 -f yaml \
-                $_RELOCATE_BIN_WRAPPER_SCRIPT_TEMPLATE_FILE $_RELOCATE_BIN_WRAPPER_SCRIPT_VARS_FILE > $_tf 2> $_bin_jinja_stderr \
-                    && cd $(dirname $_tf_bin_path_py) && \
+                $_RELOCATE_BIN_WRAPPER_SCRIPT_TEMPLATE_FILE $_RELOCATE_BIN_WRAPPER_SCRIPT_VARS_FILE > $_tf 2> $_bin_jinja_stderr && \
+                    cd $(dirname $_tf_bin_path_py) && \
                     mv $_tf $_tf_bin_path_py_clean && \
                     cython --embed -o $(basename $_tf_bin_path_py_clean .py).c \
                         $(basename $_tf_bin_path_py_clean .py).py && \
                     gcc -Os -I /usr/include/python3.6m \
                         -o $destination_file_name $(basename $_tf_bin_path_py_clean .py).c \
                         -lpython3.6m -lpthread -lm -lutil -ldl && \
-                    unlink $(basename $_tf_bin_path_py_clean .py).py && \
-                    unlink $(basename $_tf_bin_path_py_clean .py).c && \
-                    if [[ \"$REPLACED_BUILD_SCRIPT\" != \"\" ]]; then mv $destination_file_name $REPLACED_BUILD_SCRIPT; fi \
+                    rm $(basename $_tf_bin_path_py_clean .py).py $(basename $_tf_bin_path_py_clean .py).c && \
+                    $rename_cmd \
 \n"
             >&2 ansi --cyan "            j_cmd=$j_cmd"
             echo -e $j_cmd > $_bin_jinja_cmd
