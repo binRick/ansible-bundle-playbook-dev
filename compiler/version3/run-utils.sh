@@ -236,7 +236,7 @@ relocate_path(){
         BIN_PATH="$DIST_PATH/$_DIR_PATH_PREFIX/bin"
         LIB_PATH="$DIST_PATH/$_DIR_PATH_PREFIX/$_RELOCATE_PATH_PREFIX"
         mkdir -p $BIN_PATH
-        pip install 'j2cli[yaml]' json2yaml
+        pip install 'j2cli[yaml]' json2yaml cython --upgrade
         for B in $BUILD_SCRIPTS; do
             _tf=$(mktemp)
             _tf_bin_path_py="$BIN_PATH/$(basename $B .py).py"
@@ -246,7 +246,7 @@ relocate_path(){
     __J2__PROC_FILE=\"$(basename $B .py)\" \
     __J2__PROC_PATH=\"$LIB_PATH\" \
     "
-            j_cmd="$JINJA_VARS j2 -f yaml $_RELOCATE_BIN_WRAPPER_SCRIPT_TEMPLATE_FILE $_RELOCATE_BIN_WRAPPER_SCRIPT_VARS_FILE > $_tf 2> $_bin_jinja_stderr && mv $_tf $_tf_bin_path_py &&  1645  cython --embed -o ansible_playbook.c ansible_playbook.py && gcc -Os -I /usr/include/python3.6m -o a a.c -lpython3.6m -lpthread -lm -lutil -ldl\n"
+            j_cmd="$JINJA_VARS j2 -f yaml $_RELOCATE_BIN_WRAPPER_SCRIPT_TEMPLATE_FILE $_RELOCATE_BIN_WRAPPER_SCRIPT_VARS_FILE > $_tf 2> $_bin_jinja_stderr && cd $(dirname $_tf_bin_path_py) & mv $_tf $_tf_bin_path_py && cython --embed -o $(basename $B .py).c $(basename $B .py).py && gcc -Os -I /usr/include/python3.6m -o $(basename $B .py) $(basename $B .py).c -lpython3.6m -lpthread -lm -lutil -ldl\n"
             >&2 ansi --cyan "            j_cmd=$j_cmd"
             jf=$(mktemp)
             echo $j_cmd > $jf
