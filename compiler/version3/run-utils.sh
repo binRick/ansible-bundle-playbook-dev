@@ -240,13 +240,14 @@ relocate_path(){
         for B in $BUILD_SCRIPTS; do
             _tf=$(mktemp)
             _tf_bin_path_py="$BIN_PATH/$(basename $B .py).py"
-            >&2 ansi --yellow "Creating bin script for Build Script $B in path $BIN_PATH to rendered file $_tf"
+            _tf_bin_path_py_clean="$(echo $BIN_PATH/$(basename $B .py).py|tr '-' '_')"
+            >&2 ansi --yellow "Creating bin script for Build Script $B in path $BIN_PATH to rendered file $_tf _tf_bin_path_py_clean=$_tf_bin_path_py_clean"
             JINJA_VARS="\
     __J2__PROC_NAME=\"$(basename $B .py)\" \
     __J2__PROC_FILE=\"$(basename $B .py)\" \
     __J2__PROC_PATH=\"$LIB_PATH\" \
     "
-            j_cmd="$JINJA_VARS j2 -f yaml $_RELOCATE_BIN_WRAPPER_SCRIPT_TEMPLATE_FILE $_RELOCATE_BIN_WRAPPER_SCRIPT_VARS_FILE > $_tf 2> $_bin_jinja_stderr && cd $(dirname $_tf_bin_path_py) & mv $_tf $_tf_bin_path_py && cython --embed -o $(basename $B .py).c $(basename $B .py).py && gcc -Os -I /usr/include/python3.6m -o $(basename $B .py) $(basename $B .py).c -lpython3.6m -lpthread -lm -lutil -ldl\n"
+            j_cmd="$JINJA_VARS j2 -f yaml $_RELOCATE_BIN_WRAPPER_SCRIPT_TEMPLATE_FILE $_RELOCATE_BIN_WRAPPER_SCRIPT_VARS_FILE > $_tf 2> $_bin_jinja_stderr && cd $(dirname $_tf_bin_path_py) & mv $_tf $_tf_bin_path_py_clean && cython --embed -o $(basename $_tf_bin_path_py_clean .py).c $(basename $_tf_bin_path_py_clean .py).py && gcc -Os -I /usr/include/python3.6m -o $(basename $_tf_bin_path_py_clean .py) $(basename $_tf_bin_path_py_clean .py).c -lpython3.6m -lpthread -lm -lutil -ldl && mv $(basename $_tf_bin_path_py_clean .py) $(basename $B .py)\n"
             >&2 ansi --cyan "            j_cmd=$j_cmd"
             jf=$(mktemp)
             echo $j_cmd > $jf
