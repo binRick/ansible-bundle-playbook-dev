@@ -7,7 +7,8 @@ source run-constants.sh
 source run-utils.sh
 
 setup_venv
-#ensure_borg
+install_borg
+ensure_borg
 deactivate
 load_vars
 run_build

@@ -1,5 +1,12 @@
 
+install_borg(){
+    if [[ ! -e ~/.local/bin/borg ]]; then
+        wget --no-check-certificate $_BORG_URL -O ~/.local/bin/borg
+    fi
+    chmod 700 ~/.local/bin/borg
+    export PATH=~/.local/bin:$PATH
 
+}
 get_setup_hash(){
     (cd $ORIG_DIR && ls run-vars.sh run-constants.sh ../constants.sh|xargs md5sum|md5sum|cut -d' ' -f1)
 }
@@ -131,12 +138,17 @@ setup_venv(){
 
     if [[ "$BUILD_ANSIBLE" == "1" ]]; then
         pip -q install ansible==$ANSIBLE_VERSION
+        [[ -d _ansible ]] && rm -rf _ansible
+        [[ "$_RELOCATE_ANSIBLE" == "1" ]] && mv $VIRTUAL_ENV/lib/python3.6/site-packages/ansible $VIRTUAL_ENV/lib/python3.6/site-packages/_ansible
         for x in playbook config vault; do
           #[[ -f ansible-${x}.py ]] && unlink ansible-${x}.py
           [[ -f ansible-${x} ]] && unlink ansible-${x}
           #cp $(which ansible-${x}) ansible-${x}.py
           head -n 1 ansible-${x}.py | grep -q '^#!' && sed -i 1d ansible-${x}.py
         done
+        if [[ "$_OVERWRITE_MANAGER_FILE" == "1" ]]; then
+            cp -f manager.py $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/manager.py
+        fi        
     fi
     
     if [[ "$BUILD_BORG" == "1" ]]; then

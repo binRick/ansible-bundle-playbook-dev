@@ -25,3 +25,5 @@ test*/.*.sh
 */.*mangled_vars.txt
 */.exit_code
 */.COMMENT
+*/package-lock.json 
+version*/.*_save_cmd

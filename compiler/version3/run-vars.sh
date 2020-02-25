@@ -20,7 +20,7 @@ export _BUILD_SCRIPTS="\
 "
 
 BASE_MODS="psutil loguru json2yaml setproctitle pyyaml pyaml requests json2yaml"
-ANSIBLE_MODULES="ansible simplejson terminaltables netaddr configparser jmespath urllib3"
+ANSIBLE_MODULES="simplejson terminaltables netaddr configparser jmespath urllib3"
 ADDTL_MODS="speedtest-cli docopt python-jose pycryptodome paramiko psutil"
 
 export _MODULES="\
@@ -37,3 +37,4 @@ export _MODULES="\
 export MODULES="\
     $ANSIBLE_MODULES
 "
+

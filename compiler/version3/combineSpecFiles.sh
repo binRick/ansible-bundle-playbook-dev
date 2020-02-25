@@ -52,15 +52,15 @@ done
 
 if [[ "$BUILD_ANSIBLE" == "1" ]]; then
     export _ADD_DATAS="\
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/base.yml:lib/ansible/config \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/module_defaults.yml:lib/ansible/config \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/utils/shlex.py:lib/ansible/utils \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins/cache:lib/ansible/plugins/cache \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/module_utils:lib/ansible/module_utils \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins/inventory:lib/ansible/plugins/inventory \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins:lib/ansible/plugins \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/modules:lib/ansible/modules \
-                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/executor/discovery/python_target.py:lib/ansible/executor/discovery \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/base.yml:${_DATA_PREFIX}/ansible/config \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/module_defaults.yml:${_DATA_PREFIX}/ansible/config \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/utils/shlex.py:${_DATA_PREFIX}/ansible/utils \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins/cache:${_DATA_PREFIX}/ansible/plugins/cache \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/module_utils:${_DATA_PREFIX}/ansible/module_utils \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins/inventory:${_DATA_PREFIX}/ansible/plugins/inventory \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/plugins:${_DATA_PREFIX}/ansible/plugins \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/modules:${_DATA_PREFIX}/ansible/modules \
+                        --add-data $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/executor/discovery/python_target.py:${_DATA_PREFIX}/ansible/executor/discovery \
 "
 else
     export _ADD_DATAS=""
@@ -125,6 +125,7 @@ for x in $BUILD_SCRIPTS; do
                 $_ADD_DATAS \
             -p $VIRTUAL_ENV/lib64/python3.6/site-packages \
             -p _borg \
+            -p _ansible \
                ${_BS}.py > $spec_combined_stdout_mkspec 2> $spec_combined_stderr_mkspec"
 
 

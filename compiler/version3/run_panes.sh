@@ -25,7 +25,7 @@ CMD9="$(setupWhile $(setupTail .combined-spec-cmd.sh))"
 #CMD_count_add_datas="watch -n 10 \"echo -e "add-data lines in .combined-spec-cmd.sh:\" && grep add-data .combined-spec-cmd.sh -c""
 CMD_dstat="sleep 5 && dstat -alp 5 500"
 CMD_run="echo time ./run.sh; echo run.sh exited $?"
-CMD8_nodemon_run="nodemon --delay 1 -V -w run*.sh -e sh -x ./run.sh"
+CMD_nodemon_run="nodemon --delay 1 -V -w run*.sh -e sh -x ./run.sh"
 
 xpanes \
     -t \
@@ -43,4 +43,4 @@ xpanes \
         "sh -c '$CMD8' 2>/dev/null" \
         "sh -c '$CMD9' 2>/dev/null" \
         "sh -c '$CMD_dstat'" \
-        "sh -c '$CMD_run'"
+        "sh -c '$CMD_nodemon_run'"

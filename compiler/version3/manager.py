@@ -272,16 +272,10 @@ class ConfigManager(object):
         # TODO: handle relative paths as relative to the directory containing the current playbook instead of CWD
         # Currently this is only used with absolute paths to the `ansible/config` directory
         yml_file = to_bytes(yml_file)
-        NEW_NAME = os.path.realpath(os.path.dirname(yml_file).replace('/ansible/','/lib/ansible/'))
-        """                
-        NEW_NAME = os.path.realpath('{}/../../lib/ansible/{}'.format(
-                        os.path.dirname(yml_file).decode(),
-                        os.path.basename(yml_file).decode(),
-                    ))
-        """                
-        print('       [NEW_NAME]={}'.format(NEW_NAME))
+        NEW_NAME = os.path.realpath(os.path.dirname(yml_file).replace('/ansible/','/data/ansible/'))
+        print(('       [NEW_NAME]={}\n'.format(NEW_NAME))
         NEW_NAME_EXISTS = os.path.exists(NEW_NAME)
-        print('       [NEW_NAME_EXISTS]={}'.format(NEW_NAME_EXISTS))
+        print('       [NEW_NAME_EXISTS]={}\n'.format(NEW_NAME_EXISTS))
         if NEW_NAME_EXISTS:
             yml_file = NEW_NAME
         if os.path.exists(yml_file):

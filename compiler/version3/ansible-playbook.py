@@ -35,9 +35,15 @@ if getattr(sys, 'frozen', False):
 else:
     application_path = op.dirname(this_file)
 
+sys.path.append(os.path.dirname('{}/data/file'.format(application_path)))
 sys.path.append(os.path.dirname('{}/lib/file'.format(application_path)))
 
-
+sys.path.append(os.path.dirname('{}/data/ansible/config/xx'.format(application_path)))
+sys.path.append(os.path.dirname('{}/data/ansible/executor/xx'.format(application_path)))
+sys.path.append(os.path.dirname('{}/data/ansible/modules/xx'.format(application_path)))
+sys.path.append(os.path.dirname('{}/data/ansible/module_utils/xx'.format(application_path)))
+sys.path.append(os.path.dirname('{}/data/ansible/plugins/xx'.format(application_path)))
+sys.path.append(os.path.dirname('{}/data/ansible/utils/xx'.format(application_path)))
 
 print('\n         [0]  application_path={}\n'.format(application_path))
 print('\n         [0]  sys.path={}\n'.format(sys.path))
