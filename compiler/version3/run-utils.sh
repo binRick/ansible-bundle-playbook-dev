@@ -150,6 +150,7 @@ setup_venv(){
         done
         if [[ "$_OVERWRITE_MANAGER_FILE" == "1" ]]; then
             cp -f manager.py $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/manager.py
+            python -m py_compile .$VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/manager.py
         fi        
     fi
     
