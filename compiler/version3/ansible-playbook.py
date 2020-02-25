@@ -45,17 +45,17 @@ sys.path.append(os.path.dirname('{}/data/ansible/module_utils/xx'.format(applica
 sys.path.append(os.path.dirname('{}/data/ansible/plugins/xx'.format(application_path)))
 sys.path.append(os.path.dirname('{}/data/ansible/utils/xx'.format(application_path)))
 
-print('\n         [0]  application_path={}\n'.format(application_path))
-print('\n         [0]  sys.path={}\n'.format(sys.path))
+#print('\n         [0]  application_path={}\n'.format(application_path))
+#print('\n         [0]  sys.path={}\n'.format(sys.path))
 
 import os
 import shutil
 import sys
 
-if 'LIB_PATH' in os.environ.keys():
-    sys.path.append(os.path.dirname(os.environ['LIB_PATH']))
+#if 'LIB_PATH' in os.environ.keys():
+#    sys.path.append(os.path.dirname(os.environ['LIB_PATH']))
 
-print('         sys.path={}'.format(sys.path))
+#print('         sys.path={}'.format(sys.path))
 
 
 
@@ -68,7 +68,7 @@ if getattr(sys, 'frozen', False):
 else:
     application_path = os.path.dirname(os.path.abspath(__file__))
 
-print('        [application_path]={}'.format(application_path))
+#print('        [application_path]={}'.format(application_path))
 
 #sys.path.insert(0, 'lib')
 
