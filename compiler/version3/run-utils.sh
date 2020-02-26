@@ -259,10 +259,10 @@ setup_venv(){
         (cd _borg && git pull)
         pip install -q -r _borg/requirements.d/development.txt
         pip install -q -e _borg
-        cp -f _borg/src/borg/__main__.py scripts/BORG.py
+        [[ ! -f scripts/BORG.py ]] && cp -f _borg/src/borg/__main__.py scripts/BORG.py
         head -n 1 scripts/BORG.py | grep -q '^#!' && sed -i 1d scripts/BORG.py
         python scripts/BORG.py --help >/dev/null 2>&1
-        >&2 ansi --green Pre compile BORG.py validated OK
+        >&2 ansi --green Pre compile scripts/BORG.py validated OK
     fi
 }
 
