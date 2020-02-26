@@ -46,5 +46,5 @@ xpanes \
         "sh -c '$CMD9' 2>/dev/null" \
         "sh -c '$CMD10' 2>/dev/null" \
         "sh -c '$CMD_dstat'" \
-        "sh -c '$CMD_run'"
-        #"sh -c '$CMD_nodemon_run'"
+        "sh -c '$CMD_nodemon_run'"
+        #"sh -c '$CMD_run'"

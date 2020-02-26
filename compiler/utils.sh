@@ -154,28 +154,18 @@ addAdditionalAnsibleModules(){
     __MODULES="$3"
     for m in $(echo "$__MODULES"|tr ' ' '\n'); do
         mFile="$(basename $m)"
-        if [[ $m == http* ]]; then
-#            if [ "$DEBUG_CMD" == "1" ]; then
-#              echo url detected $m
-#       fi
+        mDir="$(dirname $m)"
+        mCmdDir="$(getAnsiblePath)/${MODULE_TYPE}/${MODULE_TYPE_DIR}"
+        mCmd="cp $mDir/$mFile $mCmdDir/$mFile"
+
+        if [[ $m == http* && ! -f $mCmdDir/$mFile ]]; then
             mT=$(mktemp -d)
             (cd $mT && curl -ks $m > $mFile)
             _m=$mT/$(basename $m)
-#            if [ "$DEBUG_CMD" == "1" ]; then
-#              echo _m=$_m
-#              echo m=$m
-#       fi
-            m=$_m
+                m=$_m
+            if [[ ! -d "$mCmdDir" ]]; then mkdir -p $mCmdDir; fi
+            eval $mCmd
         fi
-        mDir="$(dirname $m)"
-        mCmdDir="$(getAnsiblePath)/${MODULE_TYPE}/${MODULE_TYPE_DIR}"
-        if [[ ! -d "$mCmdDir" ]]; then mkdir -p $mCmdDir; fi
-        mCmd="cp $mDir/$mFile $mCmdDir/$mFile"
-#       if [ "$DEBUG_CMD" == "1" ]; then
-#           echo mCmdDir=$mCmdDir
-#           echo mCmd=$mCmd
-#       fi
-        eval $mCmd
     done
 }
 

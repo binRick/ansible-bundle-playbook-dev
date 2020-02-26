@@ -18,7 +18,7 @@ export _EXCLUDE_ANSIBLE_MODULES=0
 SAVE_MODULE_PATH=/tmp/SAVED_MODULES
 
 #   """ Borg Build """
-export BUILD_BORG=1
+export BUILD_BORG=0
 
 #   """ Borg Cache """
 export SAVE_BUILD_TO_BORG=0
@@ -34,7 +34,7 @@ export _DATA_PREFIX=data/ansible
 export _DIR_PATH_PREFIX=ansible-playbook
 export _RELOCATE_PATH=1
 #export _RELOCATE_PATH_PREFIX=.lib/
-export _RELOCATE_PATH_PREFIX=../bin/.lib/
+export _RELOCATE_PATH_PREFIX=.lib/
 export _RELOCATE_MODULES='j2cli[yaml] json2yaml cython'
 
 #   """ Exec Wrapper """

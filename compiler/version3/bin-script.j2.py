@@ -20,7 +20,7 @@ else:
 
 #print('        application_path={}'.format(application_path))
 
-NEW_PATH = '{}/../{}{}'.format(
+NEW_PATH = '{}/{}{}'.format(
             application_path,
             __J2__PROC_PATH_SUFFIX,
             __J2__PROC_FILE,
