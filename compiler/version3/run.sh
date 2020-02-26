@@ -22,7 +22,7 @@ normalize_dist_path
 test_dist_path
 setup_venv
 relocate_path
-test_borg
+#test_borg
 summary
 
 echo "DIST_PATH=$DIST_PATH"
