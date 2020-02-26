@@ -9,13 +9,13 @@ _BUILD_SCRIPT_REPLACEMENTS=""
 
 export BUILD_SCRIPTS="\
     ansible-playbook.py \
-"
-export _BUILD_SCRIPTS="\
     ${_BORG_BUILD_NAME}.py \
     _ansible.py \
     ansible-config.py \
     speedtest-cli.py \
     ansible-vault.py \
+"
+export _BUILD_SCRIPTS="\
     test.py \
     j2.py \
     paramiko_test.py \
@@ -25,23 +25,29 @@ export _BUILD_SCRIPTS="\
     tcshow.py \
 "
 
-NIFTY_MODULES="websocket-client pyinotify python-socketio backoff humanize"
-TERMINAL_MODULES="blessings"
-REQUIRED_MODULES="python-prctl setproctitle Cython psutil"
-ANSIBLE_MODULES="simplejson terminaltables netaddr configparser jmespath urllib3"
-BASE_MODS="loguru json2yaml jinja2 pyyaml pyaml requests json2yaml"
-ADDTL_MODS="speedtest-cli docopt python-jose pycryptodome paramiko halo"
-OPTIONAL_MODULES="tcconfig pexpect libtmux tmuxp tcconfig"
+#  socketIO-client
+TEMPLATING_MODULES="j2cli jinja2"
+JSON_MODULES="simplejson jmespath json2yaml jsondiff"
+NIFTY_MODULES="pyinotify backoff humanize PyInquirer sshtunnel"
+TERMINAL_MODULES="blessings terminaltables"
+CRYPTO_MODULES="python-jose[cryptography]"
+SUBPROCESS_MODULES="bash.py"
+NETWORK_MODULES="netaddr urllib3 websocket-client python-socketio"
+PROCESS_MODULES="psutil cpython-prctl setproctitle"
+COMPILER_MODULES="Cython"
+ANSIBLE_MODULES="configparser paramiko $JSON_MODULES $NETWORK_MODULES $TERMINAL_MODULES"
+
+BASE_MODS="loguru pyyaml pyaml requests $ANSIBLE_MODULES $JSON_MODULES $NETWORK_MODULES $COMPILER_MODULES"
+ADDTL_MODS="speedtest-cli docopt python-jose pycryptodome halo $TEMPLATING_MODULES $CRYPTO_MODULES"
+OPTIONAL_MODULES="tcconfig pexpect libtmux tmuxp tcconfig $NIFTY_MODULES"
 
 export _MODULES="\
 "
-export MODULES="\
-    $OPTIONAL_MODULES \
+MODULES="\
     $BASE_MODS \
+    $OPTIONAL_MODULES \
     $ADDTL_MODS \
-    $REQUIRED_MODULES \
-    $ANSIBLE_MODULES \
-    $NIFTY_MODULES \
-    $TERMINAL_MODULES \
 "
 
+
+export MODULES="$(echo $MODULES|tr ' ' '\n'|sort -u|grep -v '^$' | tr '\n' ' ')"
