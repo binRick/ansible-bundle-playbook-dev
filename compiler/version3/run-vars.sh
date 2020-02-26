@@ -27,7 +27,7 @@ export _BUILD_SCRIPTS="\
 
 #  socketIO-client
 TEMPLATING_MODULES="j2cli jinja2"
-JSON_MODULES="simplejson jmespath json2yaml jsondiff"
+JSON_MODULES="simplejson jmespath json2yaml jsondiff kaptan"
 NIFTY_MODULES="pyinotify backoff humanize PyInquirer sshtunnel"
 TERMINAL_MODULES="blessings terminaltables"
 CRYPTO_MODULES="python-jose[cryptography]"
