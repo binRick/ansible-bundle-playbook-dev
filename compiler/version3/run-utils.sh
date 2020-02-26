@@ -126,6 +126,7 @@ save_build_script_to_repo(){
   fi
 }
 get_module_md5(){
+    _F=$1
     if [[ -f "scripts/$1 " ]]; then
         _F=scripts/$1
     fi

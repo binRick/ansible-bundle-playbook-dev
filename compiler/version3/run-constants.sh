@@ -17,10 +17,12 @@ export _EXCLUDE_ANSIBLE_MODULES=0
 #   """ File Caching """
 SAVE_MODULE_PATH=/tmp/SAVED_MODULES
 
-#   """ Borg """
+#   """ Borg Build """
+export BUILD_BORG=1
+
+#   """ Borg Cache """
 export SAVE_BUILD_TO_BORG=0
 export BORG_KEEP_WITHIN_DAYS=30
-export BUILD_BORG=0
 export _BORG_URL="https://github.com/borgbackup/borg/releases/download/1.1.10/borg-linux64"
 export BORG_ARGS="--lock-wait 20"
 export BORG_REPO=~/.bundler.borg
@@ -31,7 +33,8 @@ export BORG_PASSPHRASE=456729372362
 export _DATA_PREFIX=data/ansible
 export _DIR_PATH_PREFIX=ansible-playbook
 export _RELOCATE_PATH=1
-export _RELOCATE_PATH_PREFIX=.lib/
+#export _RELOCATE_PATH_PREFIX=.lib/
+export _RELOCATE_PATH_PREFIX=../bin/.lib/
 export _RELOCATE_MODULES='j2cli[yaml] json2yaml cython'
 
 #   """ Exec Wrapper """

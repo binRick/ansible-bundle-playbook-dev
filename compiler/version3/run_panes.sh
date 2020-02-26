@@ -26,7 +26,7 @@ CMD10="$(setupWhile $(setupTail .bin_jinja.stderr))"
 CMD11="$(setupWhile $(setupTail .bin_jinja-cmd.sh))"
 #CMD_count_add_datas="watch -n 10 \"echo -e "add-data lines in .combined-spec-cmd.sh:\" && grep add-data .combined-spec-cmd.sh -c""
 CMD_dstat="sleep 5 && command dstat -alp 5 500"
-CMD_run="echo time ./run.sh; echo run.sh exited $?"
+CMD_run="time ./run.sh; echo run.sh exited $?"
 CMD_nodemon_run="nodemon --delay 1 -V -w run*.sh -e sh -x ./run.sh"
 
 xpanes \
@@ -46,4 +46,5 @@ xpanes \
         "sh -c '$CMD9' 2>/dev/null" \
         "sh -c '$CMD10' 2>/dev/null" \
         "sh -c '$CMD_dstat'" \
-        "sh -c '$CMD_nodemon_run'"
+        "sh -c '$CMD_run'"
+        #"sh -c '$CMD_nodemon_run'"

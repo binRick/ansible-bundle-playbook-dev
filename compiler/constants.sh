@@ -36,10 +36,10 @@ EXCLUDED_ANSIBLE_MODULES="$EXCLUDED_ADDITIONAL_MODULES ansible.modules.network a
 
 
 ADDITIONAL_ANSIBLE_CALLLBACK_MODULES="https://raw.githubusercontent.com/binRick/ansible-callback-concise/master/callback_plugins/codekipple_concise.py https://raw.githubusercontent.com/binRick/ansible-beautiful-output/master/callback_plugins/beautiful_output.py https://raw.githubusercontent.com/binRick/ansible-json-audit-log/master/callback/json_audit.py"
-ADDITIONAL_ANSIBLE_CALLLBACK_MODULES=""
+_ADDITIONAL_ANSIBLE_CALLLBACK_MODULES=""
 
 ADDITIONAL_ANSIBLE_LIBRARY_MODULES="https://raw.githubusercontent.com/binRick/ansible-mysql-query/master/library/mysql_query.py https://raw.githubusercontent.com/ageis/ansible-module-ping/master/modules/icmp_ping.py https://raw.githubusercontent.com/cleargray/git_commit/master/git_commit.py https://raw.githubusercontent.com/binRick/mysql_database_query/master/mysql_database_query.py"
-ADDITIONAL_ANSIBLE_LIBRARY_MODULES=""
+_ADDITIONAL_ANSIBLE_LIBRARY_MODULES=""
 
 CACHED_MODULES_DIR=$(mktemp -d)
 CP_OPTIONS="-fv"
