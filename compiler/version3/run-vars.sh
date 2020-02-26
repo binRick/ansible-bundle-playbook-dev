@@ -1,7 +1,7 @@
-export MODULE_REPOS="
+export _MODULE_REPOS="
     git+https://github.com/binRick/python3-parse-nagios-status-dat \
 "
-export _MODULE_REPOS="
+export MODULE_REPOS="
 "
 
 BUILD_SCRIPT_REPLACEMENTS="_ansible.py|ansible.py"
