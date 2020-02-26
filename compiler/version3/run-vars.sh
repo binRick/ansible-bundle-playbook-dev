@@ -8,15 +8,15 @@ BUILD_SCRIPT_REPLACEMENTS="_ansible.py|ansible.py"
 _BUILD_SCRIPT_REPLACEMENTS=""
 
 export BUILD_SCRIPTS="\
+    test.py \
+"
+export _BUILD_SCRIPTS="\
+    ${_BORG_BUILD_NAME}.py \
     ansible-playbook.py \
     _ansible.py \
     ansible-config.py \
     speedtest-cli.py \
     ansible-vault.py \
-    ${_BORG_BUILD_NAME}.py \
-"
-export _BUILD_SCRIPTS="\
-    test.py \
     j2.py \
     paramiko_test.py \
     nagios_parser_test.py \
@@ -42,11 +42,12 @@ ADDTL_MODS="speedtest-cli docopt python-jose pycryptodome halo $TEMPLATING_MODUL
 OPTIONAL_MODULES="tcconfig pexpect libtmux tmuxp tcconfig $NIFTY_MODULES"
 
 export _MODULES="\
-"
-MODULES="\
     $BASE_MODS \
     $OPTIONAL_MODULES \
     $ADDTL_MODS \
+"
+MODULES="\
+    requests
 "
 
 

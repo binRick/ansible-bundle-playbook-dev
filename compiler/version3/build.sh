@@ -7,9 +7,8 @@ export -n VENV_DIRECTORY
 . ../utils.sh
 
 export MODULES BUILD_SCRIPTS MODULE_REPOS
-
-
 export -n VENV_DIRECTORY
+
 VENV_DIR=".venv-1"
 NUKE_VENV=0
 if [[ "$NUKE_VENV" == "1" ]]; then
@@ -21,6 +20,9 @@ if [[ ! -f $VENV_DIR/bin/activate ]]; then
 fi
 
 source $VENV_DIR/bin/activate || retry_nuked_venv
+
+
+
 
 BUILD_SCRIPTS="$(echo $BUILD_SCRIPTS|tr ',' ' '|sed 's/[[:space:]]/ /g')"
 MODULES="$(echo $MODULES|tr ',' ' '|sed 's/[[:space:]]/ /g')"
