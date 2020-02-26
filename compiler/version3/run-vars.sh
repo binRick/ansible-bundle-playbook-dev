@@ -9,13 +9,13 @@ _BUILD_SCRIPT_REPLACEMENTS=""
 
 export BUILD_SCRIPTS="\
     ansible-playbook.py \
+"
+export _BUILD_SCRIPTS="\
     ${_BORG_BUILD_NAME}.py \
     _ansible.py \
     ansible-config.py \
     speedtest-cli.py \
     ansible-vault.py \
-"
-export _BUILD_SCRIPTS="\
     test.py \
     j2.py \
     paramiko_test.py \

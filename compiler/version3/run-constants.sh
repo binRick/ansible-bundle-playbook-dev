@@ -8,7 +8,7 @@ export _REMOVE_SHEBANG_LINE_FROM_ANSIBLE_CLI_SCRIPTS=1
 
 #   """ Ansible """
 ANSIBLE_VERSION=2.8.8
-export _OVERWRITE_MANAGER_FILE=1
+export _OVERWRITE_MANAGER_FILE=0
 export _OVERWRITE_ANSIBLE_CLI_SCRIPTS=0
 export BUILD_ANSIBLE=1
 export _ADD_DATA_ANSIBLE_PATH=ansible
@@ -18,7 +18,7 @@ export _EXCLUDE_ANSIBLE_MODULES=0
 SAVE_MODULE_PATH=/tmp/SAVED_MODULES
 
 #   """ Borg Build """
-export BUILD_BORG=1
+export BUILD_BORG=0
 [[ "$PLAINTEXT_PASSPHRASE" == "" ]] && PLAINTEXT_PASSPHRASE="12345678"
 [[ "$ENCRYPTED_PASSPHRASE" == "" ]] && ENCRYPTED_PASSPHRASE="yEGDBcJ2lKcFdhhay2kJDg=="
 
@@ -32,7 +32,8 @@ export BORG_PASSPHRASE=456729372362
 [[ "$_BORG_BUILD_NAME" == "" ]] && export _BORG_BUILD_NAME=MYBORG
 
 #   """ Directory Management """
-export _DATA_PREFIX=data/ansible
+#export _DATA_PREFIX=data/ansible
+export _DATA_PREFIX=ansible
 export _DIR_PATH_PREFIX=ansible-playbook
 export _RELOCATE_PATH=1
 #export _RELOCATE_PATH_PREFIX=.lib/
