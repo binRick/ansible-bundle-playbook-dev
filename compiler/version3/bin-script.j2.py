@@ -2,43 +2,28 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 import os, sys, shutil
+
 __J2__PROC_NAME         = """{{ env('__J2__PROC_NAME') }}"""
 __J2__PROC_PATH         = """{{ env('__J2__PROC_PATH') }}"""
 __J2__PROC_FILE         = """{{ env('__J2__PROC_FILE') }}"""
 __J2__PROC_PATH_SUFFIX  = """{{ env('__J2__PROC_PATH_SUFFIX') }}"""
 
-
 try:
     this_file = __file__
 except NameError:
     this_file = sys.argv[0]
+
 this_file = os.path.abspath(this_file)
 if getattr(sys, 'frozen', False):
     application_path = getattr(sys, '_MEIPASS', os.path.dirname(sys.executable))
 else:
     application_path = os.path.dirname(this_file)
 
-#print('        application_path={}'.format(application_path))
-
-NEW_PATH = '{}/{}{}'.format(
+NEW_PATH = os.path.realpath('{}/{}{}'.format(
             application_path,
             __J2__PROC_PATH_SUFFIX,
             __J2__PROC_FILE,
-        )
-
-#print('        NEW_PATH={}'.format(NEW_PATH))
-NEW_PATH = os.path.realpath(NEW_PATH)
-#print('        real NEW_PATH={}'.format(NEW_PATH))
-
-"""
-try:
-    import prctl
-    print('[prctl] loaded')
-except Exception as e:
-    print('[prctl] {}'.format(e))
-    pass
-"""
-
+        ))
 
 if os.environ.get('__DEBUG_ENV', False):
     print('env={}',os.environ.keys())
