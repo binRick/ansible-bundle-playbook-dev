@@ -9,14 +9,14 @@ _BUILD_SCRIPT_REPLACEMENTS=""
 
 export BUILD_SCRIPTS="\
     ansible-playbook.py \
-    _ansible.py \
-    ansible-config.py \
 "
 export _BUILD_SCRIPTS="\
     ${_BORG_BUILD_NAME}.py \
+    _ansible.py \
+    ansible-config.py \
     speedtest-cli.py \
-    test.py \
     ansible-vault.py \
+    test.py \
     j2.py \
     paramiko_test.py \
     nagios_parser_test.py \
@@ -25,11 +25,14 @@ export _BUILD_SCRIPTS="\
     tcshow.py \
 "
 
+NIFTY_MODULES="websocket-client pyinotify python-socketio backoff humanize"
+TERMINAL_MODULES="blessings"
 REQUIRED_MODULES="python-prctl setproctitle Cython psutil"
 ANSIBLE_MODULES="simplejson terminaltables netaddr configparser jmespath urllib3"
 BASE_MODS="loguru json2yaml jinja2 pyyaml pyaml requests json2yaml"
 ADDTL_MODS="speedtest-cli docopt python-jose pycryptodome paramiko halo"
 OPTIONAL_MODULES="tcconfig pexpect libtmux tmuxp tcconfig"
+
 export _MODULES="\
 "
 export MODULES="\
@@ -38,5 +41,7 @@ export MODULES="\
     $ADDTL_MODS \
     $REQUIRED_MODULES \
     $ANSIBLE_MODULES \
+    $NIFTY_MODULES \
+    $TERMINAL_MODULES \
 "
 

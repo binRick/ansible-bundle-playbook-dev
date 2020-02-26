@@ -23,13 +23,14 @@ getBuildScriptReplacement(){
 
 doTestBorg(){
     if [[ "$BUILD_BORG" == "1" ]]; then
+      (
         set -e
         if [[ "$1" == "" ]]; then
             echo "[doTestBorg] : missing argument"
             exit 1
         fi
         >&2 ansi --yellow "Testing borg with $1"
-        >&2 env | egrep "BORG_|AUTH_TOKEN|PUBLIC_KEY|AUDIENCE"
+#        >&2 env | egrep "BORG_|AUTH_TOKEN|PUBLIC_KEY|AUDIENCE"
         >&2 $1 --version
 
         _TEST_FILE=$(mktemp)
@@ -41,36 +42,37 @@ doTestBorg(){
 
         >&2 ansi --yellow "Borging with plaintext passphrase"
         >&2 $1 create $_BORG_REPO::test1 $_TEST_FILE
-        >&2 $1 list $_BORG_REPO::test1 | grep $(basename $_TEST_FILE)
+        #>&2 $1 list $_BORG_REPO::test1 | grep $(basename $_TEST_FILE)
         [[ -d $_BORG_REPO ]] && rm -rf $_BORG_REPO
         >&2 ansi --green "     OK"
-        set +e
         echo "OK"
+      )
     fi
 }
 
 doPassphraseTests(){
+  (
     BP="$1"
     >&2 ansi --yellow Testing Borg with $BP
-    file $BP
+    >&2 file $BP
 
     BORG_PASSPHRASE="$PLAINTEXT_PASSPHRASE" \
         doTestBorg $BP
-    >&2 ansi --green Plaintext with specified passphrase tests pas
+    >&2 ansi --green Plaintext with specified passphrase tests pass
     unset BORG_PASSPHRASE
 
     AUDIENCE="$(cat ~/.keys/audience.key)" \
     PUBLIC_KEY="$(cat ~/.keys/pub.key|base64 -w0)" \
     AUTH_TOKEN="$(generateApplicationToken.sh apiStatus read)" \
-    doTestBorg $BP
+        doTestBorg $BP
     >&2 ansi --green Plaintext passphrase in AUTH_TOKEN tests pass
 
     AUDIENCE="$(cat ~/.keys/audience.key)" \
     PUBLIC_KEY="$(cat ~/.keys/pub.key|base64 -w0)" \
     AUTH_TOKEN="$(generateApplicationToken.sh araAPI_ro read)" \
-    doTestBorg $BP
+        doTestBorg $BP
     >&2 ansi --green Encrypted passphrase in AUTH_TOKEN tests pass
-
+  )
 }
 get_setup_hash(){
     (cd $ORIG_DIR && ls run-vars.sh run-constants.sh ../constants.sh|xargs md5sum|md5sum|cut -d' ' -f1)
@@ -120,7 +122,6 @@ get_cached_build_script_repo_env_name(){
     echo $_K
 }
 get_cached_build_script_repo_name(){
-    #_K="$(get_module_md5 $1)-$1-cached-build_script"
     _K="$(get_setup_hash)-$1-cached-build_script"
     >&2 ansi --yellow  "        [get_cached_build_script_repo_name]           $1=$_K"
     echo $_K
@@ -371,4 +372,28 @@ relocate_path(){
             >&2 ansi --green "  ****   Rendered $B to $_tf using bash script $_bin_jinja_cmd and moved it to $destination_file_name ****   "
         done
     fi
+}
+
+test_borg(){
+    if [[ "$BUILD_BORG" == "1" ]]; then
+        MYBORG_PATH="$DIST_PATH/ansible-playbook/bin/$_BORG_BUILD_NAME"
+        if [[ ! -e $MYBORG_PATH ]]; then
+            >&2 ansi --red "Invalid MYBORG_PATH :: borg is not executable: \"$MYBORG_PATH\""
+            exit 666
+        fi
+        test_passphrase_cmd="(cd $ORIG_DIR && source /etc/.ansi && source ../constants.sh && source ../utils.sh && source run-constants.sh && source run-vars.sh && source run-utils.sh && doTestBorg \"$MYBORG_PATH\")"
+        test_encrypted_passphrase_cmd="(cd $ORIG_DIR && source /etc/.ansi && source ../constants.sh && source ../utils.sh && source run-constants.sh && source run-vars.sh && source run-utils.sh && doPassphraseTests \"$MYBORG_PATH\")"
+        >&2 ansi --yellow "test_passphrase_cmd=\"$test_passphrase_cmd\""
+        >&2 ansi --yellow "test_encrypted_passphrase_cmd=\"$test_encrypted_passphrase_cmd\""
+        eval $test_passphrase_cmd
+        test_passphrase_cmd_exit_code=$?
+        eval $test_encrypted_passphrase_cmd
+        test_encrypted_passphrase_cmd_exit_code=$?
+    fi
+}
+
+summary(){
+    >&2 ansi --green "Disk Usage: $(du --max-depth=1 -h $DIST_PATH)"
+    >&2 ansi --green "File Count: $(find $DIST_PATH -type f|wc -l)"
+    >&2 ansi --green "Directory Count: $(find $DIST_PATH -type d|wc -l)"
 }
