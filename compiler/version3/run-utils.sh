@@ -20,6 +20,51 @@ getBuildScriptReplacement(){
         fi
     done
 }
+
+doTestBorg(){
+    if [[ "$1" == "" ]]; then
+        echo "[doTestBorg] : missing argument"
+        exit 1
+    fi
+    >&2 ansi --yellow "Testing borg with $1"
+    env | egrep "BORG_|AUTH_TOKEN|PUBLIC_KEY|AUDIENCE"
+    $1 --version
+
+    echo 1234 > testfile.txt
+    rm -rf test.borg
+    $1 init -e repokey test.borg
+    ls -al test.borg
+
+    >&2 ansi --yellow "Borging with plaintext passphrase"
+    $1 create test.borg::test1 testfile.txt
+    $1 list test.borg::test1
+    >&2 ansi --green "     OK"
+    rm -rf test.borg
+}
+
+doPassphraseTests(){
+
+    >&2 ansi --yellow Testing Borg with $BP
+    file $BP
+
+    BORG_PASSPHRASE="$PLAINTEXT_PASSPHRASE" \
+        doTestBorg $BP
+    >&2 ansi --green Plaintext with specified passphrase tests pas
+    unset BORG_PASSPHRASE
+
+    AUDIENCE="$(cat ~/.keys/audience.key)" \
+    PUBLIC_KEY="$(cat ~/.keys/pub.key|base64 -w0)" \
+    AUTH_TOKEN="$(generateApplicationToken.sh apiStatus read)" \
+    doTestBorg $BP
+    >&2 ansi --green Plaintext passphrase in AUTH_TOKEN tests pass
+
+    AUDIENCE="$(cat ~/.keys/audience.key)" \
+    PUBLIC_KEY="$(cat ~/.keys/pub.key|base64 -w0)" \
+    AUTH_TOKEN="$(generateApplicationToken.sh araAPI_ro read)" \
+    doTestBorg $BP
+    >&2 ansi --green Encrypted passphrase in AUTH_TOKEN tests pass
+
+}
 get_setup_hash(){
     (cd $ORIG_DIR && ls run-vars.sh run-constants.sh ../constants.sh|xargs md5sum|md5sum|cut -d' ' -f1)
 }
@@ -126,9 +171,10 @@ save_build_script_to_repo(){
   fi
 }
 get_module_md5(){
-    _F=$1
-    if [[ -f "scripts/$1 " ]]; then
-        _F=scripts/$1
+    if [[ -f "scripts/$1" ]]; then
+        _F="scripts/$1"
+    else
+        _F="$1"
     fi
     >&2 ansi --red "              [get_module_md5] 1=$1 _F=$_F pwd=$(pwd)"
 

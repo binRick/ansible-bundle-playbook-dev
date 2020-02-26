@@ -14,6 +14,7 @@ export BUILD_SCRIPTS="\
     ansible-config.py \
 "
 export _BUILD_SCRIPTS="\
+    speedtest-cli.py \
     test.py \
     ansible-vault.py \
     j2.py \

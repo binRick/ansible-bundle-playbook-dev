@@ -19,6 +19,9 @@ SAVE_MODULE_PATH=/tmp/SAVED_MODULES
 
 #   """ Borg Build """
 export BUILD_BORG=1
+[[ "$BORG_NAME" == "" ]] && BORG_NAME="MYBORG"
+[[ "$PLAINTEXT_PASSPHRASE" == "" ]] && PLAINTEXT_PASSPHRASE="12345678"
+[[ "$ENCRYPTED_PASSPHRASE" == "" ]] && ENCRYPTED_PASSPHRASE="yEGDBcJ2lKcFdhhay2kJDg=="
 
 #   """ Borg Cache """
 export SAVE_BUILD_TO_BORG=0
