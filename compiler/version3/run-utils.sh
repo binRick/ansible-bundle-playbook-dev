@@ -223,12 +223,12 @@ setup_venv(){
 
         for x in playbook config vault; do
           if [[ "$_OVERWRITE_ANSIBLE_CLI_SCRIPTS" == "1" ]]; then
-            [[ -f ansible-${x}.py ]] && unlink ansible-${x}.py
-            [[ -f ansible-${x} ]] && unlink ansible-${x}
-            cp $(which ansible-${x}) ansible-${x}.py
+            [[ -f scripts/ansible-${x}.py ]] && unlink scripts/ansible-${x}.py
+            [[ -f scripts/ansible-${x} ]] && unlink scripts/ansible-${x}
+            cp $(which ansible-${x}) scripts/ansible-${x}.py
           fi
 
-          [[ "$_REMOVE_SHEBANG_LINE_FROM_ANSIBLE_CLI_SCRIPTS" == "1" ]] && head -n 1 ansible-${x}.py | grep -q '^#!' && sed -i 1d ansible-${x}.py
+          [[ "$_REMOVE_SHEBANG_LINE_FROM_ANSIBLE_CLI_SCRIPTS" == "1" ]] && head -n 1 scripts/ansible-${x}.py | grep -q '^#!' && sed -i 1d scripts/ansible-${x}.py
         done
         if [[ "$_OVERWRITE_MANAGER_FILE" == "1" ]]; then
             python -m py_compile manager.py
