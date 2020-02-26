@@ -9,11 +9,11 @@ _BUILD_SCRIPT_REPLACEMENTS=""
 
 export BUILD_SCRIPTS="\
     ${_BORG_BUILD_NAME}.py \
+"
+export _BUILD_SCRIPTS="\
     _ansible.py \
     ansible-playbook.py \
     ansible-config.py \
-"
-export _BUILD_SCRIPTS="\
     speedtest-cli.py \
     test.py \
     ansible-vault.py \
@@ -31,9 +31,9 @@ BASE_MODS="loguru json2yaml jinja2 pyyaml pyaml requests json2yaml"
 ADDTL_MODS="speedtest-cli docopt python-jose pycryptodome paramiko halo"
 OPTIONAL_MODULES="tcconfig pexpect libtmux tmuxp tcconfig"
 export _MODULES="\
-    $OPTIONAL_MODULES \
 "
 export MODULES="\
+    $OPTIONAL_MODULES \
     $BASE_MODS \
     $ADDTL_MODS \
     $REQUIRED_MODULES \

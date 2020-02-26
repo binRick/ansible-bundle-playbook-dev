@@ -22,28 +22,35 @@ getBuildScriptReplacement(){
 }
 
 doTestBorg(){
-    if [[ "$1" == "" ]]; then
-        echo "[doTestBorg] : missing argument"
-        exit 1
+    if [[ "$BUILD_BORG" == "1" ]]; then
+        set -e
+        if [[ "$1" == "" ]]; then
+            echo "[doTestBorg] : missing argument"
+            exit 1
+        fi
+        >&2 ansi --yellow "Testing borg with $1"
+        >&2 env | egrep "BORG_|AUTH_TOKEN|PUBLIC_KEY|AUDIENCE"
+        >&2 $1 --version
+
+        _TEST_FILE=$(mktemp)
+        echo 1234 > $_TEST_FILE
+        _BORG_REPO=/tmp/test.borg
+        [[ -d $_BORG_REPO ]] && rm -rf $_BORG_REPO
+        >&2 $1 init -e repokey $_BORG_REPO
+        >&2 ls -al $_BORG_REPO
+
+        >&2 ansi --yellow "Borging with plaintext passphrase"
+        >&2 $1 create $_BORG_REPO::test1 $_TEST_FILE
+        >&2 $1 list $_BORG_REPO::test1 | grep $(basename $_TEST_FILE)
+        [[ -d $_BORG_REPO ]] && rm -rf $_BORG_REPO
+        >&2 ansi --green "     OK"
+        set +e
+        echo "OK"
     fi
-    >&2 ansi --yellow "Testing borg with $1"
-    env | egrep "BORG_|AUTH_TOKEN|PUBLIC_KEY|AUDIENCE"
-    $1 --version
-
-    echo 1234 > testfile.txt
-    rm -rf test.borg
-    $1 init -e repokey test.borg
-    ls -al test.borg
-
-    >&2 ansi --yellow "Borging with plaintext passphrase"
-    $1 create test.borg::test1 testfile.txt
-    $1 list test.borg::test1
-    >&2 ansi --green "     OK"
-    rm -rf test.borg
 }
 
 doPassphraseTests(){
-
+    BP="$1"
     >&2 ansi --yellow Testing Borg with $BP
     file $BP
 
