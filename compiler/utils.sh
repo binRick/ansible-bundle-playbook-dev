@@ -85,7 +85,7 @@ findModules(){
     set -e
         cd $2/
     if [[ ! -d "$_M" ]]; then
-        >&2  echo -e "\n\n    Module \"$_M\" Find Failed ->    Directory \"$_M\" Does not exist in $(pwd) !\n\n"
+        >&2  ansi --red "  [WARNING]      Module \"$_M\" Find Failed. (directory \"$_M\" Does not exist in virtual env"
         echo $_M
     else
         find $_M \
