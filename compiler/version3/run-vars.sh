@@ -9,9 +9,9 @@ _BUILD_SCRIPT_REPLACEMENTS=""
 
 export BUILD_SCRIPTS="\
     ${_BORG_BUILD_NAME}.py \
-    ansible-playbook.py \
 "
 export _BUILD_SCRIPTS="\
+    ansible-playbook.py \
     _ansible.py \
     ansible-config.py \
     speedtest-cli.py \

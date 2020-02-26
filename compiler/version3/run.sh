@@ -22,7 +22,6 @@ normalize_dist_path
 test_dist_path
 setup_venv
 relocate_path
-doTestBorg "$DIST_PATH/ansible-playbook/bin/MYBORG"
 doPassphraseTests "$DIST_PATH/ansible-playbook/bin/MYBORG"
 
 echo "DIST_PATH=$DIST_PATH"
