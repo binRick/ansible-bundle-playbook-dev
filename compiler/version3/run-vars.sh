@@ -4,16 +4,15 @@ export MODULE_REPOS="
 export _MODULE_REPOS="
 "
 
-
 BUILD_SCRIPT_REPLACEMENTS="_ansible.py|ansible.py"
 _BUILD_SCRIPT_REPLACEMENTS=""
 
 export BUILD_SCRIPTS="\
-    test.py \
-"
-export _BUILD_SCRIPTS="\
     _ansible.py \
     ansible-playbook.py \
+"
+export _BUILD_SCRIPTS="\
+    test.py \
     ansible-config.py \
     ansible-vault.py \
     paramiko_test.py \

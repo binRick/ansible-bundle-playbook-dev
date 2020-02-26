@@ -4,6 +4,7 @@ cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 export ORIG_DIR="$(pwd)"
 source /etc/.ansi
 source ../constants.sh
+source ../utils.sh
 source run-constants.sh
 source run-utils.sh
 

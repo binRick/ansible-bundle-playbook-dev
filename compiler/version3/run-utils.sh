@@ -178,6 +178,10 @@ setup_venv(){
             python -m py_compile manager.py
             cp -f manager.py $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/manager.py
         fi        
+
+        addAdditionalAnsibleModules plugins callback "$ADDITIONAL_ANSIBLE_CALLLBACK_MODULES"
+        addAdditionalAnsibleModules modules library "$ADDITIONAL_ANSIBLE_LIBRARY_MODULES"
+
     fi
     
     if [[ "$BUILD_BORG" == "1" ]]; then
