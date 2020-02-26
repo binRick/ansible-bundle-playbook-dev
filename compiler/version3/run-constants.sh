@@ -18,7 +18,7 @@ export _EXCLUDE_ANSIBLE_MODULES=0
 SAVE_MODULE_PATH=/tmp/SAVED_MODULES
 
 #   """ Borg Build """
-export BUILD_BORG=0
+export BUILD_BORG=1
 
 #   """ Borg Cache """
 export SAVE_BUILD_TO_BORG=0

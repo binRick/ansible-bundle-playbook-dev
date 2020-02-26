@@ -39,16 +39,6 @@ for d in build dist __pycache__ $COMBINED_DIR; do
     if [[ -d $d ]]; then rm -rf $d; fi
 done
 
->&2 ansi --cyan Installing Python Requirements
->&2 pip -q install $MODULES || retry_nuked_venv
-
->&2 ansi --cyan Installing Module Repos
-for x in $(echo $MODULE_REPOS|tr ' ' '\n'|grep -v '^$'|sort -u); do
-    >&2 pip install -q $x
-done
-
->&2 ansi --green "   OK"
->&2 echo -ne "\n"
 
 if [[ "$BUILD_ANSIBLE" == "1" ]]; then
     export _ADD_DATAS="\

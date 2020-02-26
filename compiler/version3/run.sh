@@ -7,6 +7,7 @@ source ../constants.sh
 source ../utils.sh
 source run-constants.sh
 source run-utils.sh
+source run-vars.sh
 
 cleanup_compileds
 setup_venv

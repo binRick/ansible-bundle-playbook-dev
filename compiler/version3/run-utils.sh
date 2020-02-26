@@ -130,6 +130,8 @@ get_module_md5(){
     if [[ -f "scripts/$1 " ]]; then
         _F=scripts/$1
     fi
+    >&2 ansi --red "              [get_module_md5] 1=$1 _F=$_F pwd=$(pwd)"
+
     (
       md5sum $_F
       echo $1 |md5sum
@@ -183,15 +185,29 @@ setup_venv(){
         addAdditionalAnsibleModules modules library "$ADDITIONAL_ANSIBLE_LIBRARY_MODULES"
 
     fi
-    
+
+
+    >&2 ansi --cyan Installing Python Requirements
+    >&2 pip -q install $MODULES || retry_nuked_venv
+
+    >&2 ansi --cyan Installing Module Repos
+    for x in $(echo $MODULE_REPOS|tr ' ' '\n'|grep -v '^$'|sort -u); do
+        >&2 pip install -q $x
+    done
+
+    >&2 ansi --green "   OK"
+    >&2 echo -ne "\n"
+
     if [[ "$BUILD_BORG" == "1" ]]; then
+        set -e
+        >&2 ansi --yellow "           Building BORG"
         [[ -d _borg ]] || git clone https://github.com/binRick/borg _borg
         (cd _borg && git pull)
-        pip install -q -r _borg/requirements.d/development.txt --force
-        pip install -q -e _borg --force
-        cp -f _borg/src/borg/__main__.py BORG.py
-        head -n 1 BORG.py | grep -q '^#!' && sed -i 1d BORG.py
-        python BORG.py --help >/dev/null 2>&1
+        pip install -q -r _borg/requirements.d/development.txt
+        pip install -q -e _borg
+        cp -f _borg/src/borg/__main__.py scripts/BORG.py
+        head -n 1 scripts/BORG.py | grep -q '^#!' && sed -i 1d scripts/BORG.py
+        python scripts/BORG.py --help >/dev/null 2>&1
         >&2 ansi --green Pre compile BORG.py validated OK
     fi
 }
