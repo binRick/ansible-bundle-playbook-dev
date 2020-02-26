@@ -252,10 +252,10 @@ relocate_path(){
         mv $DIST_PATH/$_DIR_PATH_PREFIX $DIST_PATH/${_DIR_PATH_PREFIX}.dir
         mkdir -p $DIST_PATH/$_DIR_PATH_PREFIX
         [[ -d $DIST_PATH/$_DIR_PATH_PREFIX/$_RELOCATE_PATH_PREFIX ]] && rmdir $DIST_PATH/$_DIR_PATH_PREFIX/$_RELOCATE_PATH_PREFIX
-        mv $DIST_PATH/${_DIR_PATH_PREFIX}.dir $DIST_PATH/$_DIR_PATH_PREFIX/$_RELOCATE_PATH_PREFIX
         BIN_PATH="$DIST_PATH/$_DIR_PATH_PREFIX/bin"
         LIB_PATH="$DIST_PATH/$_DIR_PATH_PREFIX/bin/$_RELOCATE_PATH_PREFIX"
         mkdir -p $BIN_PATH
+        mv $DIST_PATH/${_DIR_PATH_PREFIX}.dir $LIB_PATH
         pip install $_RELOCATE_MODULES --upgrade -q
         for B in $BUILD_SCRIPTS; do
             _tf=$(mktemp)

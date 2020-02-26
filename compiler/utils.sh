@@ -161,6 +161,7 @@ addAdditionalAnsibleModules(){
         if [[ $m == http* && ! -f $mCmdDir/$mFile ]]; then
             mT=$(mktemp -d)
             (cd $mT && curl -ks $m > $mFile)
+        else
             _m=$mT/$(basename $m)
                 m=$_m
             if [[ ! -d "$mCmdDir" ]]; then mkdir -p $mCmdDir; fi
