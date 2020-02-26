@@ -156,25 +156,26 @@ addAdditionalAnsibleModules(){
         mFile="$(basename $m)"
         mDir="$(dirname $m)"
         mCmdDir="$(getAnsiblePath)/${MODULE_TYPE}/${MODULE_TYPE_DIR}"
-        mCmd="cp $mDir/$mFile $mCmdDir/$mFile"
-
-        if [[ $m == http* && ! -f $mCmdDir/$mFile ]]; then
-            mT=$(mktemp -d)
-            (cd $mT && curl -ks $m > $mFile)
-        else
-            _m=$mT/$(basename $m)
-                m=$_m
+        if [[ ! -f $mCmdDir/$mFile ]]; then
             if [[ ! -d "$mCmdDir" ]]; then mkdir -p $mCmdDir; fi
-            eval $mCmd
+            if [[ "$m" == http* ]]; then
+                    (cd $mCmdDir && curl -ks $m > $mFile)
+            else
+                mT=$(mktemp -d)
+                _m=$mT/$(basename $m)
+                m=$_m
+                mCmd="cp $mDir/$mFile $mCmdDir/$mFile"
+                eval $mCmd
+            fi
         fi
     done
 }
 
 getSitePackagesPath(){
-    pip show ansible|grep ^Location:|cut -d' ' -f2| grep "^\/"|head -n 1
+    echo "$VIRTUAL_ENV/lib/python3.6/site-packages"
 }
 getAnsiblePath(){
-    echo $(getSitePackagesPath)/ansible
+    echo "$VIRTUAL_ENV/lib/python3.6/site-packages/ansible"
 }
 getAnsiblePluginsPath(){
     echo $(getAnsiblePath)/plugins

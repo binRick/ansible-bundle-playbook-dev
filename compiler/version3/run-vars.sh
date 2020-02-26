@@ -8,12 +8,12 @@ BUILD_SCRIPT_REPLACEMENTS="_ansible.py|ansible.py"
 _BUILD_SCRIPT_REPLACEMENTS=""
 
 export BUILD_SCRIPTS="\
-    ${_BORG_BUILD_NAME}.py \
-"
-export _BUILD_SCRIPTS="\
     ansible-playbook.py \
     _ansible.py \
     ansible-config.py \
+"
+export _BUILD_SCRIPTS="\
+    ${_BORG_BUILD_NAME}.py \
     speedtest-cli.py \
     test.py \
     ansible-vault.py \
