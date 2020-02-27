@@ -79,8 +79,8 @@ get_setup_hash(){
 }
 ensure_borg(){
  [[ -d $BORG_REPO ]] || command borg $BORG_ARGS init -e repokey
- borg check $BORG_ARGS
- borg prune $BORG_ARGS -v -p --keep-within ${BORG_KEEP_WITHIN_DAYS}d 2>/dev/null
+# [[ "$CHECK_BORG" == "1" ]] && borg check $BORG_ARGS
+# [[ "$PRUNE_BORG" == "1" ]] && borg prune $BORG_ARGS -v -p --keep-within ${BORG_KEEP_WITHIN_DAYS}d 2>/dev/null
 }
 cleanup_compileds(){
     find . -maxdepth 2 -name ".COMBINED-*" -type d -amin +6|xargs -I % rm -rf %
@@ -128,33 +128,22 @@ get_cached_build_script_repo_name(){
 }
 get_cached_build_script(){
     set +e
+    SPEC_NAME="$(basename $1 .py).spec"
+    MANGLED_VARS_FILE=".$(basename $SPEC_NAME .spec)_mangled_vars.txt"
     REPO_NAME=$(get_cached_build_script_repo_name $1)
-    cmd="borg list ::$REPO_NAME"
-    eval $cmd > .o 2>&1
+    cmd="borg list ::$REPO_NAME $SPEC_NAME --format=\"{path}{NEWLINE}\""
+    eval $cmd > .o 2>.e
     ec=$?
-    >&2 ansi --yellow "     $(echo -e "\n\n")     [cached_build_script] 1=$1 REPO_NAME=$REPO_NAME cmd=$cmd exit_code=$ec $(echo -e "\n\n") "
+    >&2 ansi --yellow "    [cached_build_script] 1=$1 REPO_NAME=$REPO_NAME SPEC_NAME=$SPEC_NAME MANGLED_VARS_FILE=$MANGLED_VARS_FILE cmd=$cmd exit_code=$ec"
     if [[ "$ec" == "0" ]]; then
-        cat .o
+        [[ -f /tmp/$SPEC_NAME ]] && unlink /tmp/$SPEC_NAME
+        (cd /tmp && borg $BORG_ARGS extract ::$REPO_NAME $SPEC_NAME $MANGLED_VARS_FILE)
+        echo -e "/tmp/$SPEC_NAME\n/tmp/$MANGLED_VARS_FILE"
     else
         echo ""
     fi
 
     set -e
-}
-xxxx(){
-    cmd_out=$(mktemp)
-    cmd_err=$(mktemp)
-    eval $cmd >$cmd_out 2>$cmd_err
-    cmd_exit_code=$?
-    if [[ "$cmd_exit_code" == "0" ]]; then
-        >&2 ansi --green $(cat $cmd_out)
-        cat $cmd_out
-    else
-        >&2 ansi --red $(cat $cmd_out $cmd_err)
-        echo ""
-    fi
-    set -e
-
 }
 save_build_script_to_repo(){
   if [[ "$SAVE_BUILD_TO_BORG" == "1" ]]; then
@@ -162,20 +151,16 @@ save_build_script_to_repo(){
     >&2 ansi --yellow "[save_build_script_to_repo] 1=\"$1\""
     REPO_NAME=$(get_cached_build_script_repo_name $1)
     REPO_ENV_NAME=$(get_cached_build_script_repo_env_name $1)
-    file_save_cmd="(borg $BORG_ARGS delete ::$REPO_NAME >/dev/null 2>&1; cd $(dirname $2) && borg $BORG_ARGS create -x -v --stats --progress  ::$REPO_NAME $(basename $2))"
     _DIR="$(dirname $2)"
+    MANGLED_VARS_FILE=".$(basename $2 .spec)_mangled_vars.txt"
+    file_save_cmd="(borg $BORG_ARGS delete ::$REPO_NAME >/dev/null 2>&1; cd $ORIG_DIR/$(dirname $2) && cp ../$MANGLED_VARS_FILE . && borg $BORG_ARGS create -x -v --stats --progress  ::$REPO_NAME $(basename $2) $MANGLED_VARS_FILE)"
     _FILES="$(cd $_DIR && find .|tr '\n' ' ')"
-    env_save_cmd="borg $BORG_ARGS delete ::$REPO_ENV_NAME >/dev/null 2>&1; cd $_DIR && borg $BORG_ARGS create -x -v --stats --progress  ::$REPO_ENV_NAME $_FILES"
     echo $file_save_cmd > .file_save_cmd
-    echo $env_save_cmd > .env_save_cmd
-    >&2 ansi --yellow "file_save_cmd saved, env_save_cmd saved to .file_save_cmd .env_save_cmd"
+    >&2 ansi --yellow "file_save_cmd saved to .file_save_cmd, MANGLED_VARS_FILE=$MANGLED_VARS_FILE"
     set +e
     bash .file_save_cmd
     file_save_exit_code=$?
-    bash .env_save_cmd
-    env_save_exit_code=$?
-    >&2 ansi --yellow "     file_save_exit_code=$file_save_exit_code env_save_exit_code=$env_save_exit_code"
-    set -e
+    >&2 ansi --yellow "     file_save_exit_code=$file_save_exit_code"
   fi
 }
 get_module_md5(){
@@ -268,19 +253,11 @@ setup_venv(){
 
 
 save_modules(){
-    set +e
+    set -e
     for m in $BUILD_SCRIPTS; do
         >&2 ansi --green saving Build Script $m to repo
-        save_build_script_to_repo $m $DIST_PATH/$m
-        #        exit 201
-        _m="$(basename $m .py)"
-        save_path=$(get_module_saved_path $m)
-        cp_cmd="cp $DIST_PATH/$_m $save_path"
-        >&2 ansi --yellow "      Saving Build Script $_m to $save_path with cmd:$(echo -e "\n\n           \"$cp_cmd\"\n\n")"
-        >&2 pwd
-        eval $cp_cmd
+        save_build_script_to_repo "$m" ".specs/$(basename $m .py).spec"
     done
-    set -e
 }
 
 run_build(){
@@ -353,9 +330,9 @@ relocate_path(){
                 $_RELOCATE_BIN_WRAPPER_SCRIPT_TEMPLATE_FILE $_RELOCATE_BIN_WRAPPER_SCRIPT_VARS_FILE > $_tf 2> $_bin_jinja_stderr && \
                     cd $(dirname $_tf_bin_path_py) && \
                     mv $_tf $_tf_bin_path_py_clean && \
-                    cython --embed -o $(basename $_tf_bin_path_py_clean .py).c \
-                        $(basename $_tf_bin_path_py_clean .py).py && \
-                    gcc -Os -I /usr/include/python3.6m \
+                    cython -${CYTHON_PYTHON_COMPILE_VERSION} --embed \
+                        -o $(basename $_tf_bin_path_py_clean .py).c $(basename $_tf_bin_path_py_clean .py).py && \
+                    gcc -Os -I ${CYTHON_PYTHON_COMPILE_LIBRARY_PATH} \
                         -o $destination_file_name $(basename $_tf_bin_path_py_clean .py).c \
                         -lpython3.6m -lpthread -lm -lutil -ldl && \
                     rm $(basename $_tf_bin_path_py_clean .py).py $(basename $_tf_bin_path_py_clean .py).c && \

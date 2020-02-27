@@ -10,7 +10,7 @@ export _REMOVE_SHEBANG_LINE_FROM_ANSIBLE_CLI_SCRIPTS=1
 ANSIBLE_VERSION=2.8.8
 export _OVERWRITE_MANAGER_FILE=0
 export _OVERWRITE_ANSIBLE_CLI_SCRIPTS=0
-export BUILD_ANSIBLE=1
+export BUILD_ANSIBLE=0
 export _ADD_DATA_ANSIBLE_PATH=ansible
 export _EXCLUDE_ANSIBLE_MODULES=0
 
@@ -18,12 +18,20 @@ export _EXCLUDE_ANSIBLE_MODULES=0
 SAVE_MODULE_PATH=/tmp/SAVED_MODULES
 
 #   """ Borg Build """
-export BUILD_BORG=1
+export BUILD_BORG=0
 [[ "$PLAINTEXT_PASSPHRASE" == "" ]] && PLAINTEXT_PASSPHRASE="12345678"
 [[ "$ENCRYPTED_PASSPHRASE" == "" ]] && ENCRYPTED_PASSPHRASE="yEGDBcJ2lKcFdhhay2kJDg=="
 
+#   """ Cython Compiler """
+export CYTHON_PYTHON_COMPILE_VERSION=3
+export CYTHON_PYTHON_COMPILE_LIBRARY_PATH=/usr/include/python3.6m
+#export CYTHON_PYTHON_COMPILE_VERSION=2
+#export CYTHON_PYTHON_COMPILE_LIBRARY_PATH=/usr/include/python2.7
+
 #   """ Borg Cache """
-export SAVE_BUILD_TO_BORG=0
+export CHECK_BORG=0
+export PRUNE_BORG=0
+export SAVE_BUILD_TO_BORG=1
 export BORG_KEEP_WITHIN_DAYS=30
 export _BORG_URL="https://github.com/borgbackup/borg/releases/download/1.1.10/borg-linux64"
 export BORG_ARGS="--lock-wait 20"

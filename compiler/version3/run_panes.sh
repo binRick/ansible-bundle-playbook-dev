@@ -29,6 +29,8 @@ CMD_dstat="sleep 5 && command dstat -alp 5 500"
 CMD_run="time ./run.sh; echo run.sh exited $?"
 CMD_nodemon_run="nodemon --delay 1 -V -w run*.sh -e sh -x ./run.sh"
 
+CMD_RUN="$CMD_run"
+
 xpanes \
     -t \
     -s \
@@ -46,5 +48,5 @@ xpanes \
         "sh -c '$CMD9' 2>/dev/null" \
         "sh -c '$CMD10' 2>/dev/null" \
         "sh -c '$CMD_dstat'" \
-        "sh -c '$CMD_nodemon_run'"
+        "sh -c '$CMD_RUN'"
         #"sh -c '$CMD_run'"
