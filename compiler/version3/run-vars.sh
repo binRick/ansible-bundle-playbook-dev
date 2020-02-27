@@ -4,13 +4,12 @@ export _MODULE_REPOS="
 export MODULE_REPOS="
 "
 
-BUILD_SCRIPT_REPLACEMENTS="_ansible.py|ansible.py _glances.py|glances.py"
+BUILD_SCRIPT_REPLACEMENTS="_ansible.py|ansible.py"
 
 export BUILD_SCRIPTS="\
-    _glances.py \
+    test.py \
 "
 export _BUILD_SCRIPTS="\
-    test.py \
     ${_BORG_BUILD_NAME}.py \
     _ansible.py \
     ansible-playbook.py \
@@ -32,7 +31,7 @@ TEMPLATING_MODULES="j2cli jinja2"
 JSON_MODULES="simplejson jmespath json2yaml jsondiff kaptan"
 NIFTY_MODULES="pyinotify backoff humanize PyInquirer sshtunnel"
 TERMINAL_MODULES="blessings terminaltables"
-SYSTEM_PERFORMANCE_MODULES="glances"
+SYSTEM_PERFORMANCE_MODULES=""
 CRYPTO_MODULES="python-jose[cryptography]"
 SUBPROCESS_MODULES="bash.py"
 NETWORK_MODULES="netaddr urllib3 websocket-client python-socketio"
@@ -50,7 +49,6 @@ export _MODULES="\
     $BASE_MODS \
 "
 MODULES="\
-    glances
 "
 
 
