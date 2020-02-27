@@ -89,19 +89,29 @@ cleanup_compileds(){
 save_build_to_borg(){
   if [[ "$SAVE_BUILD_TO_BORG" == "1" ]]; then
       set +e
-      BUILD_DIR=$1
+      BUILD_DIR="$1"
       [[ ! -d $BUILD_DIR ]] && ansi --red Invalid Build Dir && exit 1
-      REPO_NAME="$(basename $BUILD_DIR)"
+      ___REPO_NAME="$(basename $BUILD_DIR)"
+
+      for m in $BUILD_SCRIPTS; do
+        _BIN_PATH="$BUILD_DIR/$(basename $m .py)"
+        >&2 ansi --yellow "   _BIN_PATH=$_BIN_PATH m=$m REPO_NAME=$___REPO_NAME BUILD_DIR=$BUILD_DIR"
+        save_binary_to_borg "$_BIN_PATH"
+      done
+
       FILES="$(cd $BUILD_DIR && find .)"
       modules_file=$(mktemp)
       bs_file=$(mktemp)
+      set +e
       echo "$MODULES"|tr ' ' '\n'|grep -v '^$' > $modules_file
       echo "$BUILD_SCRIPTS"|tr ' ' '\n'|grep -v '^$' > $bs_file
-      jo dist_path=$REPO_NAME modules=@$modules_file build_scripts=@$bs_file |base64 -w0> .COMMENT
+      set -e
+      jo dist_path=$___REPO_NAME modules=@$modules_file build_scripts=@$bs_file |base64 -w0> .COMMENT
       cat .COMMENT
       COMMENT=$(cat .COMMENT)
-      cmd="borg $BORG_ARGS delete ::$REPO_NAME >/dev/null 2>&1; cd $(dirname $BUILD_DIR) && borg $BORG_ARGS create -x -v --stats --progress --comment '$COMMENT' ::$REPO_NAME $REPO_NAME"
+      cmd="borg $BORG_ARGS delete ::$___REPO_NAME >/dev/null 2>&1; cd $BUILD_DIR && borg $BORG_ARGS create -x -v --stats --progress --comment '$COMMENT' ::$___REPO_NAME $FILES"
       ansi --yellow $cmd
+      set +e
       eval $cmd
 
       set -e
@@ -122,23 +132,26 @@ get_cached_build_script_repo_env_name(){
     _K="$(get_module_md5 $1)-$1-cached-build_script-env"
     echo $_K
 }
+get_cached_binary_build_script_repo_name(){
+    _K="$(get_setup_hash)-$(basename $1)-cached-build_script-binary"
+    echo $_K
+}
 get_cached_build_script_repo_name(){
     _K="$(get_setup_hash)-$1-cached-build_script"
-    >&2 ansi --yellow  "        [get_cached_build_script_repo_name]           $1=$_K"
     echo $_K
 }
 get_cached_build_script(){
     set +e
     SPEC_NAME="$(basename $1 .py).spec"
     MANGLED_VARS_FILE=".$(basename $SPEC_NAME .spec)_mangled_vars.txt"
-    REPO_NAME=$(get_cached_build_script_repo_name $1)
-    cmd="borg list ::$REPO_NAME $SPEC_NAME --format=\"{path}{NEWLINE}\""
+    ____REPO_NAME=$(get_cached_build_script_repo_name $1)
+    cmd="borg list ::$____REPO_NAME $SPEC_NAME --format=\"{path}{NEWLINE}\""
     eval $cmd > .o 2>.e
     ec=$?
-    >&2 ansi --yellow "    [cached_build_script] 1=$1 REPO_NAME=$REPO_NAME SPEC_NAME=$SPEC_NAME MANGLED_VARS_FILE=$MANGLED_VARS_FILE cmd=$cmd exit_code=$ec"
+    >&2 ansi --yellow "    [cached_build_script] 1=$1 REPO_NAME=$____REPO_NAME SPEC_NAME=$SPEC_NAME MANGLED_VARS_FILE=$MANGLED_VARS_FILE cmd=$cmd exit_code=$ec"
     if [[ "$ec" == "0" ]]; then
         [[ -f /tmp/$SPEC_NAME ]] && unlink /tmp/$SPEC_NAME
-        (cd /tmp && borg $BORG_ARGS extract ::$REPO_NAME $SPEC_NAME $MANGLED_VARS_FILE)
+        (cd /tmp && borg $BORG_ARGS extract ::$____REPO_NAME $SPEC_NAME $MANGLED_VARS_FILE)
         echo -e "/tmp/$SPEC_NAME\n/tmp/$MANGLED_VARS_FILE"
     else
         echo ""
@@ -146,21 +159,33 @@ get_cached_build_script(){
 
     set -e
 }
-save_build_script_to_repo(){
+save_binary_to_borg(){
   if [[ "$SAVE_BUILD_TO_BORG" == "1" ]]; then
-    ansi --yellow "[save_build_script_to_repo] 1=\"$1\""
-    >&2 ansi --yellow "[save_build_script_to_repo] 1=\"$1\""
-    REPO_NAME=$(get_cached_build_script_repo_name $1)
-    REPO_ENV_NAME=$(get_cached_build_script_repo_env_name $1)
-    _DIR="$(dirname $2)"
-    MANGLED_VARS_FILE=".$(basename $2 .spec)_mangled_vars.txt"
-    file_save_cmd="(borg $BORG_ARGS delete ::$REPO_NAME >/dev/null 2>&1; cd $ORIG_DIR/$(dirname $2) && cp ../$MANGLED_VARS_FILE . && borg $BORG_ARGS create -x -v --stats --progress  ::$REPO_NAME $(basename $2) $MANGLED_VARS_FILE)"
-    _FILES="$(cd $_DIR && find .|tr '\n' ' ')"
+    __REPO_NAME="$(get_cached_binary_build_script_repo_name $1)"
+    file_save_cmd="(borg $BORG_ARGS delete ::$__REPO_NAME >/dev/null 2>&1; cd $(dirname $1) && borg $BORG_ARGS create -x -v --stats --progress  ::$__REPO_NAME $(basename $1))"
     echo $file_save_cmd > .file_save_cmd
     >&2 ansi --yellow "file_save_cmd saved to .file_save_cmd, MANGLED_VARS_FILE=$MANGLED_VARS_FILE"
     set +e
     bash .file_save_cmd
     file_save_exit_code=$?
+    set -e
+    >&2 ansi --yellow "     file_save_exit_code=$file_save_exit_code"
+  fi
+}
+save_build_script_to_repo(){
+  if [[ "$SAVE_BUILD_TO_BORG" == "1" ]]; then
+    ansi --yellow "[save_build_script_to_repo] 1=\"$1\""
+    >&2 ansi --yellow "[save_build_script_to_repo] 1=\"$1\""
+    _REPO_NAME=$(get_cached_build_script_repo_name $1)
+    _DIR="$(dirname $2)"
+    MANGLED_VARS_FILE=".$(basename $2 .spec)_mangled_vars.txt"
+    file_save_cmd="(borg $BORG_ARGS delete ::$_REPO_NAME >/dev/null 2>&1; cd $ORIG_DIR/$(dirname $2) && cp ../$MANGLED_VARS_FILE . && borg $BORG_ARGS create -x -v --stats --progress  ::$_REPO_NAME $(basename $2) $MANGLED_VARS_FILE)"
+    echo $file_save_cmd > .file_save_cmd
+    >&2 ansi --yellow "file_save_cmd saved to .file_save_cmd, MANGLED_VARS_FILE=$MANGLED_VARS_FILE"
+    set +e
+    bash .file_save_cmd
+    file_save_exit_code=$?
+    set -e
     >&2 ansi --yellow "     file_save_exit_code=$file_save_exit_code"
   fi
 }
@@ -267,6 +292,8 @@ save_modules(){
 #        >&2 ansi --green saving Build Script $m to repo
         save_build_script_to_repo "$m" ".specs/$(basename $m .py).spec"
     done
+    
+
 }
 
 run_build(){
@@ -274,7 +301,7 @@ run_build(){
     [[ -f .stderr ]] && ansi --yellow "Starting build" > .stderr
     [[ -f .exit_code ]] && echo "" > .exit_code
     set +e
-    bash -x ./build.sh # > .stdout 2> .stderr
+    bash ./build.sh > .stdout 2> .stderr
     exit_code=$?
     set -e
     echo $exit_code > .exit_code
@@ -284,12 +311,14 @@ run_build(){
             exit $exit_code
     fi
     export DIST_PATH="$(pwd)/$(grep '^.COMBINED-' .stdout|tail -n1)"
+
     if [[ "$DIST_PATH" == "" || ! -d "$DIST_PATH" ]]; then
         ansi --red "     invalid DIST_PATH detected... \"$DIST_PATH\" is not a directory."
         ansi --green "$(cat .stdout)"
         ansi --red "$(cat .stderr)"
             exit 101
     fi
+    echo "$DIST_PATH"
 
 #    >&2 ansi --green Validated DIST_PATH $DIST_PATH
 }
@@ -302,6 +331,7 @@ normalize_dist_path(){
 }
 test_dist_path(){
 #    >&2 ansi --cyan  "DIST_PATH=$DIST_PATH"
+    cd $ORIG_DIR
     cmd="BUILD_SCRIPTS=\"$BUILD_SCRIPTS\" \
         ./test.sh $DIST_PATH/$_DIR_PATH_PREFIX"
     eval $cmd
@@ -399,4 +429,14 @@ summary(){
     >&2 ansi --green "File Count: $(find $DIST_PATH -type f|wc -l)"
     >&2 ansi --green "Directory Count: $(find $DIST_PATH -type d|wc -l)"
     >&2 echo -e "\n\n"
+}
+
+repo_names(){
+    borg list $BORG_REPO $BORG_ARGS --format="{name}{NEWLINE}" | grep '^.COMBINED-'
+}
+repo_name_build_scripts(){
+    borg info ::$1|grep '^Comment: '|cut -d' ' -f2|base64 -d|jq '.build_scripts' -Mrc
+}
+repo_name_modules(){
+    borg info ::$1|grep '^Comment: '|cut -d' ' -f2|base64 -d|jq '.modules' -Mrc
 }

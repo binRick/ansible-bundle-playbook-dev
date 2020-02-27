@@ -10,9 +10,9 @@ export BUILD_SCRIPTS="\
     test.py \
 "
 export _BUILD_SCRIPTS="\
-    ${_BORG_BUILD_NAME}.py \
     _ansible.py \
     ansible-playbook.py \
+    ${_BORG_BUILD_NAME}.py \
     ansible-config.py \
     speedtest-cli.py \
     ansible-vault.py \
