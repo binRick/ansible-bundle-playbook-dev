@@ -252,8 +252,9 @@ setup_venv(){
         >&2 ansi --green "                  OK"
         [[ ! -f scripts/BORG.py ]] && cp -f _borg/src/borg/__main__.py scripts/BORG.py
         head -n 1 scripts/BORG.py | grep -q '^#!' && sed -i 1d scripts/BORG.py
-        >&2 ansi --yellow "           Test BORG"
-        python scripts/BORG.py --help >/dev/null 2>&1
+        [[ ! -f scripts/$_BORG_BUILD_NAME ]] && cp -f scripts/BORG.py scripts/$_BORG_BUILD_NAME
+        >&2 ansi --yellow "           Test BORG @$_BORG_BUILD_NAME"
+        python scripts/$_BORG_BUILD_NAME --help >/dev/null 2>&1
         >&2 ansi --green "                  OK"
     fi
 }
@@ -272,7 +273,7 @@ run_build(){
     [[ -f .stderr ]] && ansi --yellow "Starting build" > .stderr
     [[ -f .exit_code ]] && echo "" > .exit_code
     set +e
-    bash -x ./build.sh > .stdout 2> .stderr
+    bash -x ./build.sh # > .stdout 2> .stderr
     exit_code=$?
     set -e
     echo $exit_code > .exit_code

@@ -11,9 +11,9 @@ export BUILD_SCRIPTS="\
 "
 export _BUILD_SCRIPTS="\
     test.py \
+    ${_BORG_BUILD_NAME}.py \
     _ansible.py \
     ansible-playbook.py \
-    ${_BORG_BUILD_NAME}.py \
     ansible-config.py \
     speedtest-cli.py \
     ansible-vault.py \
