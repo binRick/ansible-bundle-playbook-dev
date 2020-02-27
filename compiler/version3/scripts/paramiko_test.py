@@ -4,6 +4,7 @@ import paramiko, os, json, sys, socket, select, threading, traceback, subprocess
 parser = argparse.ArgumentParser()
 parser.add_argument('--verbose', '-v', action='store_true', help='Verbose Mode')
 parser.add_argument('--test', '-t', action='store_true', help='Test Mode')
+parser.add_argument('--version', '-V', action='store_true', help='Version Mode')
 parser.add_argument('--debug', '-d', action='store_true', help='Debug Mode')
 parser.add_argument('--playProcessor', '-pp', action='store_true', help='Play Processor')
 parser.add_argument('--whmcs-config-file', '-wcf', action='store', help='WHMCS Configuration File', dest='whmcs_config_file')
@@ -15,6 +16,10 @@ CMD = 'cat /var/log/nagios/status.dat'
 hostname = os.environ['XP_h']
 username = os.environ['XP_ru']
 password = os.environ['XP_rp']
+
+if args.version:
+    print("OK")
+    sys.exit(0)
 
 if args.test:
     print("OK")

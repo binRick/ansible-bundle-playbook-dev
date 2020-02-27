@@ -26,20 +26,16 @@ findVenvEggs(){
 getVenvModules(){
 
     (
-    findVenvEggs
-	(cd $VIRTUAL_ENV/lib/python3.6/site-packages && ls *.py|xargs -I % echo %|sed 's/.py$//g'|sort -u)
+      findVenvEggs
+	  (cd $VIRTUAL_ENV/lib/python3.6/site-packages && ls *.py|xargs -I % echo %|sed 's/.py$//g'|sort -u)
 
-cmd="    	cd  $VIRTUAL_ENV && \
+      cd $VIRTUAL_ENV && \
 		find . \
-\
-\
 		| egrep '__init__.py$' \
 		| cut -d'/' -f5 \
-		| sort -u \
-"
-	eval $cmd		
+		| sort -u
 	
-    ) 2>/dev/null | sort -u
+    )    2>/dev/null | sort -u
 }
 
 getModules(){
@@ -112,14 +108,6 @@ _findAllVenvModules(){
         findModules_venv $m
     done
    ) | sort -u
-# > $M
-
-#    if [[ "$_EXCLUDE_ANSIBLE_MODULES" == "1" ]]; then
-#        cat $M | excludeRawAnsibleModules
-#    else
-#        cat $M
-#    if 
-#    unlink $M
 }
 
 excludeRawAnsibleModules(){
