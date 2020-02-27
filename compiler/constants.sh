@@ -19,7 +19,7 @@ VENV_DIR=".venv-1"
 NUKE_VENV=0
 MANGLE_SCRIPT="./mangleSpec.sh"
 
-export _ADDITIONAL_HIDDEN_MODULES="setproctitle prctl"
+export _ADDITIONAL_HIDDEN_MODULES="setproctitle prctl Glances"
 
 #_ADD_DATAS="\$(echo \$_ADD_DATAS|tr ' ' '\n'|grep -v '^$'|sort -u |tr '\n' ' ')"
 
