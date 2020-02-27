@@ -14,16 +14,16 @@ export BUILD_SCRIPTS="\
     speedtest-cli.py \
     ansible-vault.py \
     paramiko_test.py \
-    ${_BORG_BUILD_NAME}.py \
 "
 export _BUILD_SCRIPTS="\
+    ${_BORG_BUILD_NAME}.py \
     nagios_parser_test.py \
     tmuxp.py \
     tcshow.py \
     j2.py \
 "
 
-export BUILD_BORG=1
+export BUILD_BORG=0
 export ANSIBLE_VERSION=2.8.8
 export BUILD_ANSIBLE=1
 

@@ -1,4 +1,0 @@
-*.spec
-.*.txt
-.COMB*
-test*/.status.dat

@@ -1,8 +1,0 @@
-build.sh
-devBuild.sh
-mangleSpec.sh
-test1.py
-test2.py
-test_build.sh
-test.py
-.ansi
