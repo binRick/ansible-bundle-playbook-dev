@@ -110,9 +110,10 @@ save_build_to_borg(){
       cat .COMMENT
       COMMENT=$(cat .COMMENT)
       cmd="borg $BORG_ARGS delete ::$___REPO_NAME >/dev/null 2>&1; cd $BUILD_DIR && borg $BORG_ARGS create -x -v --stats --progress --comment '$COMMENT' ::$___REPO_NAME $FILES"
-      ansi --yellow $cmd
+      ansi -n --yellow "   Creating Borg $___REPO_NAME"
       set +e
       eval $cmd
+      ansi --yellow "            OK"
 
       set -e
    fi
@@ -330,7 +331,6 @@ normalize_dist_path(){
     echo $ANSIBLE_CFG_B64|base64 -d > $DIST_PATH/$_DIR_PATH_PREFIX/ansible.cfg
 }
 test_dist_path(){
-#    >&2 ansi --cyan  "DIST_PATH=$DIST_PATH"
     cd $ORIG_DIR
     cmd="BUILD_SCRIPTS=\"$BUILD_SCRIPTS\" \
         ./test.sh $DIST_PATH/$_DIR_PATH_PREFIX"

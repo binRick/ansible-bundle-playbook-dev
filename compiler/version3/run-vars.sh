@@ -49,6 +49,7 @@ export _MODULES="\
     $BASE_MODS \
 "
 MODULES="\
+    $BASE_MODS \
 "
 
 
