@@ -7,14 +7,14 @@ export MODULE_REPOS="
 BUILD_SCRIPT_REPLACEMENTS="_ansible.py|ansible.py"
 
 export BUILD_SCRIPTS="\
+    ${_BORG_BUILD_NAME}.py \
+"
+export _BUILD_SCRIPTS="\
     _ansible.py \
     ansible-playbook.py \
-    ${_BORG_BUILD_NAME}.py \
     ansible-config.py \
     speedtest-cli.py \
     ansible-vault.py \
-"
-export _BUILD_SCRIPTS="\
     test.py \
     paramiko_test.py \
     nagios_parser_test.py \
