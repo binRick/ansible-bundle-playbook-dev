@@ -19,10 +19,14 @@ load_vars(){
     >&2 ansi --cyan "  Loading $(wc -l vars.sh) Vars.."
     source vars.sh
 }
+findVenvEggs(){
+    (cd $VIRTUAL_ENV/lib/python3.6/site-packages/ && ls *.egg-info -d|cut -d'-' -f1)
+}
 
 getVenvModules(){
 
     (
+    findVenvEggs
 	(cd $VIRTUAL_ENV/lib/python3.6/site-packages && ls *.py|xargs -I % echo %|sed 's/.py$//g'|sort -u)
 
 cmd="    	cd  $VIRTUAL_ENV && \
@@ -35,7 +39,7 @@ cmd="    	cd  $VIRTUAL_ENV && \
 "
 	eval $cmd		
 	
-    ) 2>/dev/null
+    ) 2>/dev/null | sort -u
 }
 
 getModules(){

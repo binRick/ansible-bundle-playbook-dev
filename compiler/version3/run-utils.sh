@@ -21,6 +21,7 @@ getBuildScriptReplacement(){
     done
 }
 
+
 doTestBorg(){
     if [[ "$BUILD_BORG" == "1" ]]; then
       (
