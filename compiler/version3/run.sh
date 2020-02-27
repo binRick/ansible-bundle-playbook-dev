@@ -2,7 +2,7 @@
 set -e
 cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 export ORIG_DIR="$(pwd)"
-for S in /etc/.ansi ../constants.sh ../utils.sh run-constants.sh run-vars.sh run-utils.sh ../../submodules/bash-concurrent/concurrent.lib.sh; do source $S; done
+for S in /etc/.ansi ../constants.sh ../utils.sh run-constants.sh run-vars.sh run-utils.sh; do source $S; done
 
 
 
