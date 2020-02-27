@@ -8,10 +8,10 @@ BUILD_SCRIPT_REPLACEMENTS="_ansible.py|ansible.py"
 
 export BUILD_SCRIPTS="\
     test.py \
-"
-export _BUILD_SCRIPTS="\
     _ansible.py \
     ansible-playbook.py \
+"
+export _BUILD_SCRIPTS="\
     ${_BORG_BUILD_NAME}.py \
     ansible-config.py \
     speedtest-cli.py \
@@ -25,7 +25,7 @@ export _BUILD_SCRIPTS="\
 
 export BUILD_BORG=0
 export ANSIBLE_VERSION=2.8.8
-export BUILD_ANSIBLE=0
+export BUILD_ANSIBLE=1
 
 TEMPLATING_MODULES="j2cli jinja2"
 JSON_MODULES="simplejson jmespath json2yaml jsondiff kaptan"
