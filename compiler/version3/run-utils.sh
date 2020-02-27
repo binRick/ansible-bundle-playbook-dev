@@ -226,28 +226,35 @@ setup_venv(){
     fi
 
 
-    >&2 ansi --cyan Installing Python Requirements
-    >&2 pip -q install $MODULES || retry_nuked_venv
-
-    >&2 ansi --cyan Installing Module Repos
-    for x in $(echo $MODULE_REPOS|tr ' ' '\n'|grep -v '^$'|sort -u); do
-        >&2 pip install -q $x
-    done
-
-    >&2 ansi --green "   OK"
-    >&2 echo -ne "\n"
+    >&2 ansi --cyan "Installing $(count_required_modules) Python Requirements"
+    if [[ "$MODULES" != "" ]]; then
+        >&2 pip -q install $MODULES
+    fi        
+        >&2 ansi --green "  OK"
+    
+    >&2 ansi --cyan "Installing $(count_required_module_repos) Module Repos"
+    if [[ "$MODULE_REPOS" != "" ]]; then
+        for x in $(echo $MODULE_REPOS|tr ' ' '\n'|grep -v '^$'|sort -u); do
+            >&2 pip install -q $x
+        done
+    fi
+    >&2 ansi --green "  OK"
 
     if [[ "$BUILD_BORG" == "1" ]]; then
         set -e
-        >&2 ansi --yellow "           Building BORG"
+        >&2 ansi --yellow "           Fetch BORG Source Code"
         [[ -d _borg ]] || git clone https://github.com/binRick/borg _borg
         (cd _borg && git pull)
+        >&2 ansi --yellow "           Install BORG Requirements"
         pip install -q -r _borg/requirements.d/development.txt
+        >&2 ansi --yellow "           Install BORG"
         pip install -q -e _borg
+        >&2 ansi --green "                  OK"
         [[ ! -f scripts/BORG.py ]] && cp -f _borg/src/borg/__main__.py scripts/BORG.py
         head -n 1 scripts/BORG.py | grep -q '^#!' && sed -i 1d scripts/BORG.py
+        >&2 ansi --yellow "           Test BORG"
         python scripts/BORG.py --help >/dev/null 2>&1
-        >&2 ansi --green Pre compile scripts/BORG.py validated OK
+        >&2 ansi --green "                  OK"
     fi
 }
 
@@ -255,7 +262,7 @@ setup_venv(){
 save_modules(){
     set -e
     for m in $BUILD_SCRIPTS; do
-        >&2 ansi --green saving Build Script $m to repo
+#        >&2 ansi --green saving Build Script $m to repo
         save_build_script_to_repo "$m" ".specs/$(basename $m .py).spec"
     done
 }
@@ -282,7 +289,7 @@ run_build(){
             exit 101
     fi
 
-    >&2 ansi --green Validated DIST_PATH $DIST_PATH
+#    >&2 ansi --green Validated DIST_PATH $DIST_PATH
 }
 normalize_dist_path(){
     set -e
@@ -292,14 +299,14 @@ normalize_dist_path(){
     echo $ANSIBLE_CFG_B64|base64 -d > $DIST_PATH/$_DIR_PATH_PREFIX/ansible.cfg
 }
 test_dist_path(){
-    >&2 ansi --cyan  "DIST_PATH=$DIST_PATH"
+#    >&2 ansi --cyan  "DIST_PATH=$DIST_PATH"
     cmd="BUILD_SCRIPTS=\"$BUILD_SCRIPTS\" \
         ./test.sh $DIST_PATH/$_DIR_PATH_PREFIX"
     eval $cmd
 }
 relocate_path(){
     if [[ "$_RELOCATE_PATH" == "1" ]]; then
-        >&2 ansi --yellow "   [_RELOCATE_PATH]  _RELOCATE_PATH_PREFIX=$_RELOCATE_PATH_PREFIX"
+#        >&2 ansi --yellow "   [_RELOCATE_PATH]  _RELOCATE_PATH_PREFIX=$_RELOCATE_PATH_PREFIX"
         mv $DIST_PATH/$_DIR_PATH_PREFIX $DIST_PATH/${_DIR_PATH_PREFIX}.dir
         mkdir -p $DIST_PATH/$_DIR_PATH_PREFIX
         [[ -d $DIST_PATH/$_DIR_PATH_PREFIX/$_RELOCATE_PATH_PREFIX ]] && rmdir $DIST_PATH/$_DIR_PATH_PREFIX/$_RELOCATE_PATH_PREFIX
@@ -330,17 +337,17 @@ relocate_path(){
                 $_RELOCATE_BIN_WRAPPER_SCRIPT_TEMPLATE_FILE $_RELOCATE_BIN_WRAPPER_SCRIPT_VARS_FILE > $_tf 2> $_bin_jinja_stderr && \
                     cd $(dirname $_tf_bin_path_py) && \
                     mv $_tf $_tf_bin_path_py_clean && \
-                    cython -${CYTHON_PYTHON_COMPILE_VERSION} --embed \
+                    cython -${CYTHON_COMPILE_PYTHON_VERSION} --embed \
                         -o $(basename $_tf_bin_path_py_clean .py).c $(basename $_tf_bin_path_py_clean .py).py && \
                     gcc -Os -I ${CYTHON_PYTHON_COMPILE_LIBRARY_PATH} \
                         -o $destination_file_name $(basename $_tf_bin_path_py_clean .py).c \
-                        -lpython3.6m -lpthread -lm -lutil -ldl && \
-                    rm $(basename $_tf_bin_path_py_clean .py).py $(basename $_tf_bin_path_py_clean .py).c && \
+                        -l${CYTHON_PYTHON_LIBRARY} ${CYTHON_COMPILE_LIBS} && \
+                    rm -f $(basename $_tf_bin_path_py_clean .py).py $(basename $_tf_bin_path_py_clean .py).c && \
                     $rename_cmd \
 \n"
-            >&2 ansi --cyan "            j_cmd=$j_cmd"
+#            >&2 ansi --cyan "            j_cmd=$j_cmd"
             echo -e $j_cmd > $_bin_jinja_cmd
-            bash -x $_bin_jinja_cmd
+            bash $_bin_jinja_cmd
             exit_code=$?
             if [[ "$exit_code" != "0" ]]; then
                 >&2 ansi --red "$(cat $_bin_jinja_stderr)"
@@ -368,9 +375,26 @@ test_borg(){
         test_encrypted_passphrase_cmd_exit_code=$?
     fi
 }
+count_required_module_repos(){
+    echo -e "$MODULE_REPOS"|tr ' ' '\n'|grep -v '^$'|sort -u|wc -l
+}
+count_required_modules(){
+    echo -e "$MODULES"|tr ' ' '\n'|grep -v '^$'|sort -u|wc -l
+}
+count_binaries(){
+    echo 666
+}
+count_modules(){
+    findAllVenvModules 2>/dev/null | wc -l
+}
 
 summary(){
+    >&2 echo -e "\n\n"
+    >&2 ansi --green "Binaries: $(count_binaries)"
+    >&2 ansi --green "Required Modules: $(count_required_modules)"
+    >&2 ansi --green "Python Modules: $(count_modules)"
     >&2 ansi --green "Disk Usage: $(du --max-depth=1 -h $DIST_PATH)"
     >&2 ansi --green "File Count: $(find $DIST_PATH -type f|wc -l)"
     >&2 ansi --green "Directory Count: $(find $DIST_PATH -type d|wc -l)"
+    >&2 echo -e "\n\n"
 }

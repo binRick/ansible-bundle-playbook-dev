@@ -11,18 +11,17 @@ export BUILD_SCRIPTS="\
     test.py \
 "
 export _BUILD_SCRIPTS="\
-    ${_BORG_BUILD_NAME}.py \
-    ansible-playbook.py \
     _ansible.py \
+    ansible-playbook.py \
+    ${_BORG_BUILD_NAME}.py \
     ansible-config.py \
     speedtest-cli.py \
     ansible-vault.py \
-    j2.py \
     paramiko_test.py \
     nagios_parser_test.py \
-    test-hyphen.py \
     tmuxp.py \
     tcshow.py \
+    j2.py \
 "
 
 #  socketIO-client
@@ -47,7 +46,8 @@ export _MODULES="\
     $ADDTL_MODS \
 "
 MODULES="\
-    requests
+    requests \
+    $BASE_MODS \
 "
 
 

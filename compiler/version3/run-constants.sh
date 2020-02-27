@@ -7,10 +7,10 @@
 export _REMOVE_SHEBANG_LINE_FROM_ANSIBLE_CLI_SCRIPTS=1
 
 #   """ Ansible """
-ANSIBLE_VERSION=2.8.8
+export ANSIBLE_VERSION=2.8.8
+export BUILD_ANSIBLE=1
 export _OVERWRITE_MANAGER_FILE=0
 export _OVERWRITE_ANSIBLE_CLI_SCRIPTS=0
-export BUILD_ANSIBLE=0
 export _ADD_DATA_ANSIBLE_PATH=ansible
 export _EXCLUDE_ANSIBLE_MODULES=0
 
@@ -22,11 +22,19 @@ export BUILD_BORG=0
 [[ "$PLAINTEXT_PASSPHRASE" == "" ]] && PLAINTEXT_PASSPHRASE="12345678"
 [[ "$ENCRYPTED_PASSPHRASE" == "" ]] && ENCRYPTED_PASSPHRASE="yEGDBcJ2lKcFdhhay2kJDg=="
 
-#   """ Cython Compiler """
-export CYTHON_PYTHON_COMPILE_VERSION=3
-export CYTHON_PYTHON_COMPILE_LIBRARY_PATH=/usr/include/python3.6m
-#export CYTHON_PYTHON_COMPILE_VERSION=2
-#export CYTHON_PYTHON_COMPILE_LIBRARY_PATH=/usr/include/python2.7
+#   """ Cython Compiler :: Used to compile bin/* Python Wrapper Scripts, not the build scripts """
+export CYTHON_COMPILE_LIBS="-lpthread -lm -lutil -ldl"
+export CYTHON_COMPILE_PYTHON_VERSION=2
+
+if [[ "$CYTHON_COMPILE_PYTHON_VERSION" == "3" ]]; then
+    #   """ Python 3 """
+    export CYTHON_PYTHON_COMPILE_LIBRARY_PATH=/usr/include/python3.6m
+    export CYTHON_PYTHON_LIBRARY=python3.6m
+elif [[ "$CYTHON_COMPILE_PYTHON_VERSION" == "2" ]]; then
+    #   """ Python 2 """
+    export CYTHON_PYTHON_COMPILE_LIBRARY_PATH=/usr/include/python2.7
+    export CYTHON_PYTHON_LIBRARY=python2.7
+fi
 
 #   """ Borg Cache """
 export CHECK_BORG=0
