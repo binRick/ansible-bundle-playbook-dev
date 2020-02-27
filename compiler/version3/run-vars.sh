@@ -10,13 +10,13 @@ export BUILD_SCRIPTS="\
     test.py \
     _ansible.py \
     ansible-playbook.py \
-"
-export _BUILD_SCRIPTS="\
-    ${_BORG_BUILD_NAME}.py \
     ansible-config.py \
     speedtest-cli.py \
     ansible-vault.py \
     paramiko_test.py \
+"
+export _BUILD_SCRIPTS="\
+    ${_BORG_BUILD_NAME}.py \
     nagios_parser_test.py \
     tmuxp.py \
     tcshow.py \
