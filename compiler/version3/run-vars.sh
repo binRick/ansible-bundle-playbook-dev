@@ -6,7 +6,7 @@ export MODULE_REPOS="
 
 BUILD_SCRIPT_REPLACEMENTS="_ansible.py|ansible.py"
 
-export BUILD_SCRIPTS="\
+[[ "$BUILD_SCRIPTS" == "" ]] && export BUILD_SCRIPTS="\
     test.py \
     _ansible.py \
     ansible-playbook.py \
@@ -23,9 +23,9 @@ export _BUILD_SCRIPTS="\
     j2.py \
 "
 
-export BUILD_BORG=1
-export ANSIBLE_VERSION=2.8.8
-export BUILD_ANSIBLE=1
+[[ "$BUILD_BORG" == "" ]] && export BUILD_BORG=1
+[[ "$ANSIBLE_VERSION" == "" ]] && export ANSIBLE_VERSION=2.8.9
+[[ "$BUILD_ANSIBLE" == "" ]] && export BUILD_ANSIBLE=1
 
 TEMPLATING_MODULES="j2cli jinja2"
 JSON_MODULES="simplejson jmespath json2yaml jsondiff kaptan"
@@ -47,7 +47,7 @@ export _MODULES="\
     $OPTIONAL_MODULES \
     $BASE_MODS \
 "
-MODULES="\
+[[ "$MODULES" == "" ]] && export MODULES="\
     $ADDTL_MODS \
     $BASE_MODS \
 "
