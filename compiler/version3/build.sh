@@ -37,8 +37,8 @@ customize_ansible_environment
 
 m_o=$_combined_stdout
 m_e=$_combined_stderr
-xpanes -x --stay -l ev -e "tail -f $m_o"
-xpanes -x --stay -l ev -e "tail -f $m_e"
+#xpanes -x --stay -l ev -e "tail -f $m_o"
+#xpanes -x --stay -l ev -e "tail -f $m_e"
 set +e
 if [[ "$DEBUG_MODE" == "1" ]]; then
     ./combineSpecFiles.sh > $m_o 2>$m_e
@@ -67,7 +67,8 @@ retry_nuked_venv(){
     fi
 }
 
-
+combined_stdout=~/.combined-compile.stdout
+combined_stderr=~/.combined-compile.stderr
 
 ansi --yellow "Compiling spec file $COMBINED_SPEC_FILE"
 
