@@ -1,6 +1,6 @@
 
 
-
+export DISABLE_AUTO_UPDATE=true
 
 
 #   """ Script Mangling """
