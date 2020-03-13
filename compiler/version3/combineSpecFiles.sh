@@ -17,8 +17,8 @@ BUILD_SCRIPTS="$(echo $BUILD_SCRIPTS|tr ',' ' '|sed 's/[[:space:]]/ /g')"
 MODULES="$(echo $MODULES|tr ',' ' '|sed 's/[[:space:]]/ /g')"
 COMBINED_DIR=".COMBINED-$(date +%s)"
 MANGLE_SCRIPT="./mangleSpec.sh"
-combined_stdout=.combined-compile.stdout
-combined_stderr=.combined-compile.stderr
+combined_stdout=~/.combined-compile.stdout
+combined_stderr=~/.combined-compile.stderr
 MODULES="$(echo pyinstaller $MODULES|sed 's/[[:space:]]/ /'|tr ' ' '\n'|grep -v '^$'|tr '\n' ' ')"
 MODULES="$(echo $MODULES|tr ' ' '\n'|grep -v '^$'|sort -u|tr '\n' ' ')"
 

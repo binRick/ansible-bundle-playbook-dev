@@ -37,6 +37,8 @@ customize_ansible_environment
 
 m_o=$_combined_stdout
 m_e=$_combined_stderr
+xpanes -x --stay -l ev -e "tail -f $m_o"
+xpanes -x --stay -l ev -e "tail -f $m_e"
 set +e
 if [[ "$DEBUG_MODE" == "1" ]]; then
     ./combineSpecFiles.sh > $m_o 2>$m_e

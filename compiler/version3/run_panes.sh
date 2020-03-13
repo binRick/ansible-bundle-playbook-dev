@@ -34,11 +34,15 @@ CMD_RUN="$CMD_run"
 xpanes \
     -t \
     -s \
+    -d \
     -l ev \
     -B "cd $ORIG_DIR" \
     -e \
-        "sh -c '$CMD1' 2>/dev/null" \
-        "sh -c '$CMD2' 2>/dev/null" \
+        "sh -c '$CMD_RUN'"
+
+#        "sh -c '$CMD1' 2>/dev/null" \
+#        "sh -c '$CMD2' 2>/dev/null" \
+echo \        
         "sh -c '$CMD3' 2>/dev/null" \
         "sh -c '$CMD4' 2>/dev/null" \
         "sh -c '$CMD5' 2>/dev/null" \
