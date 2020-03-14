@@ -13,10 +13,12 @@ setupTail(){
 
 
 
-CMD1="$(setupWhile $(setupTail .stderr))"
-CMD2="$(setupWhile $(setupTail .stdout))"
-CMD3="$(setupWhile $(setupTail .combined.stderr))"
-CMD4="$(setupWhile $(setupTail .combined.stdout))"
+CMD1="$(setupWhile $(setupTail .*stderr*))"
+CMD2="$(setupWhile $(setupTail .*stdout*))"
+CMD3="$(setupWhile $(setupTail ~/.*stderr*))"
+CMD4="$(setupWhile $(setupTail ~/.*stdout*))"
+_CMD3="$(setupWhile $(setupTail .combined.stderr))"
+_CMD4="$(setupWhile $(setupTail .combined.stdout))"
 CMD5="$(setupWhile $(setupTail .combined-compile.stdout))"
 CMD6="$(setupWhile $(setupTail .combined-compile.stderr))"
 CMD7="$(setupWhile $(setupTail .combined-mkspec.stderr))"
@@ -38,10 +40,11 @@ xpanes \
     -l ev \
     -B "cd $ORIG_DIR" \
     -e \
+        "sh -c '$CMD3' 2>/dev/null" \
+        "sh -c '$CMD4' 2>/dev/null" \
+        "$CMD_dstat" \
         "sh -c '$CMD_RUN'"
 
-#        "sh -c '$CMD1' 2>/dev/null" \
-#        "sh -c '$CMD2' 2>/dev/null" \
 echo \        
         "sh -c '$CMD3' 2>/dev/null" \
         "sh -c '$CMD4' 2>/dev/null" \
