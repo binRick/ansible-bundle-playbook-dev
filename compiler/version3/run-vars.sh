@@ -1,16 +1,25 @@
->&2 echo pre_MODULES=$MODULES
->&2 echo pre_BUILD_SCRIPTS=$BUILD_SCRIPTS
+
+[[ "$BUILD_MODE" == "" ]] && export BUILD_MODE=default
+
+
+if [[ "$DEBUG_VARS" == "1" ]]; then
+    >&2 echo pre_MODULES=$MODULES
+    >&2 echo pre_BUILD_SCRIPTS=$BUILD_SCRIPTS
+    >&2 echo BUILD_MODE=$BUILD_MODE
+fi
 
 [[ "$ANSIBLE_MODE" == "" ]] && export ANSIBLE_MODE=0
 [[ "$DEBUG_VARS" == "" ]] && export DEBUG_VARS=1
 
-export _MODULE_REPOS="
+export _MODULE_REPOS="\
+"
+export MODULE_REPOS="\
     git+https://github.com/binRick/python3-parse-nagios-status-dat \
 "
-export MODULE_REPOS="
-"
 
-BUILD_SCRIPT_REPLACEMENTS="_ansible.py|ansible.py"
+BUILD_SCRIPT_REPLACEMENTS="\
+    _ansible.py|ansible.py \
+"
 
 [[ "$BUILD_SCRIPTS" == "" ]] && export BUILD_SCRIPTS="\
     test.py \
@@ -23,7 +32,6 @@ export _BUILD_SCRIPTS="\
     ansible-vault.py \
     paramiko_test.py \
     ${_BORG_BUILD_NAME}.py \
-    nagios_parser_test.py \
     tmuxp.py \
     tcshow.py \
     j2.py \
@@ -62,16 +70,26 @@ export _MODULES="\
 
 
 
-
-
-
-if [[ "$ANSIBLE_MODE" == "1" ]]; then
+if [[ "$BUILD_MODE" == "ANSIBLE+BORGS+TOOLS" ]]; then
     export BUILD_SCRIPTS="_ansible ansible-playbook ansible-vault ansible-config ansible-vault ansible-pull ansible-console ansible-doc \
     paramiko_test.py \
     ${_BORG_BUILD_NAME}.py \
     nagios_parser_test.py \
     speedtest-cli.py \
     j2.py \
+    borg.py \
+"
+    export BUILD_ANSIBLE=1
+    export BUILD_BORG=1
+    export MODULES="paramiko configparser simplejson jmespath json2yaml jsondiff kaptan psutil setproctitle blessings terminaltables jinja2 jmespath netaddr urllib3"
+elif [[ "$ANSIBLE_MODE" == "1" ]]; then
+    export BUILD_SCRIPTS="_ansible ansible-playbook ansible-vault ansible-config ansible-vault ansible-pull ansible-console ansible-doc \
+    paramiko_test.py \
+    ${_BORG_BUILD_NAME}.py \
+    nagios_parser_test.py \
+    speedtest-cli.py \
+    j2.py \
+    borg.py \
 "
     export BUILD_ANSIBLE=1
     export BUILD_BORG=1
@@ -82,6 +100,6 @@ export MODULES="$(echo $MODULES|tr ' ' '\n'|sort -u|grep -v '^$' | tr '\n' ' ')"
 export BUILD_SCRIPTS="$(echo $BUILD_SCRIPTS|tr ' ' '\n'|sort -u|grep -v '^$' | tr '\n' ' ')"
 
 if [[ "$DEBUG_VARS" == "1" ]]; then
-    >&2 echo MODULES=$MODULES
-    >&2 echo BUILD_SCRIPTS=$BUILD_SCRIPTS
+    >&2 echo post_MODULES=$MODULES
+    >&2 echo post_BUILD_SCRIPTS=$BUILD_SCRIPTS
 fi
