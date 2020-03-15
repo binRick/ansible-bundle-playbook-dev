@@ -5,7 +5,7 @@ source /etc/.ansi
 
 [[ "$NUKE_VENV" == "1" ]] && command rm -rf .venv-1
 
-export BUILD_SCRIPTS="_ansible ansible-playbook ansible-vault ansible-config"
+export BUILD_SCRIPTS="_ansible ansible-playbook ansible-vault ansible-config ansible-vault"
 export BUILD_ANSIBLE=1
 export BUILD_BORG=0
 export MODULES="paramiko"
