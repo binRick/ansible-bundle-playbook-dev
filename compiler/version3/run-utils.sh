@@ -161,13 +161,15 @@ get_cached_build_script(){
 }
 save_binary_to_borg(){
   if [[ "$SAVE_BUILD_TO_BORG" == "1" ]]; then
-      __REPO_NAME="$(get_cached_binary_build_script_repo_name $1)"
-      echo "$MODULES"|tr ' ' '\n'|grep -v '^$' > $modules_file
-      echo "$BUILD_SCRIPTS"|tr ' ' '\n'|grep -v '^$' > $bs_file
-      jo blah=123 \
-        |base64 -w0> .COMMENT-$1
-      cat .COMMENT-$1
-      COMMENT=$(cat .COMMENT-$1)
+    __REPO_NAME="$(get_cached_binary_build_script_repo_name $1)"
+    modules_file=$(mktemp)
+    bs_file=$(mktemp)
+    echo "$MODULES"|tr ' ' '\n'|grep -v '^$' > $modules_file
+    echo "$BUILD_SCRIPTS"|tr ' ' '\n'|grep -v '^$' > $bs_file
+    #jo blah=123 |base64 -w0> .COMMENT-$1
+    #cat .COMMENT-$1
+    #COMMENT=$(cat .COMMENT-$1)
+    COMMENT=123
     file_save_cmd="(borg $BORG_ARGS delete ::$__REPO_NAME >/dev/null 2>&1; cd $(dirname $1) && borg $BORG_ARGS create --comment \"$COMMENT\" -x -v --stats --progress  ::$__REPO_NAME $(basename $1))"
     echo $file_save_cmd > .file_save_cmd
     >&2 ansi --yellow "file_save_cmd saved to .file_save_cmd, MANGLED_VARS_FILE=$MANGLED_VARS_FILE"
@@ -198,10 +200,12 @@ save_build_script_to_repo(){
 get_module_md5(){
     if [[ -f "scripts/$1" ]]; then
         _F="scripts/$1"
+    elif [[ -f "scripts/${1}.py" ]]; then
+        _F="scripts/${1}.py"
     else
         _F="$1"
     fi
-    >&2 ansi --red "              [get_module_md5] 1=$1 _F=$_F pwd=$(pwd)"
+#    >&2 ansi --yellow "              [get_module_md5] 1=$1 _F=$_F pwd=$(pwd)"
 
     (
       md5sum $_F
@@ -256,7 +260,6 @@ setup_venv(){
         addAdditionalAnsibleModules modules library "$ADDITIONAL_ANSIBLE_LIBRARY_MODULES"
 
     fi
-
 
     >&2 ansi --cyan "Installing $(count_required_modules) Python Requirements"
     if [[ "$MODULES" != "" ]]; then

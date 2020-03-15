@@ -60,7 +60,7 @@ basic_build(){
     load_vars
     run_build
     save_modules
-    #save_build_to_borg "$DIST_PATH"
+    save_build_to_borg "$DIST_PATH"
     normalize_dist_path
     test_dist_path
     setup_venv

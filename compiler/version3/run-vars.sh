@@ -16,10 +16,12 @@ export __MODULE_REPOS="\
 
 BUILD_SCRIPT_REPLACEMENTS="\
     _ansible.py|ansible.py \
+    _pproxy.py|pproxy.py \
     __borg.py|borg.py \
 "
 
 [[ "$BUILD_SCRIPTS" == "" ]] && export BUILD_SCRIPTS="\
+    _pproxy.py \
     test.py \
 "
 export _BUILD_SCRIPTS="\
@@ -47,18 +49,21 @@ SYSTEM_PERFORMANCE_MODULES=""
 CRYPTO_MODULES="python-jose[cryptography]"
 SUBPROCESS_MODULES="bash.py"
 NETWORK_MODULES="netaddr urllib3 websocket-client python-socketio"
+PROXY_MODULES="pproxy"
 PROCESS_MODULES="psutil cpython-prctl setproctitle"
 COMPILER_MODULES="Cython"
+WHMCS_MODULES="whmcspy"
+WEBSOCKET_MODULES="SimpleWebSocketServer"
 ANSIBLE_MODULES="configparser paramiko $JSON_MODULES $NETWORK_MODULES $TERMINAL_MODULES"
 
-BASE_MODS="loguru pyyaml pyaml requests $ANSIBLE_MODULES $JSON_MODULES $NETWORK_MODULES $COMPILER_MODULES"
-ADDTL_MODS="speedtest-cli docopt python-jose pycryptodome halo $TEMPLATING_MODULES $CRYPTO_MODULES $SYSTEM_PERFORMANCE_MODULES"
+BASE_MODS="loguru pyyaml pyaml requests $ANSIBLE_MODULES $JSON_MODULES $NETWORK_MODULES $COMPILER_MODULES $PROXY_MODULES"
+ADDTL_MODS="speedtest-cli docopt python-jose pycryptodome halo $TEMPLATING_MODULES $CRYPTO_MODULES $SYSTEM_PERFORMANCE_MODULES $WHMCS_MODULES $WEBSOCKET_MODULES"
 OPTIONAL_MODULES="tcconfig pexpect libtmux tmuxp tcconfig $NIFTY_MODULES"
+
 
 ALL_MODULES="$BASE_MODS $ADDTL_MODS $OPTIONAL_MODULES"
 
 export _MODULES="\
-    $OPTIONAL_MODULES \
     $BASE_MODS \
 "
 [[ "$MODULES" == "" ]] && export MODULES="\
@@ -70,12 +75,13 @@ export _MODULES="\
 
 if [[ "$BUILD_MODE" == "ANSIBLE+BORGS+TOOLS" ]]; then
     export BUILD_SCRIPTS="_ansible ansible-playbook ansible-vault ansible-config ansible-vault ansible-pull ansible-console ansible-doc \
+    _pproxy.py \
     paramiko_test.py \
-    nagios_parser_test.py \
     speedtest-cli.py \
     __borg.py \
     ${_BORG_BUILD_NAME}.py \
 "
+#    nagios_parser_test.py \
 
     export BUILD_ANSIBLE=1
     export BUILD_BORG=0 && echo "$BUILD_SCRIPTS"|grep -iq borg && export BUILD_BORG=1
