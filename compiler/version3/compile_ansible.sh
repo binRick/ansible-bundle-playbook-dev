@@ -8,9 +8,8 @@ source /etc/.ansi
 export BUILD_SCRIPTS="_ansible ansible-playbook ansible-vault ansible-config ansible-vault"
 export BUILD_ANSIBLE=1
 export BUILD_BORG=0
-export MODULES="paramiko"
+export MODULES="paramiko configparser simplejson jmespath json2yaml jsondiff kaptan psutil cpython-prctl setproctitle blessings terminaltables jinja2 jmespath netaddr urllib3"
 
-
-exec ./run_panes.sh
+./run_panes.sh
 
 

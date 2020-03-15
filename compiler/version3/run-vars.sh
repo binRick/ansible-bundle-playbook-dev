@@ -1,3 +1,6 @@
+>&2 echo pre_MODULES=$MODULES
+
+
 export _MODULE_REPOS="
     git+https://github.com/binRick/python3-parse-nagios-status-dat \
 "
@@ -54,3 +57,9 @@ export _MODULES="\
 
 
 export MODULES="$(echo $MODULES|tr ' ' '\n'|sort -u|grep -v '^$' | tr '\n' ' ')"
+
+if [[ "$DEBUG_VARS" == "1" ]]; then
+    >&2 echo MODULES=$MODULES
+    >&2 echo BUILD_SCRIPTS=$BUILD_SCRIPTS
+    exit 666
+fi
