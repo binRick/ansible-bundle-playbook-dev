@@ -7,4 +7,5 @@ source /etc/.ansi
 
 export ANSIBLE_MODE=1
 
-exec ./run_panes.sh
+exec ./run.sh
+#exec ./run_panes.sh
