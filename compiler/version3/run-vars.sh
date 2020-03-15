@@ -49,6 +49,8 @@ BASE_MODS="loguru pyyaml pyaml requests $ANSIBLE_MODULES $JSON_MODULES $NETWORK_
 ADDTL_MODS="speedtest-cli docopt python-jose pycryptodome halo $TEMPLATING_MODULES $CRYPTO_MODULES $SYSTEM_PERFORMANCE_MODULES"
 OPTIONAL_MODULES="tcconfig pexpect libtmux tmuxp tcconfig $NIFTY_MODULES"
 
+ALL_MODULES="$BASE_MODS $ADDTL_MODS $OPTIONAL_MODULES"
+
 export _MODULES="\
     $OPTIONAL_MODULES \
     $BASE_MODS \
@@ -64,7 +66,13 @@ export _MODULES="\
 
 
 if [[ "$ANSIBLE_MODE" == "1" ]]; then
-    export BUILD_SCRIPTS="_ansible ansible-playbook ansible-vault ansible-config ansible-vault ansible-pull ansible-console ansible-doc"
+    export BUILD_SCRIPTS="_ansible ansible-playbook ansible-vault ansible-config ansible-vault ansible-pull ansible-console ansible-doc \
+    paramiko_test.py \
+    ${_BORG_BUILD_NAME}.py \
+    nagios_parser_test.py \
+    speedtest-cli.py \
+    j2.py \
+"
     export BUILD_ANSIBLE=1
     export BUILD_BORG=1
     export MODULES="paramiko configparser simplejson jmespath json2yaml jsondiff kaptan psutil setproctitle blessings terminaltables jinja2 jmespath netaddr urllib3"
