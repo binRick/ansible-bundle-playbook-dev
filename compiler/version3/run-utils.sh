@@ -447,11 +447,26 @@ build_script_repo_names(){
     done
 }
 repo_names(){
-    borg list $BORG_REPO $BORG_ARGS --format="{name}{NEWLINE}" | grep '^.COMBINED-'
+    QTY=$1
+    [[ "$QTY" == "" ]] && export QTY=10
+    borg list $BORG_REPO $BORG_ARGS --format="{name}{NEWLINE}" | grep '^.COMBINED-' | tail -n $QTY
 }
 repo_name_build_scripts(){
     borg info ::$1|grep '^Comment: '|cut -d' ' -f2|base64 -d|jq '.build_scripts' -Mrc
 }
 repo_name_modules(){
     borg info ::$1|grep '^Comment: '|cut -d' ' -f2|base64 -d|jq '.modules' -Mrc
+}
+
+repo_info_json(){
+    modules_file=$(mktemp)
+    bs_file=$(mktemp)
+    for r in $(repo_names 15); do
+      set +e
+      repo_name_modules $r|tr ' ' '\n' | tr '\n' ','|grep -v '^$' |sed 's/,$//g' > $modules_file
+      repo_name_build_scripts $r|tr ' ' '\n' | tr '\n' ','|grep -v '^$' | sed 's/,$//g' > $bs_file
+      set -e
+      jo_cmd="jo repo=$r modules=@$modules_file build_scripts=@$bs_file"
+      eval $jo_cmd
+    done
 }

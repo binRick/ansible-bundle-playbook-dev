@@ -14,9 +14,9 @@ BUILD_SCRIPT_REPLACEMENTS="_ansible.py|ansible.py"
 
 [[ "$BUILD_SCRIPTS" == "" ]] && export BUILD_SCRIPTS="\
     test.py \
+    _ansible.py \
 "
 export _BUILD_SCRIPTS="\
-    _ansible.py \
     ansible-playbook.py \
     ansible-config.py \
     speedtest-cli.py \
