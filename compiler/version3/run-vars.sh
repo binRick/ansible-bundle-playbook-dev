@@ -77,7 +77,6 @@ if [[ "$BUILD_MODE" == "ANSIBLE+BORGS+TOOLS" ]]; then
     paramiko_test.py \
     nagios_parser_test.py \
     speedtest-cli.py \
-    j2.py \
     __borg.py \
     ${_BORG_BUILD_NAME}.py \
 "
