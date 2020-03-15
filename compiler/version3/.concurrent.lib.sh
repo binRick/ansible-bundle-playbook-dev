@@ -349,8 +349,38 @@ concurrent() (
             fi
         fi
     }
-
+    _TASKS_DIR=$(mktemp -d)
+    GET_TASK_HASH(){
+        echo "$@" | md5sum|cut -d' ' -f1
+    }
+    GET_TASK_HASH_DIR(){
+        echo "$_TASKS_DIR/$(GET_TASK_HASH "$@")"
+    }
+    GET_TASK_HASH_STARTED_FILE(){
+        _F="$(GET_TASK_HASH_DIR "$@")/started.txt"
+        mkdir -p $(dirname $_F)
+        echo $_F
+    }
+    GET_TASK_HASH_ENDED_FILE(){
+        _F="$(GET_TASK_HASH_DIR "$@")/ended.txt"
+        mkdir -p $(dirname $_F)
+        echo $_F
+    }
+    TS(){
+        command date "+%s"
+    }
+    SET_TASK_ENDED(){
+        __GET_TASK_HASH_ENDEDFILE=$(GET_TASK_HASH_ENDED_FILE "$@")
+        echo "$(TS)" > $__GET_TASK_HASH_ENDEDFILE
+        echo __GET_TASK_HASH_ENDED_FILE=$__GET_TASK_HASH_ENDED_FILE
+    }
+    SET_TASK_STARTED(){
+        __GET_TASK_HASH_STARTED_FILE=$(GET_TASK_HASH_STARTED_FILE "$@")
+        echo "$(TS)" > $__GET_TASK_HASH_STARTED_FILE
+        echo __GET_TASK_HASH_STARTED_FILE=$__GET_TASK_HASH_STARTED_FILE
+    }        
     __crt__start_task() {
+        SET_TASK_STARTED "$1"
         __crt__task_runner "${1}" &
         __crt__mark_task_as_started "${1}"
         __crt__draw_status "${1}" running
@@ -378,6 +408,7 @@ concurrent() (
     }
 
     __crt__skip_task() {
+        SET_TASK_ENDED "$1"
         __crt__mark_task_as_started "${1}"
         echo "[SKIPPED] Prereq '${2}' failed or was skipped" > "${__crt__status_dir}/${1}"
         __crt__mark_task_with_code "${1}" skip
@@ -447,12 +478,15 @@ concurrent() (
     }
 
     __crt__handle_done_task() {
+        #SET_TASK_ENDED "$1"
         local index=${1%%:*}
         local code=${1#*:}
         __crt__mark_task_as_stopped "${index}" "${code}"
         __crt__codes["${index}"]=${code}
         __crt__draw_status "${index}" "${code}"
-        cp -- "${__crt__status_dir}/${index}" "${CONCURRENT_LOG_DIR}/${index}. ${__crt__names[${index}]//\//-} (${code}).log"
+        DFILE="${CONCURRENT_LOG_DIR}/${index}_${__crt__names[${index}]//\//-}__exit_code+${code}.log"
+        DFILE="$(echo "$DFILE"|sed 's/ /_/g')"
+        cp -- "${__crt__status_dir}/${index}" "$DFILE"
         if [[ "${code}" != "0" ]]; then
             __crt__final_status=1
         fi

@@ -2,26 +2,36 @@
 set -e
 cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 export ORIG_DIR="$(pwd)"
-. setup.sh
+source setup.sh >/dev/null 2>/dev/null
 
-nesting_success() {
+concurrent_build() {
     local args=(
         - "Cleanup Past Compilations"       cleanup_compileds
+        --and-then \
         - "Setup Virtual Environment"       setup_venv
+        --and-then \
         - "Install Borg"       install_borg
+        --and-then \
         - "Validate Borg"       ensure_borg
-        - "Deactivate Virtual Environment"       deactivate
+        --and-then \
         - "Load Variables"       load_vars
+        --and-then \
         - "Run Build"       run_build
+        --and-then \
         - "Save Modules"       save_modules
+        --and-then \
         - "Normalize Dist Path"       test_dist_path
+        --and-then \
         - "Setup Virtual Environment"       setup_venv
+        --and-then \
         - "Relocate Dist Path"       relocate_path
+        --and-then \
         - "Print Summary"       summary
     )
     local _args=(
         - "Save Modules to Borg"       save_build_to_borg "$DIST_PATH"
         - "Test Borg"       test_borg
+        - "Deactivate Virtual Environment"       deactivate
     )
     local __args=(
         - "Task A2"               concurrent
@@ -33,9 +43,10 @@ nesting_success() {
     )
 
     concurrent "${args[@]}"
+    #concurrent "${__args[@]}"
 }
 
-nesting_success
+concurrent_build
 echo OK
 echo "DIST_PATH=$DIST_PATH"
 exit
