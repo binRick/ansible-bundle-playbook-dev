@@ -310,8 +310,8 @@ run_build(){
     [[ -f .stderr ]] && ansi --yellow "Starting build" > .stderr
     [[ -f .exit_code ]] && echo "" > .exit_code
     set +e
-    xpanes -x --stay -l ev -e "tail -n0 -f .*stdout*"
-    xpanes -x --stay -l ev -e "tail -n0 -f .*stderr*"
+#    xpanes -x --stay -l ev -e "tail -n0 -f .*stdout*"
+#    xpanes -x --stay -l ev -e "tail -n0 -f .*stderr*"
     bash ./build.sh > .stdout 2> .stderr
     exit_code=$?
     set -e
