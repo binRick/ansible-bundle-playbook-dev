@@ -64,7 +64,7 @@ export _MODULES="\
 
 
 if [[ "$ANSIBLE_MODE" == "1" ]]; then
-    export BUILD_SCRIPTS="_ansible ansible-playbook ansible-vault ansible-config ansible-vault ansible-pull ansible-console"
+    export BUILD_SCRIPTS="_ansible ansible-playbook ansible-vault ansible-config ansible-vault ansible-pull ansible-console ansible-doc"
     export BUILD_ANSIBLE=1
     export BUILD_BORG=1
     export MODULES="paramiko configparser simplejson jmespath json2yaml jsondiff kaptan psutil setproctitle blessings terminaltables jinja2 jmespath netaddr urllib3"
