@@ -78,13 +78,13 @@ if [[ "$BUILD_MODE" == "ANSIBLE+BORGS+TOOLS" ]]; then
     nagios_parser_test.py \
     speedtest-cli.py \
     j2.py \
-"
-xxx="    ${_BORG_BUILD_NAME}.py \
     __borg.py \
+    ${_BORG_BUILD_NAME}.py \
 "
+
     export BUILD_ANSIBLE=1
     export BUILD_BORG=0 && echo "$BUILD_SCRIPTS"|grep -iq borg && export BUILD_BORG=1
-    export MODULES="paramiko configparser simplejson jmespath json2yaml jsondiff kaptan psutil setproctitle blessings terminaltables jinja2 jmespath netaddr urllib3"
+    export MODULES="$ALL_MODULES"
 elif [[ "$ANSIBLE_MODE" == "1" ]]; then
     export BUILD_SCRIPTS="_ansible ansible-playbook ansible-vault ansible-config ansible-vault ansible-pull ansible-console ansible-doc"
     export BUILD_ANSIBLE=1

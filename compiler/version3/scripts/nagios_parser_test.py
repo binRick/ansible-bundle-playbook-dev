@@ -1,16 +1,16 @@
-import re, json, os, requests, urllib3, time
+import re, json, os, requests, urllib3, time, sys
 import parse_nagios
 from halo import Halo
 
-import otherFile as OF
-
-
-
 if __name__ == "__main__":
-    OF.something()
-    spinner = Halo(text='Loading', spinner='dots')
+    spinner = Halo(text='Parsing Nagios Status File', spinner='dots')
     spinner.start()
     time.sleep(3)
-    spinner.stop()
-    OF.something()
-    print(json.dumps(parse_nagios.read_status()))
+    try:
+        D = parse_nagios.read_status().strip()
+        spinner.succeed('Parsed {} Bytes'.format(len(D)))
+        print(json.dumps(D))
+        sys.exit(0)
+    except Exception as e:
+        spinner.fail('NAGIOS PARSER FAILED: {}'.format(e))
+        sys.exit(1)
