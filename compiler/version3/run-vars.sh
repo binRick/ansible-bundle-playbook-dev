@@ -1,5 +1,8 @@
 >&2 echo pre_MODULES=$MODULES
+>&2 echo pre_BUILD_SCRIPTS=$BUILD_SCRIPTS
 
+[[ "$ANSIBLE_MODE" == "" ]] && export ANSIBLE_MODE=0
+[[ "$DEBUG_VARS" == "" ]] && export DEBUG_VARS=1
 
 export _MODULE_REPOS="
     git+https://github.com/binRick/python3-parse-nagios-status-dat \
@@ -11,6 +14,8 @@ BUILD_SCRIPT_REPLACEMENTS="_ansible.py|ansible.py"
 
 [[ "$BUILD_SCRIPTS" == "" ]] && export BUILD_SCRIPTS="\
     test.py \
+"
+export _BUILD_SCRIPTS="\
     _ansible.py \
     ansible-playbook.py \
     ansible-config.py \
@@ -18,17 +23,15 @@ BUILD_SCRIPT_REPLACEMENTS="_ansible.py|ansible.py"
     ansible-vault.py \
     paramiko_test.py \
     ${_BORG_BUILD_NAME}.py \
-"
-export _BUILD_SCRIPTS="\
     nagios_parser_test.py \
     tmuxp.py \
     tcshow.py \
     j2.py \
 "
 
-[[ "$BUILD_BORG" == "" ]] && export BUILD_BORG=1
+[[ "$BUILD_BORG" == "" ]] && export BUILD_BORG=0
 [[ "$ANSIBLE_VERSION" == "" ]] && export ANSIBLE_VERSION=2.8.9
-[[ "$BUILD_ANSIBLE" == "" ]] && export BUILD_ANSIBLE=1
+[[ "$BUILD_ANSIBLE" == "" ]] && export BUILD_ANSIBLE=0
 
 TEMPLATING_MODULES="j2cli jinja2"
 JSON_MODULES="simplejson jmespath json2yaml jsondiff kaptan"
@@ -56,10 +59,21 @@ export _MODULES="\
 "
 
 
+
+
+
+
+if [[ "$ANSIBLE_MODE" == "1" ]]; then
+    export BUILD_SCRIPTS="_ansible ansible-playbook ansible-vault ansible-config ansible-vault ansible-pull ansible-console"
+    export BUILD_ANSIBLE=1
+    export BUILD_BORG=1
+    export MODULES="paramiko configparser simplejson jmespath json2yaml jsondiff kaptan psutil setproctitle blessings terminaltables jinja2 jmespath netaddr urllib3"
+fi
+
 export MODULES="$(echo $MODULES|tr ' ' '\n'|sort -u|grep -v '^$' | tr '\n' ' ')"
+export BUILD_SCRIPTS="$(echo $BUILD_SCRIPTS|tr ' ' '\n'|sort -u|grep -v '^$' | tr '\n' ' ')"
 
 if [[ "$DEBUG_VARS" == "1" ]]; then
     >&2 echo MODULES=$MODULES
     >&2 echo BUILD_SCRIPTS=$BUILD_SCRIPTS
-    exit 666
 fi

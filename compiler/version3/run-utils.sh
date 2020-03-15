@@ -149,21 +149,26 @@ get_cached_build_script(){
     cmd="borg list ::$____REPO_NAME $SPEC_NAME --format=\"{path}{NEWLINE}\""
     eval $cmd > .o 2>.e
     ec=$?
-    >&2 ansi --yellow "    [cached_build_script] 1=$1 REPO_NAME=$____REPO_NAME SPEC_NAME=$SPEC_NAME MANGLED_VARS_FILE=$MANGLED_VARS_FILE cmd=$cmd exit_code=$ec"
+    #>&2 ansi --yellow "    [cached_build_script] 1=$1 REPO_NAME=$____REPO_NAME SPEC_NAME=$SPEC_NAME MANGLED_VARS_FILE=$MANGLED_VARS_FILE cmd=$cmd exit_code=$ec"
     if [[ "$ec" == "0" ]]; then
         [[ -f /tmp/$SPEC_NAME ]] && unlink /tmp/$SPEC_NAME
-        (cd /tmp && borg $BORG_ARGS extract ::$____REPO_NAME $SPEC_NAME $MANGLED_VARS_FILE)
+        (cd /tmp && borg $BORG_ARGS extract ::$____REPO_NAME $SPEC_NAME $MANGLED_VARS_FILE) >/dev/null 2>&1
         echo -e "/tmp/$SPEC_NAME\n/tmp/$MANGLED_VARS_FILE"
     else
         echo ""
     fi
-
     set -e
 }
 save_binary_to_borg(){
   if [[ "$SAVE_BUILD_TO_BORG" == "1" ]]; then
-    __REPO_NAME="$(get_cached_binary_build_script_repo_name $1)"
-    file_save_cmd="(borg $BORG_ARGS delete ::$__REPO_NAME >/dev/null 2>&1; cd $(dirname $1) && borg $BORG_ARGS create -x -v --stats --progress  ::$__REPO_NAME $(basename $1))"
+      __REPO_NAME="$(get_cached_binary_build_script_repo_name $1)"
+      echo "$MODULES"|tr ' ' '\n'|grep -v '^$' > $modules_file
+      echo "$BUILD_SCRIPTS"|tr ' ' '\n'|grep -v '^$' > $bs_file
+      jo blah=123 \
+        |base64 -w0> .COMMENT-$1
+      cat .COMMENT-$1
+      COMMENT=$(cat .COMMENT-$1)
+    file_save_cmd="(borg $BORG_ARGS delete ::$__REPO_NAME >/dev/null 2>&1; cd $(dirname $1) && borg $BORG_ARGS create --comment \"$COMMENT\" -x -v --stats --progress  ::$__REPO_NAME $(basename $1))"
     echo $file_save_cmd > .file_save_cmd
     >&2 ansi --yellow "file_save_cmd saved to .file_save_cmd, MANGLED_VARS_FILE=$MANGLED_VARS_FILE"
     set +e
@@ -433,6 +438,14 @@ summary(){
     >&2 echo -e "\n\n"
 }
 
+build_script_repo_names(){
+    for _REPO in $(borg list $BORG_REPO $BORG_ARGS --format="{name}{NEWLINE}"|grep 'cached-build_script-binary$'|sort -u); do
+        _REPO_BINARY="$(echo "$_REPO"| cut -d'-' -f2|sort -u)"
+        _REPO_COMMENT="$(borg info ::$_REPO|grep '^Command: ')"
+        echo _REPO=$_REPO, _REPO_BINARY=$_REPO_BINARY, _REPO_COMMENT=$_REPO_COMMENT
+
+    done
+}
 repo_names(){
     borg list $BORG_REPO $BORG_ARGS --format="{name}{NEWLINE}" | grep '^.COMBINED-'
 }

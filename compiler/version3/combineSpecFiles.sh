@@ -74,7 +74,7 @@ for x in $BUILD_SCRIPTS; do
     cached_module_dir=$(get_cached_module_dir $_BS_ORIG)
     ansi --cyan "     Checking if Build Script $x exists in cache => $save_path=$save_path => spec_saved_path=$spec_saved_path :: mangled_saved_path=$mangled_saved_path"
     cache_build_script_repo_name=$(get_cached_build_script_repo_name $_BS_ORIG)
-    _cached_build_script=$(get_cached_build_script $_BS_ORIG)
+    _cached_build_script=$(get_cached_build_script $_BS_ORIG 2>/dev/null)
     ansi --yellow cache_build_script_repo_name=$cache_build_script_repo_name
     ansi --yellow _cached_build_script=$_cached_build_script
 
@@ -82,6 +82,7 @@ for x in $BUILD_SCRIPTS; do
     cached_build_script="$(echo -e "$_cached_build_script"|head -n1)"
     cached_build_mangled_vars_file="$(echo -e "$_cached_build_script"|head -n2|tail -n1)"
     if [[ "$cached_build_script" == "xxxxxxxxxxxxxx" ]]; then #&& -f "$cached_build_script" && -f "$cached_build_mangled_vars_file" ]]; then 
+    #if [[ -f "$cached_build_script" && -f "$cached_build_mangled_vars_file" ]]; then 
            >&2 ansi --green "VALID CACHED BUILD \"$(echo $cached_build_script)\""
            >&2 ansi --green  "         cached_build_script=$cached_build_script cached_build_mangled_vars_file=$cached_build_mangled_vars_file"
            cp_cmd="(cd $ORIG_DIR && cp $CP_OPTIONS $cached_build_script $x_mangle_vars && cp $CP_OPTIONS $cached_build_mangled_vars_file .specs/$x_spec)"
