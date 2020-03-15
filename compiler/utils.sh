@@ -85,7 +85,7 @@ findModules(){
     set -e
         cd $2/
     if [[ ! -d "$_M" ]]; then
-        >&2  ansi --red "  [WARNING]      Module \"$_M\" Find Failed. (directory \"$_M\" Does not exist in virtual env"
+        >&2  ansi --yellow --reset-background "  $(ansi --red --bg-black "[WARNING]")      $(ansi --yellow --bg-black "Module \"$_M\" Find Failed. (directory \"$_M\" Does not exist in virtual env")"
         echo $_M
     else
         find $_M \
@@ -132,7 +132,12 @@ findAllVenvModules(){
     c=$(mktemp)
     _findAllVenvModules  > $a
     getExcludedAnsibleModules > $b
+
+    #cat $a
+
+    #set -x
     comm -23 $a $b
+    #set +x
 }
 
 

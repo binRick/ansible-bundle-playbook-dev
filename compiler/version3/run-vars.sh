@@ -1,10 +1,6 @@
-
 [[ "$BUILD_MODE" == "" ]] && export BUILD_MODE=default
-
-
-
 [[ "$ANSIBLE_MODE" == "" ]] && export ANSIBLE_MODE=0
-[[ "$DEBUG_VARS" == "" ]] && export DEBUG_VARS=1
+[[ "$DEBUG_VARS" == "" ]] && export DEBUG_VARS=0
 
 if [[ "$DEBUG_VARS" == "1" ]]; then
     >&2 echo pre_MODULES=$MODULES
@@ -25,9 +21,9 @@ BUILD_SCRIPT_REPLACEMENTS="\
 
 [[ "$BUILD_SCRIPTS" == "" ]] && export BUILD_SCRIPTS="\
     test.py \
-    _ansible.py \
 "
 export _BUILD_SCRIPTS="\
+    _ansible.py \
     ansible-playbook.py \
     ansible-config.py \
     speedtest-cli.py \
