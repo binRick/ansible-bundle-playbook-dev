@@ -75,10 +75,11 @@ export _MODULES="\
 if [[ "$BUILD_MODE" == "ANSIBLE+BORGS+TOOLS" ]]; then
     export BUILD_SCRIPTS="_ansible ansible-playbook ansible-vault ansible-config ansible-vault ansible-pull ansible-console ansible-doc \
     paramiko_test.py \
-    ${_BORG_BUILD_NAME}.py \
     nagios_parser_test.py \
     speedtest-cli.py \
     j2.py \
+"
+xxx="    ${_BORG_BUILD_NAME}.py \
     __borg.py \
 "
     export BUILD_ANSIBLE=1
