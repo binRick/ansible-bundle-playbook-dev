@@ -23,6 +23,7 @@ BUILD_SCRIPT_REPLACEMENTS="\
 
 [[ "$BUILD_SCRIPTS" == "" ]] && export BUILD_SCRIPTS="\
     __tester.py \
+    speedtest-cli.py \
 "
 export _BUILD_SCRIPTS="\
     _pproxy.py \
@@ -30,7 +31,6 @@ export _BUILD_SCRIPTS="\
     _ansible.py \
     ansible-playbook.py \
     ansible-config.py \
-    speedtest-cli.py \
     ansible-vault.py \
     paramiko_test.py \
     ${_BORG_BUILD_NAME}.py \
@@ -57,9 +57,9 @@ PROCESS_MODULES="psutil cpython-prctl setproctitle"
 COMPILER_MODULES="Cython pyinstaller"
 WHMCS_MODULES="whmcspy"
 WEBSOCKET_MODULES="SimpleWebSocketServer"
-ANSIBLE_MODULES="configparser paramiko $JSON_MODULES $NETWORK_MODULES $TERMINAL_MODULES $DATA_MODULES"
+ANSIBLE_MODULES="configparser paramiko $JSON_MODULES $NETWORK_MODULES $TERMINAL_MODULES $DATA_MODULES $COMPILER_MODULES"
 
-BASE_MODS="$COMPILER_MODULES paramiko"
+BASE_MODS="paramiko speedtest-cli"
 ADDTL_MODS="speedtest-cli docopt python-jose pycryptodome halo $TEMPLATING_MODULES $CRYPTO_MODULES $SYSTEM_PERFORMANCE_MODULES $WHMCS_MODULES $WEBSOCKET_MODULES \
     loguru pyyaml pyaml requests $ANSIBLE_MODULES $JSON_MODULES $NETWORK_MODULES $PROXY_MODULES"
 OPTIONAL_MODULES="tcconfig pexpect libtmux tmuxp tcconfig $NIFTY_MODULES"

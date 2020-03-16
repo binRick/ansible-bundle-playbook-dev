@@ -4,21 +4,21 @@ source setup.sh
 set -e
 repo_names | \
     fzf \
-        --tac
+        --tac \
         --border \
-        --header="Select Application Type to generate Token for" \
+        --header="Select Borg Repo" \
         --preview="\
              echo -e ::     {}    ::;\
         \
+        echo;echo;echo '---------------------';\
+        echo -e \"    Build Scripts:\";\
+        echo '---------------------';echo;\
+        borg info ::{} 2>/dev/null |grep '^Comment: '|cut -d' ' -f2|base64 -d|jq '.build_scripts' -r|grep '\"' |cut -d'\"' -f2|sort -u|column -c 80;\
         echo;echo;echo '-----------------';\
-        echo Build Scripts:;\
-        echo '-----------------';echo;\
-        borg info ::{}|grep '^Comment: '|cut -d' ' -f2|base64 -d|jq '.build_scripts' -Mrc;\
-        echo;echo;echo '-----------------';\
-        echo Modules:;\
+        echo -e \"    Modules:\";\
         echo '-----------------';\
         echo;\
-        borg info ::{}|grep '^Comment: '|cut -d' ' -f2|base64 -d|jq '.modules' -Mrc" \
+        borg info ::{} 2>/dev/null|grep '^Comment: '|cut -d' ' -f2|base64 -d|jq '.modules' -r|grep '\"' |cut -d'\"' -f2|sort -u|column -c 80" \
         \
         \
         

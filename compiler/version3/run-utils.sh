@@ -36,7 +36,7 @@ doTestBorg(){
         echo 1234 > $_TEST_FILE
         _BORG_REPO=/tmp/test.borg
         [[ -d $_BORG_REPO ]] && rm -rf $_BORG_REPO
-        >&2 $1 init -e repokey $_BORG_REPO
+        >&2 $1 init -e repokey $_BORG_REPO >/dev/null  2>/dev/null
         >&2 ls -al $_BORG_REPO
 
         >&2 ansi --yellow "Borging with plaintext passphrase"
@@ -77,12 +77,19 @@ get_setup_hash(){
     (cd $ORIG_DIR && ls run-vars.sh run-constants.sh ../constants.sh|xargs md5sum|md5sum|cut -d' ' -f1)
 }
 ensure_borg(){
- [[ -d $BORG_REPO ]] || command borg $BORG_ARGS init -e repokey
+ [[ -d $BORG_REPO ]] || command borg $BORG_ARGS init -e repokey 2>/dev/null
 # [[ "$CHECK_BORG" == "1" ]] && borg check $BORG_ARGS
 # [[ "$PRUNE_BORG" == "1" ]] && borg prune $BORG_ARGS -v -p --keep-within ${BORG_KEEP_WITHIN_DAYS}d 2>/dev/null
 }
 cleanup_compileds(){
     find . -maxdepth 2 -name ".COMBINED-*" -type d -amin +6|xargs -I % rm -rf %
+}
+get_bs_md5(){
+    _f="scripts/$(basename $1 .py).py"
+    md5sum $_f | cut -d' ' -f1
+}
+get_pkg_md5(){
+    find $(get_pkg_path $1) -type f 2>/dev/null|xargs md5sum|md5sum|cut -d' ' -f1
 }
 save_build_to_borg(){
   if [[ "$SAVE_BUILD_TO_BORG" == "1" ]]; then
@@ -90,21 +97,42 @@ save_build_to_borg(){
       BUILD_DIR="$1"
       [[ ! -d $BUILD_DIR ]] && ansi --red Invalid Build Dir && exit 1
       ___REPO_NAME="$(basename $BUILD_DIR)"
+      modules_file=$(mktemp)
+      bs_file=$(mktemp)
+      bs_md5s_file=$(mktemp)
+      m_md5s_file=$(mktemp)
 
       for m in $BUILD_SCRIPTS; do
         _BIN_PATH="$BUILD_DIR/$(basename $m .py)"
+        _m="$(get_bs_md5 $(basename $m .py))"
+        echo -ne "$(basename $m .py):${_m}\n" >> $bs_md5s_file
         >&2 ansi --yellow "   _BIN_PATH=$_BIN_PATH m=$m REPO_NAME=$___REPO_NAME BUILD_DIR=$BUILD_DIR"
         #save_binary_to_borg "$_BIN_PATH"
       done
+      ENDED_TS=$(date +%s)
+      for m in $MODULES; do
+        _m="$(get_pkg_md5 $m)"
+        echo -ne "$m:${_m}\n" >> $m_md5s_file
+      done
 
       FILES="$(cd $BUILD_DIR && find .)"
-      modules_file=$(mktemp)
-      bs_file=$(mktemp)
       set +e
       echo "$MODULES"|tr ' ' '\n'|grep -v '^$' > $modules_file
       echo "$BUILD_SCRIPTS"|tr ' ' '\n'|grep -v '^$' > $bs_file
       set -e
-      jo dist_path=$___REPO_NAME modules=@$modules_file build_scripts=@$bs_file |base64 -w0> .COMMENT
+      jo \
+            borg_repo=$BORG_REPO \
+            repo_name=$___REPO_NAME \
+            dist_path=$___REPO_NAME \
+            started_ts=$STARTED_TS \
+            ended_ts=$ENDED_TS \
+            excluded_modules_md5="$(md5sum $BUILD_DIR/../../EXCLUDED_ANSIBLE_MODULES.txt|cut -d' ' -f1)" \
+            excluded_modules_qty="$(wc -l $BUILD_DIR/../../EXCLUDED_ANSIBLE_MODULES.txt|cut -d' ' -f1)" \
+            modules="$(cat $modules_file |transform)" \
+            modules_md5s="$(cat $m_md5s_file |transform)" \
+            build_scripts="$(cat $bs_file | transform)" \
+            build_script_md5s="$(cat $bs_md5s_file|transform)" \
+                |base64 -w0> .COMMENT
       cat .COMMENT
       COMMENT=$(cat .COMMENT)
       cmd="borg $BORG_ARGS delete ::$___REPO_NAME >/dev/null 2>&1; cd $BUILD_DIR && borg $BORG_ARGS create -x -v --stats --progress --comment '$COMMENT' ::$___REPO_NAME $FILES"
@@ -116,9 +144,66 @@ save_build_to_borg(){
       set -e
    fi
 }
+get_pkg_path(){
+  echo -e "$(command pip show "$1"|grep '^Location: '|cut -d' ' -f2-999)/$1"
+}
+transform(){
+    xargs -I % echo -e "- %"| yaml2json 2>/dev/null|jq -Mrc
+}
+transform_build_scripts(){
+    parse_get_borg_repo_comment $1|jq '.build_scripts' -Mrc| transform
+}
+transform_repo_modules(){
+    parse_get_borg_repo_comment $1|jq '.modules' -Mrc| transform
+}
+get_combined_borg_repos_json(){
+    QTY="$1"
+    if [[ "$QTY" == "" ]]; then
+        QTY=5
+    fi
+    for x in $(get_combined_borg_repo_names $QTY); do 
+        NEW_MODULES="$(transform_repo_modules $x)"
+        NEW_BUILD_SCRIPTS="$(transform_build_scripts $x)"
+        parse_get_borg_repo_comment $x |jq
+    done \
+      |jq
+}
+
+get_cached_build_scripts(){
+    QTY="$1"
+    source setup.sh
+    if [[ "$QTY" == "" ]]; then
+        QTY=5
+    fi
+    ./getCachedRepoObjects.sh $QTY \
+        | jq '.build_scripts' -Mr|grep '"' |cut -d'"' -f2|sort -u
+}
+
+get_combined_borg_repo_names(){
+    QTY="$1"
+    if [[ "$QTY" == "" ]]; then
+        QTY=5
+    fi
+    LIST_ARGS=" --last $QTY"
+    if [[ "$BORG_REPO" == "" ]]; then
+        ansi --red Missing BORG_REPO
+        exit 1
+    fi
+    borg list --format="{name}{NEWLINE}" $LIST_ARGS $BORG_REPO| grep '^.COMBINED-[0-9]'
+}
+
+
 parse_get_borg_repo_comment(){
     cmd="borg $BORG_ARGS info ::$1|grep '^Comment: '|cut -d' ' -f2|base64 -d"
-    eval $cmd
+    find $REPO_COMMENT_CACHE_DIR -maxdepth 2 -type f -amin +86400|xargs -I % rm -rf %
+    _md5="$(echo $cmd|md5sum|cut -d' ' -f1)"
+    _cached_file="$REPO_COMMENT_CACHE_DIR/$_md5"
+    if [[ -f "$_cached_file" ]]; then
+        cat $_cached_file
+    else
+        eval $cmd | tee $_cached_file
+        
+    fi
 }
 get_borg_repo_modules(){
     parse_get_borg_repo_comment |jq '.modules' -Mrc
@@ -295,10 +380,10 @@ setup_venv(){
 
 save_modules(){
     set -e
-    for m in $BUILD_SCRIPTS; do
+#    for m in $BUILD_SCRIPTS; do
 #        >&2 ansi --green saving Build Script $m to repo
-        save_build_script_to_repo "$m" ".specs/$(basename $m .py).spec"
-    done
+#        save_build_script_to_repo "$m" ".specs/$(basename $m .py).spec"
+#    done
     
 
 }
@@ -472,3 +557,19 @@ repo_info_json(){
     done
 }
 
+get_repo_file(){
+    set -e
+    _d=$(mktemp -d)
+    _r="$1"
+    _f="$2"
+    _repo=
+    cmd="(cd $_d && BORG_PASSPHRASE=$BORG_PASSPHRASE borg $BORG_ARGS extract $BORG_REPO::$_r $_f)"
+    eval $cmd
+    _e=$?
+    echo -e "$_d/$_f"
+}
+
+restore_repo_files(){
+    get_cached_build_scripts \
+        | fzf -m --tac --border --header="select one"
+}

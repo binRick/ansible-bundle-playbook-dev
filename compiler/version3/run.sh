@@ -3,9 +3,10 @@ set -e
 cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 export ORIG_DIR="$(pwd)"
 source setup.sh >/dev/null 2>/dev/null
-
+export STARTED_TS=$(date +%s)
 BUILD_MODE=serial
 
+setup_venv
 
 concurrent_build() {
     local args=(

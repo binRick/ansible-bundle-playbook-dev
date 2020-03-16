@@ -7,5 +7,8 @@ source .ansi
 
 export BUILD_MODE='ANSIBLE+BORGS+TOOLS'
 
-#exec ./run_panes.sh
-exec ./run.sh
+if [[ $- == *i* ]]; then
+    exec ./run_panes.sh
+else
+    exec ./run.sh
+fi

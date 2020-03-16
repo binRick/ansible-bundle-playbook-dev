@@ -110,11 +110,7 @@ for x in $BUILD_SCRIPTS; do
             -p _ansible \
                ${_BS_PREFIX}${_BS}.py > $spec_combined_stdout_mkspec 2> $spec_combined_stderr_mkspec"
 
-
         echo "$cmd" > $spec_combined_cmd
-#        echo $spec_combined_cmd
-#        exit 666
-
         __x=$(mktemp)
         cat $spec_combined_cmd |tr ' ' '\n'| sed 's/$/ \\/g'|sed 's/^/    /g' > $__x
         cat $__x > $spec_combined_cmd
