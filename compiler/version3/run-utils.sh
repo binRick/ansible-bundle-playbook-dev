@@ -14,9 +14,7 @@ getBuildScriptReplacement(){
         s2="$(echo $r|cut -d'|' -f2)"
         if [[ "$(basename $__BS .py)" == "$(basename $s1 .py)" ]]; then
             >&2 ansi --yellow "     [getBuildScriptReplacement] $s1 => $s2"
-            echo $s2
-        else
-            echo ""
+            echo "$s2"
         fi
     done
 }
@@ -96,7 +94,7 @@ save_build_to_borg(){
       for m in $BUILD_SCRIPTS; do
         _BIN_PATH="$BUILD_DIR/$(basename $m .py)"
         >&2 ansi --yellow "   _BIN_PATH=$_BIN_PATH m=$m REPO_NAME=$___REPO_NAME BUILD_DIR=$BUILD_DIR"
-        save_binary_to_borg "$_BIN_PATH"
+        #save_binary_to_borg "$_BIN_PATH"
       done
 
       FILES="$(cd $BUILD_DIR && find .)"

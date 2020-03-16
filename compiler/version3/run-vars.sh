@@ -18,13 +18,15 @@ BUILD_SCRIPT_REPLACEMENTS="\
     _ansible.py|ansible.py \
     _pproxy.py|pproxy.py \
     __borg.py|borg.py \
+    __tester.py|tester.py \
 "
 
 [[ "$BUILD_SCRIPTS" == "" ]] && export BUILD_SCRIPTS="\
-    _pproxy.py \
-    test.py \
+    __tester.py \
 "
 export _BUILD_SCRIPTS="\
+    _pproxy.py \
+    test.py \
     _ansible.py \
     ansible-playbook.py \
     ansible-config.py \
@@ -47,18 +49,19 @@ NIFTY_MODULES="pyinotify backoff humanize PyInquirer sshtunnel"
 TERMINAL_MODULES="blessings terminaltables"
 SYSTEM_PERFORMANCE_MODULES=""
 CRYPTO_MODULES="python-jose[cryptography]"
-SUBPROCESS_MODULES="bash.py"
+SUBPROCESS_MODULES="bash.py backoff"
 DATA_MODULES="msgpack"
 NETWORK_MODULES="netaddr urllib3 websocket-client python-socketio"
 PROXY_MODULES="pproxy"
 PROCESS_MODULES="psutil cpython-prctl setproctitle"
-COMPILER_MODULES="Cython"
+COMPILER_MODULES="Cython pyinstaller"
 WHMCS_MODULES="whmcspy"
 WEBSOCKET_MODULES="SimpleWebSocketServer"
 ANSIBLE_MODULES="configparser paramiko $JSON_MODULES $NETWORK_MODULES $TERMINAL_MODULES $DATA_MODULES"
 
-BASE_MODS="loguru pyyaml pyaml requests $ANSIBLE_MODULES $JSON_MODULES $NETWORK_MODULES $COMPILER_MODULES $PROXY_MODULES"
-ADDTL_MODS="speedtest-cli docopt python-jose pycryptodome halo $TEMPLATING_MODULES $CRYPTO_MODULES $SYSTEM_PERFORMANCE_MODULES $WHMCS_MODULES $WEBSOCKET_MODULES"
+BASE_MODS="$COMPILER_MODULES paramiko"
+ADDTL_MODS="speedtest-cli docopt python-jose pycryptodome halo $TEMPLATING_MODULES $CRYPTO_MODULES $SYSTEM_PERFORMANCE_MODULES $WHMCS_MODULES $WEBSOCKET_MODULES \
+    loguru pyyaml pyaml requests $ANSIBLE_MODULES $JSON_MODULES $NETWORK_MODULES $PROXY_MODULES"
 OPTIONAL_MODULES="tcconfig pexpect libtmux tmuxp tcconfig $NIFTY_MODULES"
 
 
@@ -68,7 +71,6 @@ export _MODULES="\
     $BASE_MODS \
 "
 [[ "$MODULES" == "" ]] && export MODULES="\
-    $ADDTL_MODS \
     $BASE_MODS \
 "
 

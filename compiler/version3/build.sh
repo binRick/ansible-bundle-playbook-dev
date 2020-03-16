@@ -19,10 +19,7 @@ if [[ ! -f $VENV_DIR/bin/activate ]]; then
             python3 -m venv $VENV_DIR
 fi
 
-source $VENV_DIR/bin/activate || retry_nuked_venv
-
-
-
+source $VENV_DIR/bin/activate
 
 BUILD_SCRIPTS="$(echo $BUILD_SCRIPTS|tr ',' ' '|sed 's/[[:space:]]/ /g')"
 MODULES="$(echo $MODULES|tr ',' ' '|sed 's/[[:space:]]/ /g')"
@@ -40,11 +37,7 @@ m_e=$_combined_stderr
 #xpanes -x --stay -l ev -e "tail -f $m_o"
 #xpanes -x --stay -l ev -e "tail -f $m_e"
 set +e
-if [[ "$DEBUG_MODE" == "1" ]]; then
-    ./combineSpecFiles.sh > $m_o 2>$m_e
-else
-    ./combineSpecFiles.sh > $m_o 2>$m_e
-fi
+./combineSpecFiles.sh |tee $m_o
 exit_code=$?
 if [[ "$exit_code" != "0" ]]; then echo combineSpecFiles.sh failed $exit_code; ansi --red $(cat $m_e); ansi --yellow $(cat $m_o); exit $exit_code; fi
 set -e
@@ -53,7 +46,7 @@ COMBINED_SPEC_FILE=$(cat $m_o|tail -n1)
 ansi --yellow COMBINED_SPEC_FILE=$COMBINED_SPEC_FILE
 
 
-source $VENV_DIR/bin/activate || retry_nuked_venv
+source $VENV_DIR/bin/activate
 
 retry_nuked_venv(){
     cmd="RETRIED=1 NUKE_VENV=1 exec ${BASH_SOURCE[0]} $@"
@@ -91,7 +84,8 @@ watch_cmd="tail -f $combined_stdout $combined_stderr"
 >&2 ansi --cyan "          watch_cmd=$watch_cmd"
 
 set +e
-./$combined_cmd > $combined_stdout 2> $combined_stderr
+#./$combined_cmd > $combined_stdout 2> $combined_stderr
+./$combined_cmd | tee $combined_stdout
 exit_code=$?
 if [[ "$exit_code" != "0" ]]; then
     ansi --red "    Command \"$cmd\" failed to compile $COMBINED_SPEC_FILE (exited $exit_code). stdout=$combined_stdout, stderr=$combined_stderr"
@@ -179,8 +173,5 @@ for d in build dist __pycache__ build; do
     if [[ -d $d ]]; then rm -rf $d; fi
 done
 
-
-#$PLAYBOOK_BINARY_PATH --version | grep '^ansible-playbook $ANSIBLE_VERSION' && >&2 echo Valid Version
-#file $PLAYBOOK_BINARY_PATH | grep '^ansible-playbook' | grep ': ELF 64-bit LSB executable, x86-64' && >&2 echo Valid File
 
 echo $COMBINED_DIR
