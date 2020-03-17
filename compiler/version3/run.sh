@@ -20,19 +20,17 @@ concurrent_build() {
         --and-then \
         - "Load Variables"       load_vars
         --and-then \
-        - "Run Build"       run_build
+        - "Run Build"                   run_build
         --and-then \
-        - "Save Modules"       save_modules
+        - "Normalize Dist Path"         normalize_dist_path
         --and-then \
-        - "Normalize Dist Path"       normalize_dist_path
+        - "Test Dist Path"              test_dist-path
         --and-then \
-        - "Test Dist Path"       test_dist-path
+        - "Setup Virtual Environment"   setup_venv
         --and-then \
-        - "Setup Virtual Environment"       setup_venv
+        - "Relocate Dist Path"          relocate_path
         --and-then \
-        - "Relocate Dist Path"       relocate_path
-        --and-then \
-        - "Print Summary"       summary
+        - "Print Summary"               summary
     )
     local _args=(
         - "Save Modules to Borg"       save_build_to_borg "$DIST_PATH"
@@ -60,12 +58,11 @@ basic_build(){
     deactivate
     load_vars
     run_build
-    save_modules
-    save_build_to_borg "$DIST_PATH"
     normalize_dist_path
     test_dist_path
     setup_venv
     relocate_path
+    save_build_to_borg "$DIST_PATH"
     #test_borg
     summary
 }

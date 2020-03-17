@@ -378,16 +378,6 @@ setup_venv(){
 }
 
 
-save_modules(){
-    set -e
-#    for m in $BUILD_SCRIPTS; do
-#        >&2 ansi --green saving Build Script $m to repo
-#        save_build_script_to_repo "$m" ".specs/$(basename $m .py).spec"
-#    done
-    
-
-}
-
 run_build(){
     [[ -f .stdout ]] && ansi --yellow "Starting build" > .stdout
     [[ -f .stderr ]] && ansi --yellow "Starting build" > .stderr

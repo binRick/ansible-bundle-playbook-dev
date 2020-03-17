@@ -23,7 +23,6 @@ BUILD_SCRIPT_REPLACEMENTS="\
 
 [[ "$BUILD_SCRIPTS" == "" ]] && export BUILD_SCRIPTS="\
     __tester.py \
-    speedtest-cli.py \
 "
 export _BUILD_SCRIPTS="\
     _pproxy.py \
