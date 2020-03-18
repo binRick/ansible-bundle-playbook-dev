@@ -12,9 +12,10 @@ CMD_run="time ./run.sh; echo run.sh exited $?"
 
 xpanes \
     -t \
-    -s \
     -d \
     -l ev \
+    -s \
+    -t \
     -B "cd $ORIG_DIR" \
     -e \
         "sh -c '$CMD3' 2>/dev/null" \

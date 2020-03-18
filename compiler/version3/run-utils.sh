@@ -1,3 +1,22 @@
+trim_all() {
+    set -f
+    set -- $*
+    printf '%s\n' "$*"
+    set +f
+}
+
+file_modified_ts(){
+    command perl -e 'print +(stat $ARGV[0])[9], "\n"' "$1"
+}
+get_pip_list(){ 
+    command pip list -l --isolated 
+}
+
+strip_pip_list(){
+      egrep -v '^-|^Package ' \
+        |tr -s ' ' \
+        |cut -d' ' -f1,2
+}
 
 install_borg(){
     if [[ ! -e ~/.local/bin/borg ]]; then
@@ -5,8 +24,9 @@ install_borg(){
     fi
     chmod 700 ~/.local/bin/borg
     export PATH=~/.local/bin:$PATH
-
+    alias borg=~/.local/bin/borg
 }
+
 getBuildScriptReplacement(){
     __BS="$1"
     for r in $(echo "$BUILD_SCRIPT_REPLACEMENTS"|tr ' ' '\n'); do
@@ -100,14 +120,23 @@ save_build_to_borg(){
       modules_file=$(mktemp)
       bs_file=$(mktemp)
       bs_md5s_file=$(mktemp)
+      bs_bytes_file=$(mktemp)
       m_md5s_file=$(mktemp)
+      bs_ts_file=$(mktemp)
+      pip_list_file=$(mktemp)
+    
+      get_pip_list > $pip_list_file
 
       for m in $BUILD_SCRIPTS; do
         _BIN_PATH="$BUILD_DIR/$(basename $m .py)"
         _m="$(get_bs_md5 $(basename $m .py))"
-        echo -ne "$(basename $m .py):${_m}\n" >> $bs_md5s_file
+        _mf="scripts/$(basename $m .py).py"
+        _bytes="$(stat --printf="%s" $_mf)" 
+        _t="$(file_modified_ts scripts/$m)"
+        echo -ne "$m:${_m}\n" >> $bs_md5s_file
+        echo -ne "$m:${_bytes}\n" >> $bs_bytes_file
+        echo -ne "$m:${_t}\n" >> $bs_ts_file
         >&2 ansi --yellow "   _BIN_PATH=$_BIN_PATH m=$m REPO_NAME=$___REPO_NAME BUILD_DIR=$BUILD_DIR"
-        #save_binary_to_borg "$_BIN_PATH"
       done
       ENDED_TS=$(date +%s)
       for m in $MODULES; do
@@ -132,10 +161,16 @@ save_build_to_borg(){
             modules_md5s="$(cat $m_md5s_file |transform)" \
             build_scripts="$(cat $bs_file | transform)" \
             build_script_md5s="$(cat $bs_md5s_file|transform)" \
+            build_script_bytes="$(cat $bs_bytes_file|transform)" \
+            build_script_modified_timestamps="$(cat $bs_ts_file|transform)" \
+            pip_list="$(cat $pip_list_file|transform)" \
                 |base64 -w0> .COMMENT
       cat .COMMENT
       COMMENT=$(cat .COMMENT)
-      cmd="borg $BORG_ARGS delete ::$___REPO_NAME >/dev/null 2>&1; cd $BUILD_DIR && borg $BORG_ARGS create -x -v --stats --progress --comment '$COMMENT' ::$___REPO_NAME $FILES"
+      unlink .COMMENT
+      CD_DIR="$BUILD_DIR"
+      CD_DIR="$BUILD_DIR/$_DIR_PATH_PREFIX"
+      cmd="borg $BORG_ARGS delete ::$___REPO_NAME >/dev/null 2>&1; cd $CD_DIR && borg $BORG_ARGS create -x -v --stats --progress --comment '$COMMENT' ::$___REPO_NAME $FILES"
       ansi -n --yellow "   Creating Borg $___REPO_NAME"
       set +e
       eval $cmd

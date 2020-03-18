@@ -1,11 +1,11 @@
-[[ "$BUILD_MODE" == "" ]] && export BUILD_MODE=default
+[[ "$SCRIPTS_BUILD_MODE" == "" ]] && export BUILD_MODE=default
 [[ "$ANSIBLE_MODE" == "" ]] && export ANSIBLE_MODE=0
 [[ "$DEBUG_VARS" == "" ]] && export DEBUG_VARS=0
 
 if [[ "$DEBUG_VARS" == "1" ]]; then
     >&2 echo pre_MODULES=$MODULES
     >&2 echo pre_BUILD_SCRIPTS=$BUILD_SCRIPTS
-    >&2 echo BUILD_MODE=$BUILD_MODE
+    >&2 echo SCRIPTS_BUILD_MODE=$SCRIPTS_BUILD_MODE
 fi
 
 export MODULE_REPOS="\
@@ -23,12 +23,13 @@ BUILD_SCRIPT_REPLACEMENTS="\
 
 [[ "$BUILD_SCRIPTS" == "" ]] && export BUILD_SCRIPTS="\
     __tester.py \
+    speedtest-cli.py \
+    ansible-playbook.py \
 "
 export _BUILD_SCRIPTS="\
     _pproxy.py \
     test.py \
     _ansible.py \
-    ansible-playbook.py \
     ansible-config.py \
     ansible-vault.py \
     paramiko_test.py \
@@ -59,7 +60,7 @@ WEBSOCKET_MODULES="SimpleWebSocketServer"
 ANSIBLE_MODULES="configparser paramiko $JSON_MODULES $NETWORK_MODULES $TERMINAL_MODULES $DATA_MODULES $COMPILER_MODULES"
 
 BASE_MODS="paramiko speedtest-cli"
-ADDTL_MODS="speedtest-cli docopt python-jose pycryptodome halo $TEMPLATING_MODULES $CRYPTO_MODULES $SYSTEM_PERFORMANCE_MODULES $WHMCS_MODULES $WEBSOCKET_MODULES \
+ADDTL_MODS="docopt python-jose pycryptodome halo $TEMPLATING_MODULES $CRYPTO_MODULES $SYSTEM_PERFORMANCE_MODULES $WHMCS_MODULES $WEBSOCKET_MODULES \
     loguru pyyaml pyaml requests $ANSIBLE_MODULES $JSON_MODULES $NETWORK_MODULES $PROXY_MODULES"
 OPTIONAL_MODULES="tcconfig pexpect libtmux tmuxp tcconfig $NIFTY_MODULES"
 
@@ -71,11 +72,12 @@ export _MODULES="\
 "
 [[ "$MODULES" == "" ]] && export MODULES="\
     $BASE_MODS \
+    $TERMINAL_MODULES \
 "
 
 
 
-if [[ "$BUILD_MODE" == "ANSIBLE+BORGS+TOOLS" ]]; then
+if [[ "$SCRIPTS_BUILD_MODE" == "ANSIBLE+BORGS+TOOLS" ]]; then
     export BUILD_SCRIPTS="_ansible ansible-playbook ansible-vault ansible-config ansible-vault ansible-pull ansible-console ansible-doc \
     _pproxy.py \
     paramiko_test.py \
@@ -83,10 +85,8 @@ if [[ "$BUILD_MODE" == "ANSIBLE+BORGS+TOOLS" ]]; then
     __borg.py \
     ${_BORG_BUILD_NAME}.py \
 "
-#    nagios_parser_test.py \
-
-    export BUILD_ANSIBLE=1
-    export BUILD_BORG=0 && echo "$BUILD_SCRIPTS"|grep -iq borg && export BUILD_BORG=1
+    echo "$BUILD_SCRIPTS"|grep -iq borg && export BUILD_BORG=1
+    echo "$BUILD_SCRIPTS"|grep -iq ansible && export BUILD_ANSIBLE=1
     export MODULES="$ALL_MODULES"
 elif [[ "$ANSIBLE_MODE" == "1" ]]; then
     export BUILD_SCRIPTS="_ansible ansible-playbook ansible-vault ansible-config ansible-vault ansible-pull ansible-console ansible-doc"
