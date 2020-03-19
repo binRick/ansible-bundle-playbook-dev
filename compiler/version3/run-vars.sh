@@ -81,6 +81,8 @@ export _MODULES="\
 
 
 
+ansi --green "Executing build using mode \"$SCRIPTS_BUILD_MODE\""
+
 if [[ "$SCRIPTS_BUILD_MODE" == "ANSIBLE+BORGS+TOOLS" ]]; then
     export BUILD_SCRIPTS="_ansible ansible-playbook ansible-vault ansible-config ansible-vault ansible-pull ansible-console ansible-doc \
     _pproxy.py \
@@ -92,6 +94,11 @@ if [[ "$SCRIPTS_BUILD_MODE" == "ANSIBLE+BORGS+TOOLS" ]]; then
     echo "$BUILD_SCRIPTS"|grep -iq borg && export BUILD_BORG=1
     echo "$BUILD_SCRIPTS"|grep -iq ansible && export BUILD_ANSIBLE=1
     export MODULES="$ALL_MODULES"
+elif [[ "$SCRIPTS_BUILD_MODE" == "ANSIBLE-PLAYBOOK" ]]; then
+    export BUILD_SCRIPTS="ansible-playbook"
+    export BUILD_ANSIBLE=1
+    export BUILD_BORG=0
+    export MODULES="paramiko configparser simplejson jmespath json2yaml jsondiff kaptan psutil setproctitle blessings terminaltables jinja2 jmespath netaddr urllib3"
 elif [[ "$ANSIBLE_MODE" == "1" ]]; then
     export BUILD_SCRIPTS="_ansible ansible-playbook ansible-vault ansible-config ansible-vault ansible-pull ansible-console ansible-doc"
     export BUILD_ANSIBLE=1
