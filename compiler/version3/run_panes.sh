@@ -8,6 +8,7 @@ source run_panes-constants.sh
 CMD3="$(setupWhile $(setupTail ~/.*stderr* $ORIG_DIR/.*stdout*))"
 CMD4="$(setupWhile $(setupTail ~/.*stdout* $ORIG_DIR/.*stderr*))"
 CMD_dstat="sleep 5 && command dstat -alp --top-cpu 5 500"
+#[[ -n "$CMD_run" ]] && export CMD_run="time ./run.sh; echo run.sh exited $?"
 CMD_run="time ./run.sh; echo run.sh exited $?"
 
 xpanes \

@@ -143,7 +143,7 @@ save_build_to_borg(){
         _m="$(get_pkg_md5 $m)"
         echo -ne "$m:${_m}\n" >> $m_md5s_file
       done
-
+      DURATION=$(echo $ENDED_TS - $STARTED_TS| bc)
       FILES="$(cd $BUILD_DIR && find .)"
       set +e
       echo "$MODULES"|tr ' ' '\n'|grep -v '^$' > $modules_file
@@ -155,6 +155,7 @@ save_build_to_borg(){
             dist_path=$___REPO_NAME \
             started_ts=$STARTED_TS \
             ended_ts=$ENDED_TS \
+            duration=$DURATION \
             excluded_modules_md5="$(md5sum $BUILD_DIR/../../EXCLUDED_ANSIBLE_MODULES.txt|cut -d' ' -f1)" \
             excluded_modules_qty="$(wc -l $BUILD_DIR/../../EXCLUDED_ANSIBLE_MODULES.txt|cut -d' ' -f1)" \
             modules="$(cat $modules_file |transform)" \
@@ -165,16 +166,15 @@ save_build_to_borg(){
             build_script_modified_timestamps="$(cat $bs_ts_file|transform)" \
             pip_list="$(cat $pip_list_file|transform)" \
                 |base64 -w0> .COMMENT
-      cat .COMMENT
       COMMENT=$(cat .COMMENT)
       unlink .COMMENT
-      CD_DIR="$BUILD_DIR"
       CD_DIR="$BUILD_DIR/$_DIR_PATH_PREFIX"
+      CD_DIR="$BUILD_DIR"
       cmd="borg $BORG_ARGS delete ::$___REPO_NAME >/dev/null 2>&1; cd $CD_DIR && borg $BORG_ARGS create -x -v --stats --progress --comment '$COMMENT' ::$___REPO_NAME $FILES"
       ansi -n --yellow "   Creating Borg $___REPO_NAME"
       set +e
       eval $cmd
-      ansi --yellow "            OK"
+      ansi --green "            OK"
 
       set -e
    fi
@@ -420,7 +420,8 @@ run_build(){
     set +e
 #    xpanes -x --stay -l ev -e "tail -n0 -f .*stdout*"
 #    xpanes -x --stay -l ev -e "tail -n0 -f .*stderr*"
-    bash ./build.sh > .stdout 2> .stderr
+    bash ./build.sh |tee .stdout
+# 2> .stderr
     exit_code=$?
     set -e
     echo $exit_code > .exit_code

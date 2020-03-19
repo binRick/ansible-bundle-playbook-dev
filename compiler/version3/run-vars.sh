@@ -23,10 +23,11 @@ BUILD_SCRIPT_REPLACEMENTS="\
 
 [[ "$BUILD_SCRIPTS" == "" ]] && export BUILD_SCRIPTS="\
     __tester.py \
-    speedtest-cli.py \
-    ansible-playbook.py \
 "
 export _BUILD_SCRIPTS="\
+    __test_tmux.py
+    speedtest-cli.py \
+    ansible-playbook.py \
     _pproxy.py \
     test.py \
     _ansible.py \
@@ -43,6 +44,8 @@ export _BUILD_SCRIPTS="\
 [[ "$ANSIBLE_VERSION" == "" ]] && export ANSIBLE_VERSION=2.8.9
 [[ "$BUILD_ANSIBLE" == "" ]] && export BUILD_ANSIBLE=0
 
+BORG_MODULES=""
+TMUX_MODULES="libtmux"
 TEMPLATING_MODULES="j2cli jinja2"
 JSON_MODULES="simplejson jmespath json2yaml jsondiff kaptan"
 NIFTY_MODULES="pyinotify backoff humanize PyInquirer sshtunnel"
@@ -59,10 +62,10 @@ WHMCS_MODULES="whmcspy"
 WEBSOCKET_MODULES="SimpleWebSocketServer"
 ANSIBLE_MODULES="configparser paramiko $JSON_MODULES $NETWORK_MODULES $TERMINAL_MODULES $DATA_MODULES $COMPILER_MODULES"
 
-BASE_MODS="paramiko speedtest-cli"
+BASE_MODS="paramiko speedtest-cli $BORG_MODULES"
 ADDTL_MODS="docopt python-jose pycryptodome halo $TEMPLATING_MODULES $CRYPTO_MODULES $SYSTEM_PERFORMANCE_MODULES $WHMCS_MODULES $WEBSOCKET_MODULES \
     loguru pyyaml pyaml requests $ANSIBLE_MODULES $JSON_MODULES $NETWORK_MODULES $PROXY_MODULES"
-OPTIONAL_MODULES="tcconfig pexpect libtmux tmuxp tcconfig $NIFTY_MODULES"
+OPTIONAL_MODULES="tcconfig pexpect libtmux tmuxp tcconfig $NIFTY_MODULES $TMUX_MODULES"
 
 
 ALL_MODULES="$BASE_MODS $ADDTL_MODS $OPTIONAL_MODULES"
@@ -73,6 +76,7 @@ export _MODULES="\
 [[ "$MODULES" == "" ]] && export MODULES="\
     $BASE_MODS \
     $TERMINAL_MODULES \
+    $TMUX_MODULES \
 "
 
 
