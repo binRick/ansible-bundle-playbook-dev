@@ -438,7 +438,26 @@ run_build(){
         ansi --red "$(cat .stderr)"
             exit 101
     fi
+
+
+    find_cmd="(cd $DIST_PATH && find . -type f -name \"*.pyc\"|wc -l)"
+    rm_cmd="(cd $DIST_PATH && find . -type f -name \"*.pyc\" -delete)"
+    qty=$(eval $find_cmd)
+    ansi --yellow --bg-black -n "   Removing $qty pyc files from $DIST_PATH"
+    $(eval $rm_cmd)
+    ansi --green --bg-black "    OK"
+
+
+    find_cmd="(cd $DIST_PATH && find . -type f -name \"__pycache__\"|wc -l)"
+    rm_cmd="(cd $DIST_PATH && find . -type f -name \"__pycache__\" -delete)"
+    qty=$(eval $find_cmd)
+    ansi --yellow --bg-black -n "   Removing $qty __pycache__ files from $DIST_PATH"
+    $(eval $rm_cmd)
+    ansi --green --bg-black "    OK"
+
+
     echo "$DIST_PATH"
+
 
 #    >&2 ansi --green Validated DIST_PATH $DIST_PATH
 }
