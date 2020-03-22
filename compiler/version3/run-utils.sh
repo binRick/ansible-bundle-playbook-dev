@@ -448,8 +448,8 @@ run_build(){
     ansi --green --bg-black "    OK"
 
 
-    find_cmd="(cd $DIST_PATH && find . -type f -name \"__pycache__\"|wc -l)"
-    rm_cmd="(cd $DIST_PATH && find . -type f -name \"__pycache__\" -delete)"
+    find_cmd="(cd $DIST_PATH && find . -type d -name \"__pycache__\"|wc -l)"
+    rm_cmd="(cd $DIST_PATH && find . -type d -name \"__pycache__\" -delete)"
     qty=$(eval $find_cmd)
     ansi --yellow --bg-black -n "   Removing $qty __pycache__ files from $DIST_PATH"
     $(eval $rm_cmd)

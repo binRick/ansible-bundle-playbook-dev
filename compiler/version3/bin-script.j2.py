@@ -13,7 +13,8 @@ try:
 except NameError:
     this_file = sys.argv[0]
 
-this_file = os.path.abspath(this_file)
+this_file = os.path.realpath(os.path.abspath(this_file))
+
 if getattr(sys, 'frozen', False):
     application_path = getattr(sys, '_MEIPASS', os.path.dirname(sys.executable))
 else:
@@ -37,7 +38,7 @@ if os.environ.get('__DEBUG_ARGS', False):
     print('__ARGS={}'.format(__ARGS))
 
 sys.argv[0] = __J2__PROC_FILE
-os.chdir(os.path.dirname(NEW_PATH))
+os.chdir(os.path.realpath(os.path.dirname(NEW_PATH)))
 os.execve(__EXEC, __ARGS, __ENV)
 
 
