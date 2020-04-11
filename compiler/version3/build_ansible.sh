@@ -2,7 +2,7 @@
 DIR_BASE=$(cd ${BASH_SOURCE[0]%/*} && pwd)
 RELEASE_VERSION=$1
 
-DDIR=ansible-2.8.9
+DDIR=ansible-2.8.10
 
 _REQUIRED_YUM_PACKAGES="rpm-build"
 # sqlite-devel jansson-devel wget mariadb-devel zlib-devel libpcap-devel libtool libmaxminddb libmaxminddb-devel pkgconfig"

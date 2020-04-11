@@ -10,6 +10,6 @@ if [[ "$PANE_MODE" == "1" || $- == *i* ]]; then
     exec ./run_panes.sh
 else
     ansi --yellow "Running in standard mode"
-    exec ./run.sh
+    time ./run.sh
 fi
 

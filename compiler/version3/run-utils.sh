@@ -172,11 +172,7 @@ save_build_to_borg(){
       CD_DIR="$BUILD_DIR"
       cmd="borg $BORG_ARGS delete ::$___REPO_NAME >/dev/null 2>&1; cd $CD_DIR && borg $BORG_ARGS create -x -v --stats --progress --comment '$COMMENT' ::$___REPO_NAME $FILES"
       ansi -n --yellow "   Creating Borg $___REPO_NAME"
-      set +e
-      eval $cmd
-      ansi --green "            OK"
-
-      set -e
+      (set +e; eval nohup $cmd >/dev/null 2>&1 &)
    fi
 }
 get_pkg_path(){
@@ -267,7 +263,7 @@ get_cached_build_script(){
     cmd="borg list ::$____REPO_NAME $SPEC_NAME --format=\"{path}{NEWLINE}\""
     eval $cmd > .o 2>.e
     ec=$?
-    #>&2 ansi --yellow "    [cached_build_script] 1=$1 REPO_NAME=$____REPO_NAME SPEC_NAME=$SPEC_NAME MANGLED_VARS_FILE=$MANGLED_VARS_FILE cmd=$cmd exit_code=$ec"
+    >&2 ansi --yellow "    [cached_build_script] 1=$1 REPO_NAME=$____REPO_NAME SPEC_NAME=$SPEC_NAME MANGLED_VARS_FILE=$MANGLED_VARS_FILE cmd=$cmd exit_code=$ec"
     if [[ "$ec" == "0" ]]; then
         [[ -f /tmp/$SPEC_NAME ]] && unlink /tmp/$SPEC_NAME
         (cd /tmp && borg $BORG_ARGS extract ::$____REPO_NAME $SPEC_NAME $MANGLED_VARS_FILE) >/dev/null 2>&1
@@ -300,19 +296,18 @@ save_binary_to_borg(){
 }
 save_build_script_to_repo(){
   if [[ "$SAVE_BUILD_TO_BORG" == "1" ]]; then
-    ansi --yellow "[save_build_script_to_repo] 1=\"$1\""
-    >&2 ansi --yellow "[save_build_script_to_repo] 1=\"$1\""
     _REPO_NAME=$(get_cached_build_script_repo_name $1)
     _DIR="$(dirname $2)"
     MANGLED_VARS_FILE=".$(basename $2 .spec)_mangled_vars.txt"
     file_save_cmd="(borg $BORG_ARGS delete ::$_REPO_NAME >/dev/null 2>&1; cd $ORIG_DIR/$(dirname $2) && cp ../$MANGLED_VARS_FILE . && borg $BORG_ARGS create -x -v --stats --progress  ::$_REPO_NAME $(basename $2) $MANGLED_VARS_FILE)"
+    >&2 ansi --cyan "        [save_build_script_to_repo]         1=\"$1\" 2=\"$2\" _REPO_NAME=\"$_REPO_NAME\" _DIR=\"$_DIR\" MANGLED_VARS_FILE=\"$MANGLED_VARS_FILE\" \n     file_save_cmd=\"$file_save_cmd\"\n"
     echo $file_save_cmd > .file_save_cmd
-    >&2 ansi --yellow "file_save_cmd saved to .file_save_cmd, MANGLED_VARS_FILE=$MANGLED_VARS_FILE"
+#    >&2 ansi --yellow "file_save_cmd saved to .file_save_cmd, MANGLED_VARS_FILE=$MANGLED_VARS_FILE"
     set +e
     bash .file_save_cmd
     file_save_exit_code=$?
     set -e
-    >&2 ansi --yellow "     file_save_exit_code=$file_save_exit_code"
+    >&2 ansi --cyan "     [save_build_script_to_repo]      file_save_exit_code=$file_save_exit_code"
   fi
 }
 get_module_md5(){
@@ -350,65 +345,75 @@ get_module_saved_path(){
 
 setup_venv(){
     [[ ! -d $SAVE_MODULE_PATH ]] && mkdir -p $SAVE_MODULE_PATH
-    [[ "$NUKE_VENV" == "1" && -d .venv-1 ]] && rm -rf .venv-1
     [[ -d .venv-1 ]] || python3 -m venv .venv-1
-    source .venv-1/bin/activate
-    pip -q install pip --upgrade
+    [[ -d "$VIRTUAL_ENV" ]] || source .venv-1/bin/activate
 
-    if [[ "$BUILD_ANSIBLE" == "1" ]]; then
-        pip -q install ansible==$ANSIBLE_VERSION
-        [[ -d _ansible ]] && rm -rf _ansible
-        [[ -d $VIRTUAL_ENV/lib/python3.6/site-packages/_ansible ]] && rm -rf $VIRTUAL_ENV/lib/python3.6/site-packages/_ansible
+    if [[ "$MODULES_INSTALLED" != "1" ]]; then
+        pip -q install pip --upgrade
 
-        for x in playbook config vault; do
-          if [[ "$_OVERWRITE_ANSIBLE_CLI_SCRIPTS" == "1" ]]; then
-            [[ -f scripts/ansible-${x}.py ]] && unlink scripts/ansible-${x}.py
-            [[ -f scripts/ansible-${x} ]] && unlink scripts/ansible-${x}
-            cp $(which ansible-${x}) scripts/ansible-${x}.py
-          fi
+        if [[ "$BUILD_ANSIBLE" == "1" ]]; then
+            pip -q install ansible==$ANSIBLE_VERSION
+            [[ -d _ansible ]] && rm -rf _ansible
+            [[ -d $VIRTUAL_ENV/lib/python3.6/site-packages/_ansible ]] && rm -rf $VIRTUAL_ENV/lib/python3.6/site-packages/_ansible
 
-          [[ "$_REMOVE_SHEBANG_LINE_FROM_ANSIBLE_CLI_SCRIPTS" == "1" ]] && head -n 1 scripts/ansible-${x}.py | grep -q '^#!' && sed -i 1d scripts/ansible-${x}.py
-        done
-        if [[ "$_OVERWRITE_MANAGER_FILE" == "1" ]]; then
-            python -m py_compile manager.py
-            cp -f manager.py $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/manager.py
+            for x in playbook config vault; do
+              if [[ "$_OVERWRITE_ANSIBLE_CLI_SCRIPTS" == "1" ]]; then
+                [[ -f scripts/ansible-${x}.py ]] && unlink scripts/ansible-${x}.py
+                [[ -f scripts/ansible-${x} ]] && unlink scripts/ansible-${x}
+                cp $(which ansible-${x}) scripts/ansible-${x}.py
+              fi
+
+              [[ "$_REMOVE_SHEBANG_LINE_FROM_ANSIBLE_CLI_SCRIPTS" == "1" ]] && head -n 1 scripts/ansible-${x}.py | grep -q '^#!' && sed -i 1d scripts/ansible-${x}.py
+            done
+            if [[ "$_OVERWRITE_MANAGER_FILE" == "1" ]]; then
+                python -m py_compile manager.py
+                cp -f manager.py $VIRTUAL_ENV/lib/python3.6/site-packages/ansible/config/manager.py
+            fi        
+
+            addAdditionalAnsibleModules plugins callback "$ADDITIONAL_ANSIBLE_CALLLBACK_MODULES"
+            addAdditionalAnsibleModules modules library "$ADDITIONAL_ANSIBLE_LIBRARY_MODULES"
+
+        fi
+        
+
+        >&2 ansi --cyan "Installing $(count_required_modules) Python Requirements"
+        if [[ "$MODULES" != "" ]]; then
+            >&2 pip -q install $MODULES
         fi        
-
-        addAdditionalAnsibleModules plugins callback "$ADDITIONAL_ANSIBLE_CALLLBACK_MODULES"
-        addAdditionalAnsibleModules modules library "$ADDITIONAL_ANSIBLE_LIBRARY_MODULES"
-
-    fi
-
-    >&2 ansi --cyan "Installing $(count_required_modules) Python Requirements"
-    if [[ "$MODULES" != "" ]]; then
-        >&2 pip -q install $MODULES
-    fi        
+            >&2 ansi --green "  OK"
+        
+        >&2 ansi --cyan "Installing $(count_required_module_repos) Module Repos"
+        if [[ "$MODULE_REPOS" != "" ]]; then
+            for x in $(echo $MODULE_REPOS|tr ' ' '\n'|grep -v '^$'|sort -u); do
+                >&2 pip install -q $x
+            done
+        fi
         >&2 ansi --green "  OK"
-    
-    >&2 ansi --cyan "Installing $(count_required_module_repos) Module Repos"
-    if [[ "$MODULE_REPOS" != "" ]]; then
-        for x in $(echo $MODULE_REPOS|tr ' ' '\n'|grep -v '^$'|sort -u); do
-            >&2 pip install -q $x
-        done
-    fi
-    >&2 ansi --green "  OK"
 
-    if [[ "$BUILD_BORG" == "1" ]]; then
-        set -e
-        >&2 ansi --yellow "           Fetch BORG Source Code"
-        [[ -d _borg ]] || git clone https://github.com/binRick/borg _borg
-        (cd _borg && git pull)
-        >&2 ansi --yellow "           Install BORG Requirements"
-        pip install -q -r _borg/requirements.d/development.txt
-        >&2 ansi --yellow "           Install BORG"
-        pip install -q -e _borg
-        >&2 ansi --green "                  OK"
-        [[ ! -f scripts/BORG.py ]] && cp -f _borg/src/borg/__main__.py scripts/BORG.py
-        head -n 1 scripts/BORG.py | grep -q '^#!' && sed -i 1d scripts/BORG.py
-        [[ ! -f scripts/$_BORG_BUILD_NAME ]] && cp -f scripts/BORG.py scripts/$_BORG_BUILD_NAME
-        >&2 ansi --yellow "           Test BORG @$_BORG_BUILD_NAME"
-        python scripts/$_BORG_BUILD_NAME --help >/dev/null 2>&1
-        >&2 ansi --green "                  OK"
+        if [[ "$BUILD_BORG" == "1" ]]; then
+            set -e
+            >&2 ansi --yellow "           Fetch BORG Source Code"
+            [[ -d _borg ]] || git clone https://github.com/binRick/borg _borg
+            (cd _borg && git pull)
+            >&2 ansi --yellow "           Install BORG Requirements"
+            pip install -q -r _borg/requirements.d/development.txt
+            >&2 ansi --yellow "           Install BORG"
+            pip install -q -e _borg
+            >&2 ansi --green "                  OK"
+            [[ ! -f scripts/BORG.py ]] && cp -f _borg/src/borg/__main__.py scripts/BORG.py
+            head -n 1 scripts/BORG.py | grep -q '^#!' && sed -i 1d scripts/BORG.py
+            [[ ! -f scripts/$_BORG_BUILD_NAME ]] && cp -f scripts/BORG.py scripts/$_BORG_BUILD_NAME
+            >&2 ansi --yellow "           Test BORG @$_BORG_BUILD_NAME"
+            python scripts/$_BORG_BUILD_NAME --help >/dev/null 2>&1
+            >&2 ansi --green "                  OK"
+        fi
+
+        export MODULES_INSTALLED=1
+    else
+        >&2 ansi --cyan " Skipping Installing $(count_required_modules) Python Requirements"
+        >&2 ansi --cyan " Skipping Installing $(count_required_module_repos) Module Repos"
+        >&2 ansi --cyan " Skipping Installing Ansible"
+        >&2 ansi --cyan " Skipping Installing Borg"
     fi
 }
 
@@ -427,7 +432,7 @@ run_build(){
     echo $exit_code > .exit_code
 
     if [[ "$exit_code" != "0" ]]; then
-            ansi --red "     build.sh failed with exit code $exit_code"
+            ansi --red "     [run_build]         build.sh failed with exit code $exit_code"
             exit $exit_code
     fi
     export DIST_PATH="$(pwd)/$(grep '^.COMBINED-' .stdout|tail -n1)"

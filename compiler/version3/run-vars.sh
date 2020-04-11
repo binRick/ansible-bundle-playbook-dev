@@ -41,9 +41,10 @@ export _BUILD_SCRIPTS="\
 "
 
 [[ "$BUILD_BORG" == "" ]] && export BUILD_BORG=0
-[[ "$ANSIBLE_VERSION" == "" ]] && export ANSIBLE_VERSION=2.8.9
+[[ "$ANSIBLE_VERSION" == "" ]] && export ANSIBLE_VERSION=2.8.10
 [[ "$BUILD_ANSIBLE" == "" ]] && export BUILD_ANSIBLE=0
 
+REQUIRED_COMPILER_MODULES="Cython pyinstaller"
 BORG_MODULES=""
 TMUX_MODULES="libtmux"
 TEMPLATING_MODULES="j2cli jinja2"
@@ -58,7 +59,7 @@ DATA_MODULES="msgpack"
 NETWORK_MODULES="netaddr urllib3 websocket-client python-socketio"
 PROXY_MODULES="pproxy"
 PROCESS_MODULES="psutil cpython-prctl setproctitle"
-COMPILER_MODULES="Cython pyinstaller"
+COMPILER_MODULES="$REQUIRED_COMPILER_MODULES"
 WHMCS_MODULES="whmcspy"
 WEBSOCKET_MODULES="SimpleWebSocketServer"
 ANSIBLE_MODULES="configparser paramiko $JSON_MODULES $NETWORK_MODULES $TERMINAL_MODULES $DATA_MODULES $COMPILER_MODULES"
@@ -82,7 +83,7 @@ export _MODULES="\
 
 
 
-ansi --green "Executing build using mode \"$SCRIPTS_BUILD_MODE\""
+>&2 ansi --green "Executing build using mode \"$SCRIPTS_BUILD_MODE\""
 
 if [[ "$SCRIPTS_BUILD_MODE" == "ANSIBLE+BORGS+TOOLS" ]]; then
     export BUILD_SCRIPTS="_ansible ansible-playbook ansible-vault ansible-config ansible-vault ansible-pull ansible-console ansible-doc \
@@ -107,7 +108,7 @@ elif [[ "$ANSIBLE_MODE" == "1" ]]; then
     export MODULES="paramiko configparser simplejson jmespath json2yaml jsondiff kaptan psutil setproctitle blessings terminaltables jinja2 jmespath netaddr urllib3"
 fi
 
-export MODULES="$(echo $MODULES|tr ' ' '\n'|sort -u|grep -v '^$' | tr '\n' ' ')"
+export MODULES="$(echo $MODULES $REQUIRED_COMPILER_MODULES|tr ' ' '\n'|sort -u|grep -v '^$' | tr '\n' ' ')"
 export BUILD_SCRIPTS="$(echo $BUILD_SCRIPTS|tr ' ' '\n'|sort -u|grep -v '^$' | tr '\n' ' ')"
 
 if [[ "$DEBUG_VARS" == "1" ]]; then

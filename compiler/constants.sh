@@ -43,4 +43,4 @@ ADDITIONAL_ANSIBLE_LIBRARY_MODULES="https://raw.githubusercontent.com/binRick/an
 _ADDITIONAL_ANSIBLE_LIBRARY_MODULES=""
 
 CACHED_MODULES_DIR=$(mktemp -d)
-CP_OPTIONS="-fv"
+CP_OPTIONS="-pf"

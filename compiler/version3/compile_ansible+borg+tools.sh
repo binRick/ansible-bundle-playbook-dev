@@ -4,11 +4,6 @@ set -e
 cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source .ansi
 
-if [[ "$NUKE_VENV" == "1" ]]; then
-  (set +e; command rm -rf .venv-1 _borg)
-fi
-
-
 
 if [[ "$PANE_MODE" == "1" || $- == *i* ]]; then
     ansi --green "Running in pane mode"

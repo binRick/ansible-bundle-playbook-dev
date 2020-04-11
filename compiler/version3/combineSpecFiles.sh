@@ -79,16 +79,32 @@ for x in $BUILD_SCRIPTS; do
     ansi --yellow _cached_build_script=$_cached_build_script
 
     set +e
-    cached_build_script="$(echo -e "$_cached_build_script"|head -n1)"
-    cached_build_mangled_vars_file="$(echo -e "$_cached_build_script"|head -n2|tail -n1)"
-    if [[ "$cached_build_script" == "xxxxxxxxxxxxxx" ]]; then #&& -f "$cached_build_script" && -f "$cached_build_mangled_vars_file" ]]; then 
-    #if [[ -f "$cached_build_script" && -f "$cached_build_mangled_vars_file" ]]; then 
-           >&2 ansi --green "VALID CACHED BUILD \"$(echo $cached_build_script)\""
-           >&2 ansi --green  "         cached_build_script=$cached_build_script cached_build_mangled_vars_file=$cached_build_mangled_vars_file"
-           cp_cmd="(cd $ORIG_DIR && cp $CP_OPTIONS $cached_build_script $x_mangle_vars && cp $CP_OPTIONS $cached_build_mangled_vars_file .specs/$x_spec)"
-           ansi --green "     Found Cached Files cp_cmd=$cp_cmd"
-           eval $cp_cmd
+
+    CACHED_FOUND=0
+    >&2 ansi --cyan "     [SPEC_FILE_CACHING]     START"
+    if [[ -f "$spec_saved_path" && -f "$mangled_saved_path" ]]; then
+        >&2 ansi --cyan "     [SPEC_FILE_CACHING]     found cached spec and mangled vars file.........."
+        cp_cmd="(cd $ORIG_DIR && cp $CP_OPTIONS $mangled_saved_path $x_mangle_vars && cp $CP_OPTIONS $spec_saved_path .specs/$x_spec)"
+        >&2 ansi --cyan "     [SPEC_FILE_CACHING]    cp_cmd=\"$cp_cmd\""
+        eval $cp_cmd
+        cp_exit_code=$?
+        if [[ "$cp_exit_code" == "0" ]]; then
+            CACHED_FOUND=1
+            >&2 ansi --green "    [SPEC_FILE_CACHING] copy OK!"
+        else
+            CACHED_FOUND=0
+        fi
     else
+        >&2 ansi --cyan "     [SPEC_FILE_CACHING]     did not find cached spec and mangled vars file.........."
+    
+    fi
+    >&2 ansi --cyan "     [SPEC_FILE_CACHING]     END"
+    
+
+    if [[ "$CACHED_FOUND" == "1" && "$USE_CACHED_SPEC_FILE" == "1" ]]; then
+        ansi --green "     [CACHED_FOUND] CACHED MODE"
+    else
+        ansi --yellow "     [CACHED_FOUND] NON-CACHED MODE"
         ansi --yellow "  Creating Spec from file \"$x_orig\""
 
         gm_o=$(mktemp)
@@ -139,7 +155,7 @@ for x in $BUILD_SCRIPTS; do
                 cp $mangle_stdout $x_mangle_vars
                 cp_cmd="cp $x_mangle_vars $mangled_saved_path && cp $x_spec $spec_saved_path"
                 ansi --green "    OK - $x_mangle_vars => cp_cmd=$cp_cmd"
-                eval $cp_cmd
+                eval nohup $cp_cmd &
             fi
         else
             ansi --red Undefined behavior

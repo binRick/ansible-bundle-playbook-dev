@@ -6,7 +6,7 @@ source setup.sh >/dev/null 2>/dev/null
 export STARTED_TS=$(date +%s)
 BUILD_MODE=serial
 
-setup_venv
+[[ ! -d ".venv-1" ]] && setup_venv
 
 concurrent_build() {
     local args=(
@@ -26,7 +26,7 @@ concurrent_build() {
         --and-then \
         - "Test Dist Path"              test_dist-path
         --and-then \
-        - "Setup Virtual Environment"   setup_venv
+        - "Setup Virtual Environment"   echo setup_venv
         --and-then \
         - "Relocate Dist Path"          relocate_path
         --and-then \

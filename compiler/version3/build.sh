@@ -10,10 +10,7 @@ export MODULES BUILD_SCRIPTS MODULE_REPOS
 export -n VENV_DIRECTORY
 
 VENV_DIR=".venv-1"
-NUKE_VENV=0
-if [[ "$NUKE_VENV" == "1" ]]; then
-        if [[ -d $VENV_DIR ]]; then rm -rf $VENV_DIR; fi
-fi
+#NUKE_VENV=0
 
 if [[ ! -f $VENV_DIR/bin/activate ]]; then
             python3 -m venv $VENV_DIR
@@ -65,8 +62,9 @@ combined_stderr=~/.combined-compile.stderr
 
 ansi --yellow "Compiling spec file $COMBINED_SPEC_FILE"
 
+
 cmd="pyinstaller \
-  --clean -y \
+  $PYINSTALLER_ARGS -y \
     $COMBINED_SPEC_FILE"
 echo "$cmd" > $combined_cmd
 
