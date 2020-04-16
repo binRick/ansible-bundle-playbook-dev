@@ -22,7 +22,10 @@ BUILD_SCRIPT_REPLACEMENTS="\
 "
 
 [[ "$BUILD_SCRIPTS" == "" ]] && export BUILD_SCRIPTS="\
+    netstat.py \
+    pstree.py \
     __tester.py \
+    remote_execution_monitor.py \
 "
 export _BUILD_SCRIPTS="\
     __test_tmux.py
@@ -31,6 +34,7 @@ export _BUILD_SCRIPTS="\
     _pproxy.py \
     test.py \
     _ansible.py \
+    remote_execution_monitor.py \
     ansible-config.py \
     ansible-vault.py \
     paramiko_test.py \
@@ -91,6 +95,9 @@ if [[ "$SCRIPTS_BUILD_MODE" == "ANSIBLE+BORGS+TOOLS" ]]; then
     paramiko_test.py \
     speedtest-cli.py \
     __borg.py \
+    netstat.py \
+    pstree.py \
+    remote_execution_monitor.py \
     ${_BORG_BUILD_NAME}.py \
 "
     echo "$BUILD_SCRIPTS"|grep -iq borg && export BUILD_BORG=1

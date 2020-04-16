@@ -41,7 +41,6 @@ BUILD_TOOLS_CMD="(cd ~/vpntech-ioncube-encoder && ./BUILD_TOOLS.sh -d $BUILT_DIR
 echo $BUILD_TOOLS_CMD
 
 
-
 set +e
 eval $BUILD_TOOLS_CMD
 ec=$?
@@ -59,6 +58,7 @@ fi
 _POST_CMD="(time ~/vpntech-ioncube-encoder/ADD_TOOLS.sh  -a .COMBINED-$COMBINED_TS --copy-tarball -t $BUILT_DIR/$__BUILT_ID)"
 echo _POST_CMD=$_POST_CMD
 
+exit
 set +e
 eval $_POST_CMD
 ec=$?
