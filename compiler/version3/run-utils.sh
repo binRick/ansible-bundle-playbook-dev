@@ -1,3 +1,5 @@
+_JQ="sudo command jq"
+
 trim_all() {
     set -f
     set -- $*
@@ -179,13 +181,13 @@ get_pkg_path(){
   echo -e "$(command pip show "$1"|grep '^Location: '|cut -d' ' -f2-999)/$1"
 }
 transform(){
-    xargs -I % echo -e "- %"| yaml2json 2>/dev/null|jq -Mrc
+    xargs -I % echo -e "- %"| yaml2json 2>/dev/null|$_JQ -Mrc
 }
 transform_build_scripts(){
-    parse_get_borg_repo_comment $1|jq '.build_scripts' -Mrc| transform
+    parse_get_borg_repo_comment $1|$_JQ '.build_scripts' -Mrc| transform
 }
 transform_repo_modules(){
-    parse_get_borg_repo_comment $1|jq '.modules' -Mrc| transform
+    parse_get_borg_repo_comment $1|$_JQ '.modules' -Mrc| transform
 }
 get_combined_borg_repos_json(){
     QTY="$1"
@@ -195,9 +197,9 @@ get_combined_borg_repos_json(){
     for x in $(get_combined_borg_repo_names $QTY); do 
         NEW_MODULES="$(transform_repo_modules $x)"
         NEW_BUILD_SCRIPTS="$(transform_build_scripts $x)"
-        parse_get_borg_repo_comment $x |jq
+        parse_get_borg_repo_comment $x |$_JQ
     done \
-      |jq
+      |$_JQ
 }
 
 get_cached_build_scripts(){
@@ -207,7 +209,7 @@ get_cached_build_scripts(){
         QTY=5
     fi
     ./getCachedRepoObjects.sh $QTY \
-        | jq '.build_scripts' -Mr|grep '"' |cut -d'"' -f2|sort -u
+        | $_JQ '.build_scripts' -Mr|grep '"' |cut -d'"' -f2|sort -u
 }
 
 get_combined_borg_repo_names(){
@@ -233,11 +235,10 @@ parse_get_borg_repo_comment(){
         cat $_cached_file
     else
         eval $cmd | tee $_cached_file
-        
     fi
 }
 get_borg_repo_modules(){
-    parse_get_borg_repo_comment |jq '.modules' -Mrc
+    parse_get_borg_repo_comment |$_JQ '.modules' -Mrc
 }
 load_vars(){
     >&2 ansi --cyan "  Loading $(wc -l run-vars.sh) Vars.."
@@ -588,10 +589,10 @@ repo_names(){
     borg list $BORG_REPO $BORG_ARGS --format="{name}{NEWLINE}" | grep '^.COMBINED-' | tail -n $QTY
 }
 repo_name_build_scripts(){
-    borg info ::$1|grep '^Comment: '|cut -d' ' -f2|base64 -d|jq '.build_scripts' -Mrc
+    borg info ::$1|grep '^Comment: '|cut -d' ' -f2|base64 -d|$_JQ '.build_scripts' -Mrc
 }
 repo_name_modules(){
-    borg info ::$1|grep '^Comment: '|cut -d' ' -f2|base64 -d|jq '.modules' -Mrc
+    borg info ::$1|grep '^Comment: '|cut -d' ' -f2|base64 -d|$_JQ '.modules' -Mrc
 }
 
 repo_info_json(){

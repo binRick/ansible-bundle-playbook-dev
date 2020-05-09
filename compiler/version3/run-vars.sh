@@ -45,7 +45,7 @@ export _BUILD_SCRIPTS="\
 "
 
 [[ "$BUILD_BORG" == "" ]] && export BUILD_BORG=0
-[[ "$ANSIBLE_VERSION" == "" ]] && export ANSIBLE_VERSION=2.8.10
+[[ "$ANSIBLE_VERSION" == "" ]] && export ANSIBLE_VERSION=2.8.11
 [[ "$BUILD_ANSIBLE" == "" ]] && export BUILD_ANSIBLE=0
 
 REQUIRED_COMPILER_MODULES="Cython pyinstaller"
@@ -68,7 +68,7 @@ WHMCS_MODULES="whmcspy"
 WEBSOCKET_MODULES="SimpleWebSocketServer"
 ANSIBLE_MODULES="configparser paramiko $JSON_MODULES $NETWORK_MODULES $TERMINAL_MODULES $DATA_MODULES $COMPILER_MODULES"
 
-BASE_MODS="paramiko speedtest-cli $BORG_MODULES"
+BASE_MODS="psutil paramiko speedtest-cli $BORG_MODULES"
 ADDTL_MODS="docopt python-jose pycryptodome halo $TEMPLATING_MODULES $CRYPTO_MODULES $SYSTEM_PERFORMANCE_MODULES $WHMCS_MODULES $WEBSOCKET_MODULES \
     loguru pyyaml pyaml requests $ANSIBLE_MODULES $JSON_MODULES $NETWORK_MODULES $PROXY_MODULES"
 OPTIONAL_MODULES="tcconfig pexpect libtmux tmuxp tcconfig $NIFTY_MODULES $TMUX_MODULES"
