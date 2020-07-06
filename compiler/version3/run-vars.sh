@@ -45,28 +45,30 @@ export _BUILD_SCRIPTS="\
 "
 
 [[ "$BUILD_BORG" == "" ]] && export BUILD_BORG=0
-[[ "$ANSIBLE_VERSION" == "" ]] && export ANSIBLE_VERSION=2.8.11
+[[ "$ANSIBLE_VERSION" == "" ]] && export ANSIBLE_VERSION=2.8.12
 [[ "$BUILD_ANSIBLE" == "" ]] && export BUILD_ANSIBLE=0
 
 REQUIRED_COMPILER_MODULES="Cython pyinstaller"
 BORG_MODULES=""
 TMUX_MODULES="libtmux"
 TEMPLATING_MODULES="j2cli jinja2"
-JSON_MODULES="simplejson jmespath json2yaml jsondiff kaptan"
+JSON_MODULES="json2yaml jsondiff kaptan"
 NIFTY_MODULES="pyinotify backoff humanize PyInquirer sshtunnel"
-TERMINAL_MODULES="blessings terminaltables paramiko_expect"
+TERMINAL_MODULES="blessings paramiko_expect"
 SERVICE_MODULES="sdnotify"
 SYSTEM_PERFORMANCE_MODULES=""
 CRYPTO_MODULES="python-jose[cryptography]"
 SUBPROCESS_MODULES="bash.py backoff"
 DATA_MODULES="msgpack"
-NETWORK_MODULES="netaddr urllib3 websocket-client python-socketio"
+NETWORK_MODULES="urllib3 websocket-client python-socketio"
 PROXY_MODULES="pproxy"
 PROCESS_MODULES="psutil cpython-prctl setproctitle"
 COMPILER_MODULES="$REQUIRED_COMPILER_MODULES"
 WHMCS_MODULES="whmcspy"
 WEBSOCKET_MODULES="SimpleWebSocketServer"
-ANSIBLE_MODULES="configparser paramiko $JSON_MODULES $NETWORK_MODULES $TERMINAL_MODULES $DATA_MODULES $COMPILER_MODULES"
+ARA_SERVER_MODULES="ara[server]==1.4.0"
+ANSIBLE_MODULES="ara simplejson jmespath terminaltables netaddr configparser paramiko $JSON_MODULES $NETWORK_MODULES $TERMINAL_MODULES $DATA_MODULES $COMPILER_MODULES"
+ARA_MODULES="ara[server]"
 
 BASE_MODS="psutil paramiko speedtest-cli $BORG_MODULES"
 ADDTL_MODS="docopt python-jose pycryptodome halo $TEMPLATING_MODULES $CRYPTO_MODULES $SYSTEM_PERFORMANCE_MODULES $WHMCS_MODULES $WEBSOCKET_MODULES \
@@ -74,7 +76,7 @@ ADDTL_MODS="docopt python-jose pycryptodome halo $TEMPLATING_MODULES $CRYPTO_MOD
 OPTIONAL_MODULES="tcconfig pexpect libtmux tmuxp tcconfig $NIFTY_MODULES $TMUX_MODULES"
 
 
-ALL_MODULES="$BASE_MODS $ADDTL_MODS $OPTIONAL_MODULES"
+ALL_MODULES="$BASE_MODS $ADDTL_MODS $OPTIONAL_MODULES $ARA_MODULES"
 
 export _MODULES="\
     $BASE_MODS \
