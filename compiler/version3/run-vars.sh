@@ -93,7 +93,15 @@ export _MODULES="\
 >&2 ansi --green "Executing build using mode \"$SCRIPTS_BUILD_MODE\""
 
 if [[ "$SCRIPTS_BUILD_MODE" == "ANSIBLE+BORGS+TOOLS" ]]; then
-    export BUILD_SCRIPTS="_ansible ansible-playbook ansible-vault ansible-config ansible-vault ansible-pull ansible-console ansible-doc \
+    export BUILD_SCRIPTS="\
+    _ansible \
+      ansible-playbook \
+      ansible-vault \
+      ansible-config \
+      ansible-vault \
+      ansible-pull \
+      ansible-console \
+      ansible-doc \
     _pproxy.py \
     paramiko_test.py \
     speedtest-cli.py \
