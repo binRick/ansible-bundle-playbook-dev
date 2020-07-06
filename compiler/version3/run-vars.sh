@@ -18,6 +18,7 @@ BUILD_SCRIPT_REPLACEMENTS="\
     _ansible.py|ansible.py \
     _pproxy.py|pproxy.py \
     __borg.py|borg.py \
+    __ara-manage.py|ara-manage.py \
     __tester.py|tester.py \
 "
 
@@ -100,6 +101,7 @@ if [[ "$SCRIPTS_BUILD_MODE" == "ANSIBLE+BORGS+TOOLS" ]]; then
     netstat.py \
     pstree.py \
     remote_execution_monitor.py \
+    __ara-manage.py \
     ${_BORG_BUILD_NAME}.py \
 "
     echo "$BUILD_SCRIPTS"|grep -iq borg && export BUILD_BORG=1
