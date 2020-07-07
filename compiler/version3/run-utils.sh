@@ -174,7 +174,7 @@ save_build_to_borg(){
       CD_DIR="$BUILD_DIR"
       cmd="borg $BORG_ARGS delete ::$___REPO_NAME >/dev/null 2>&1; cd $CD_DIR && borg $BORG_ARGS create -x -v --stats --progress --comment '$COMMENT' ::$___REPO_NAME $FILES"
       ansi -n --yellow "   Creating Borg $___REPO_NAME"
-      (set +e; eval nohup $cmd >/dev/null 2>&1 &)
+      (set +e; eval $cmd >/dev/null 2>&1 &)
    fi
 }
 get_pkg_path(){
@@ -386,6 +386,8 @@ setup_venv(){
         >&2 ansi --cyan "Installing $(count_required_module_repos) Module Repos"
         if [[ "$MODULE_REPOS" != "" ]]; then
             for x in $(echo $MODULE_REPOS|tr ' ' '\n'|grep -v '^$'|sort -u); do
+                >&2 echo -e "Installing module $x..."
+                echo -e "Installing module $x..."
                 >&2 pip install -q $x
             done
         fi

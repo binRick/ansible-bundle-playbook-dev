@@ -67,9 +67,9 @@ PROCESS_MODULES="psutil cpython-prctl setproctitle"
 COMPILER_MODULES="$REQUIRED_COMPILER_MODULES"
 WHMCS_MODULES="whmcspy"
 WEBSOCKET_MODULES="SimpleWebSocketServer"
-ARA_SERVER_MODULES="ara[server]==1.4.0"
+#ARA_SERVER_MODULES="ara[server]==1.4.0"
 ANSIBLE_MODULES="ara simplejson jmespath terminaltables netaddr configparser paramiko $JSON_MODULES $NETWORK_MODULES $TERMINAL_MODULES $DATA_MODULES $COMPILER_MODULES"
-ARA_MODULES="ara[server]"
+#ARA_MODULES="Django==2.1.* ara[server]"
 
 BASE_MODS="psutil paramiko speedtest-cli $BORG_MODULES"
 ADDTL_MODS="docopt python-jose pycryptodome halo $TEMPLATING_MODULES $CRYPTO_MODULES $SYSTEM_PERFORMANCE_MODULES $WHMCS_MODULES $WEBSOCKET_MODULES \
@@ -77,7 +77,7 @@ ADDTL_MODS="docopt python-jose pycryptodome halo $TEMPLATING_MODULES $CRYPTO_MOD
 OPTIONAL_MODULES="tcconfig pexpect libtmux tmuxp tcconfig $NIFTY_MODULES $TMUX_MODULES"
 
 
-ALL_MODULES="$BASE_MODS $ADDTL_MODS $OPTIONAL_MODULES $ARA_MODULES"
+ALL_MODULES="$BASE_MODS $ADDTL_MODS $OPTIONAL_MODULES"
 
 export _MODULES="\
     $BASE_MODS \
@@ -90,37 +90,57 @@ export _MODULES="\
 
 
 
->&2 ansi --green "Executing build using mode \"$SCRIPTS_BUILD_MODE\""
+>&2 ansi --green "[run-vars.sh]  Executing build using mode \"$SCRIPTS_BUILD_MODE\""
 
+############################################################
+############################################################
 if [[ "$SCRIPTS_BUILD_MODE" == "ANSIBLE+BORGS+TOOLS" ]]; then
-    export BUILD_SCRIPTS="\
-    _ansible \
-      ansible-playbook \
-      ansible-vault \
+############################################################
+    export __BUILD_SCRIPTS="\
       ansible-config \
       ansible-vault \
       ansible-pull \
       ansible-console \
       ansible-doc \
     _pproxy.py \
-    paramiko_test.py \
-    speedtest-cli.py \
-    __borg.py \
-    netstat.py \
-    pstree.py \
     remote_execution_monitor.py \
+    "
+    export BUILD_SCRIPTS="\
     __ara-manage.py \
+    pstree.py \
+    paramiko_test.py \
+    netstat.py \
+    _ansible \
+    speedtest-cli.py \
+      ansible-playbook \
+    __borg.py \
     ${_BORG_BUILD_NAME}.py \
 "
     echo "$BUILD_SCRIPTS"|grep -iq borg && export BUILD_BORG=1
     echo "$BUILD_SCRIPTS"|grep -iq ansible && export BUILD_ANSIBLE=1
-    export MODULES="$ALL_MODULES"
+    export MODULES="$ALL_MODULES Django==2.1.* ara[server] toml"
+
+############################################################
+############################################################
+elif [[ "$SCRIPTS_BUILD_MODE" == "ARA" ]]; then
+    export BUILD_SCRIPTS="__ara-manage.py ansible-playbook"
+    export BUILD_ANSIBLE=1
+    export BUILD_BORG=0
+    export MODULES="Django==2.1.* ara[server] toml"
 elif [[ "$SCRIPTS_BUILD_MODE" == "ANSIBLE-PLAYBOOK" ]]; then
+############################################################
     export BUILD_SCRIPTS="ansible-playbook"
     export BUILD_ANSIBLE=1
     export BUILD_BORG=0
     export MODULES="paramiko configparser simplejson jmespath json2yaml jsondiff kaptan psutil setproctitle blessings terminaltables jinja2 jmespath netaddr urllib3"
+
+>&2 echo -e "MODULE_REPOS=$MODULE_REPOS"
+#exit 99
+
+############################################################
+############################################################
 elif [[ "$ANSIBLE_MODE" == "1" ]]; then
+############################################################
     export BUILD_SCRIPTS="_ansible ansible-playbook ansible-vault ansible-config ansible-vault ansible-pull ansible-console ansible-doc"
     export BUILD_ANSIBLE=1
     export BUILD_BORG=0

@@ -6,10 +6,10 @@ fi
 
 
 if [[ "$PANE_MODE" == "1" || $- == *i* ]]; then
-    ansi --green "Running in pane mode"
-    exec ./run_panes.sh
+    >&2 ansi --green "Running in pane mode"
+    source ./run_panes.sh
 else
-    ansi --yellow "Running in standard mode"
-    time ./run.sh
+    >&2 ansi --yellow "Running in standard mode"
+    source ./run.sh
 fi
 

@@ -1,4 +1,5 @@
 export DEBUG_MODE=1
+PIP_INSTALL_MODULES_MODE=parallel
 
 ADDITIONAL_COMPILED_MODULES_REPLACEMENTS="pyyaml|yaml python-jose|jose python_jose|jose pyopenssl|OpenSSL mysql-connector-python|mysql mysql_connector_python|mysql linode-cli|linodecli linode_cli|linodecli speedtest-cli|speedtest websocket-client|websocket"
 
@@ -44,3 +45,10 @@ _ADDITIONAL_ANSIBLE_LIBRARY_MODULES=""
 
 CACHED_MODULES_DIR=$(mktemp -d)
 CP_OPTIONS="-pf"
+
+VENV_DIR=".venv-1"
+NUKE_VENV=0
+
+RETRIED=1
+
+source /etc/.ansi

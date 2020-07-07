@@ -40,6 +40,9 @@ if ! command -v shc >/dev/null 2>/dev/null; then
     >&2 echo shc not found in PATH
 fi
 
+
+PIP_INSTALL_MODULES_MODE=parallel
+
 _RM_PATHS="\
    ansible/modules/web_infrastructure
 "
@@ -537,20 +540,28 @@ buildPyInstallerCommand(){
             >&2 ansi --green "OK - Created $COMBINED_SPEC_FILE"
             
             SAVE_DIR=$(pwd)
+            PIP_INSTALL_MODULES_MODE="parallel"
+            if [[ "$PIP_INSTALL_MODULES_MODE" == "parallel" ]]; then
+                pip_cmd="pip install -q $(echo -e "$MODULE_BIN_INCLUDES"|tr '\n' ' '|tr ',' ' ')"
+                echo -e pip_cmd=$pip_cmd
+                eval $pip_cmd
+            fi
             for M in $(echo $MODULE_BIN_INCLUDES|tr ' ' '\n'); do
-                >&2 ansi --green ADDING $M
+                >&2 ansi --green Working on module $M
                 M_b=$(basename $M)
                 MODULE_BUILD_DIR=$(mktemp -d --suffix __compiler_module_${M})
                 cd $MODULE_BUILD_DIR
-                >&2 ansi --magenta MODULE_BUILD_DIR=$MODULE_BUILD_DIR
-                >&2 ansi --green "  adding module $M"
-                add_cmd="pip install $M -q 2>/dev/null; cp $(which $M) $BIN_MODULES_PATH/$M; true"
-                >&2 ansi --cyan add_cmd=$add_cmd
-                set +e
-                eval $add_cmd
-                exit_code=$?
-                set -e
-                ansi-exit_code "$add_cmd" $exit_code
+                if [[ "$PIP_INSTALL_MODULES_MODE" != "parallel" ]]; then
+                    >&2 ansi --magenta MODULE_BUILD_DIR=$MODULE_BUILD_DIR
+                    >&2 ansi --green "  adding module $M"
+                    add_cmd="pip install $M -q 2>/dev/null; cp $(which $M) $BIN_MODULES_PATH/$M; true"
+                    >&2 ansi --cyan add_cmd=$add_cmd
+                    set +e
+                    eval $add_cmd
+                    exit_code=$?
+                    set -e
+                    ansi-exit_code "$add_cmd" $exit_code
+                fi
                 if [[ ! -f $BIN_MODULES_PATH/$M ]]; then
                     echo cannot find file $M at $BIN_MODULES_PATH/$M
                     exit 100

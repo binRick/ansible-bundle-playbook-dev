@@ -5,7 +5,6 @@ export ORIG_DIR="$(pwd)"
 source setup.sh >/dev/null 2>/dev/null
 export STARTED_TS=$(date +%s)
 BUILD_MODE=serial
-
 [[ ! -d ".venv-1" ]] && setup_venv
 
 concurrent_build() {
@@ -13,6 +12,8 @@ concurrent_build() {
         - "Cleanup Past Compilations"       cleanup_compileds
         --and-then \
         - "Setup Virtual Environment"       setup_venv
+        --and-then \
+        - "Fix Importlib version.txt bug" ./fix_importlib_version.txt.sh
         --and-then \
         - "Install Borg"       install_borg
         --and-then \
@@ -51,11 +52,13 @@ concurrent_build() {
 }
 
 basic_build(){
+#    set -e
     cleanup_compileds
     setup_venv
+    ansi --yellow --underline --bg-black "Fix Importlib version.txt bug" && ./fix_importlib_version.txt.sh
     install_borg
     ensure_borg
-    deactivate
+    command -v deactivate >/dev/null 2>&1 && deactivate
     load_vars
     run_build
     normalize_dist_path

@@ -1,16 +1,12 @@
 #!/bin/bash
 set -e
 cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-source /etc/.ansi
 export -n VENV_DIRECTORY
 . ../constants.sh
 . ../utils.sh
 
 export MODULES BUILD_SCRIPTS MODULE_REPOS
 export -n VENV_DIRECTORY
-
-VENV_DIR=".venv-1"
-#NUKE_VENV=0
 
 if [[ ! -f $VENV_DIR/bin/activate ]]; then
             python3 -m venv $VENV_DIR
@@ -26,13 +22,10 @@ COMBINED_DIR=".COMBINED-$(date +%s)"
 
 
 ### customizations ###
-
 customize_ansible_environment
 
 m_o=$_combined_stdout
 m_e=$_combined_stderr
-#xpanes -x --stay -l ev -e "tail -f $m_o"
-#xpanes -x --stay -l ev -e "tail -f $m_e"
 set +e
 ./combineSpecFiles.sh |tee $m_o
 exit_code=$?

@@ -41,6 +41,11 @@ BUILD_TOOLS_CMD="(cd ~/vpntech-ioncube-encoder && ./BUILD_TOOLS.sh -d $BUILT_DIR
 echo $BUILD_TOOLS_CMD
 
 
+exit 9
+
+
+
+
 set +e
 eval $BUILD_TOOLS_CMD
 ec=$?

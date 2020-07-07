@@ -14,11 +14,9 @@ export BUILD_BORG=0
 export SCRIPTS_BUILD_MODE=ANSIBLE-PLAYBOOK
 
 
-if [[ "$__DEBUG_MODE" == "1" ]]; then
-    STDOUT_FILE=$(pwd)/.o
-else
-    source compile_common_run.sh | tee $STDOUT_FILE
-fi
+STDOUT_FILE=$(pwd)/.o
+source compile_common_run.sh | tee $STDOUT_FILE
+ec=$?
 set -e
 
 COMBINED_TS="$(cat $STDOUT_FILE|  sed 's/\x1b\[[0-9;]*m//g'| tail -n1| cut -d'=' -f2| sed 's/-/\n/g'| tail -n1)"

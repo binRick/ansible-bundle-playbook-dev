@@ -12,7 +12,7 @@ STDOUT_FILE=$(mktemp)
 
 export ANSIBLE_MODE=0
 export BUILD_BORG=0
-export SCRIPTS_BUILD_MODE=tester
+export SCRIPTS_BUILD_MODE=ARA
 
 if [[ "$__DEBUG_MODE" == "1" ]]; then
     STDOUT_FILE=$(pwd)/.o
@@ -23,7 +23,8 @@ set -e
 
 COMBINED_TS="$(cat $STDOUT_FILE|  sed 's/\x1b\[[0-9;]*m//g'| tail -n1| cut -d'=' -f2| sed 's/-/\n/g'| tail -n1)"
 
->&2 echo -e "STDOUT_FILE=$STDOUT_FILE"
+
+exit
 
 
 BUILD_TOOLS_CMD="(cd ~/vpntech-ioncube-encoder && ./BUILD_TOOLS.sh -d $BUILT_DIR/$__BUILT_ID -m all)"

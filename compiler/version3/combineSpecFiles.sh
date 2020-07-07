@@ -133,13 +133,13 @@ for x in $BUILD_SCRIPTS; do
 
 
         chmod +x $spec_combined_cmd
-        >&2 ansi --yellow "spec_combined_cmd=$spec_combined_cmd"
-        >&2 ansi --yellow "spec_combined_stdout_mkspec=$spec_combined_stdout_mkspec"
-        >&2 ansi --yellow "spec_combined_stderr_mkspec=$spec_combined_stderr_mkspec"
+#        >&2 ansi --yellow "spec_combined_cmd=$spec_combined_cmd"
+#        >&2 ansi --yellow "spec_combined_stdout_mkspec=$spec_combined_stdout_mkspec"
+#        >&2 ansi --yellow "spec_combined_stderr_mkspec=$spec_combined_stderr_mkspec"
         ./$spec_combined_cmd 2> .${_BS}-makespec.stderr
         exit_code=$?
         if [[ "$exit_code" != "0" ]]; then cat ${_BS}-makespec.stderr; >&2 ansi --red "pyi-makespec failed"; exit $exit_code; fi
-        ansi --green "     OK"
+        ansi --green "  Spec File Combined   OK"
 
 
         if [[ "$DO_MANGLE" == "1" ]]; then
@@ -155,7 +155,7 @@ for x in $BUILD_SCRIPTS; do
                 cp $mangle_stdout $x_mangle_vars
                 cp_cmd="cp $x_mangle_vars $mangled_saved_path && cp $x_spec $spec_saved_path"
                 ansi --green "    OK - $x_mangle_vars => cp_cmd=$cp_cmd"
-                eval nohup $cp_cmd &
+                eval $cp_cmd &
             fi
         else
             ansi --red Undefined behavior

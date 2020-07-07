@@ -41,7 +41,6 @@ getVenvModules(){
 getModules(){
   (
     for x in $MODULES; do
-        pip install $x -q
         findModules_venv $x | mangleModules
     done
   ) | egrep -v '^$' | sort -u | tr '\n' ' '
@@ -85,12 +84,11 @@ findModules(){
     set -e
         cd $2/
     if [[ ! -d "$_M" ]]; then
-        >&2  ansi --yellow --reset-background "  $(ansi --red --bg-black "[WARNING]")      $(ansi --yellow --bg-black "Module \"$_M\" Find Failed. (directory \"$_M\" Does not exist in virtual env")"
+        >&2  ansi --yellow --reset-background "  $(ansi --red --bg-black "[WARNING]")      $(ansi --yellow --bg-black "Module \"$_M\" Find Failed. (directory \"$_M\" Does not exist in virtual env. If this is a module alias, this is OK.)")"
         echo $_M
     else
         find $_M \
                 | grep '\.py$'|grep '/'  | sed 's/\.py//g' | sed 's/\/__init__//g'
-
         find $_M \
                 | grep '\.py$'| grep __init__.py$ |grep '/'| grep '/' | sed 's/\/__init__.py$//g'
     fi
