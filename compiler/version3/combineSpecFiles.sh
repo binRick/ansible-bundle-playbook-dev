@@ -136,12 +136,21 @@ for x in $BUILD_SCRIPTS; do
 #        >&2 ansi --yellow "spec_combined_cmd=$spec_combined_cmd"
 #        >&2 ansi --yellow "spec_combined_stdout_mkspec=$spec_combined_stdout_mkspec"
 #        >&2 ansi --yellow "spec_combined_stderr_mkspec=$spec_combined_stderr_mkspec"
-        ./$spec_combined_cmd 2> .${_BS}-makespec.stderr
-        exit_code=$?
-        if [[ "$exit_code" != "0" ]]; then cat ${_BS}-makespec.stderr; >&2 ansi --red "pyi-makespec failed"; exit $exit_code; fi
-        ansi --green "  Spec File Combined   OK"
+        cmd="./$spec_combined_cmd"
+        eval $cmd 2> .${_BS}-makespec.stderr &
+#        exit_code=$?
+#        if [[ "$exit_code" != "0" ]]; then cat ${_BS}-makespec.stderr; >&2 ansi --red "pyi-makespec failed"; exit $exit_code; fi
+#        ansi --green "  Spec File Combined   OK"
+    fi
+done
 
+jobs
+jobs -p
+>&2 ansi --yellow Waiting for spec files to generate..
+wait
+>&2 ansi --green Spec Files Combined OK
 
+for x in $BUILD_SCRIPTS; do 
         if [[ "$DO_MANGLE" == "1" ]]; then
             ansi --yellow "  Mangling file \"$x_orig\" using spec file $x_spec with cmd \"$mangle_cmd\""
             mangle_stdout=$(mktemp)
@@ -161,7 +170,6 @@ for x in $BUILD_SCRIPTS; do
             ansi --red Undefined behavior
             exit 999
         fi
-    fi
 done 
 
 echo -ne "\n"

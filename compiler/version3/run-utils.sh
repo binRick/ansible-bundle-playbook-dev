@@ -376,6 +376,11 @@ setup_venv(){
 
         fi
         
+        if [[ "$SPECIFIED_MODULE_NAMES" != "" ]]; then
+            >&2 ansi --cyan "Installing SPECIFIED_MODULE_NAMES $SPECIFIED_MODULE_NAMES"
+            cmd="pip install -q $SPECIFIED_MODULE_NAMES"
+            eval $cmd
+        fi
 
         >&2 ansi --cyan "Installing $(count_required_modules) Python Requirements"
         if [[ "$MODULES" != "" ]]; then

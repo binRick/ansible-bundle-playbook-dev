@@ -104,24 +104,27 @@ if [[ "$SCRIPTS_BUILD_MODE" == "ANSIBLE+BORGS+TOOLS" ]]; then
       ansible-pull \
       ansible-console \
       ansible-doc \
-    _pproxy.py \
     remote_execution_monitor.py \
-    __ara-manage.py \
     pstree.py \
     paramiko_test.py \
     netstat.py \
-    speedtest-cli.py \
+    __ara-manage.py \
     "
     export BUILD_SCRIPTS="\
-    _ansible \
       ansible-playbook \
+    speedtest-cli.py \
+    _pproxy.py \
     __borg.py \
     ${_BORG_BUILD_NAME}.py \
+    _ansible \
 "
     echo "$BUILD_SCRIPTS"|grep -iq borg && export BUILD_BORG=1
     echo "$BUILD_SCRIPTS"|grep -iq ansible && export BUILD_ANSIBLE=1
+    export MODULES="$BASE_MODS $ADDTL_MODS"
+    export SPECIFIED_MODULE_NAMES="'ara[server]' 'Django==2.1.*' pytz"
+
     export MODULES="$ALL_MODULES"
-# Django==2.1.* ara[server] toml"
+    export SPECIFIED_MODULE_NAMES=""
 
 ############################################################
 ############################################################

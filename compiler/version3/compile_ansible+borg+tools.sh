@@ -32,7 +32,7 @@ fi
 set -e
 
 #COMBINED_TS="$(cat $STDOUT_FILE|  sed 's/\x1b\[[0-9;]*m//g'| tail -n1| cut -d'=' -f2| sed 's/-/\n/g'| tail -n1)"
-COMBINED_TS=$(cd ~/vpntech-ioncube-encoder/ansible-bundle-playbook-dev/compiler/version3 && borg list --format="{name}{NEWLINE}" --last 1| cut -d'-' -f2)
+COMBINED_TS=$(cd ~/vpntech-ioncube-encoder/ansible-bundle-playbook-dev/compiler/version3 && borg --lock-wait 30 list --format="{name}{NEWLINE}" --last 1| cut -d'-' -f2)
 
 
 
@@ -41,7 +41,6 @@ BUILD_TOOLS_CMD="(cd ~/vpntech-ioncube-encoder && ./BUILD_TOOLS.sh -d $BUILT_DIR
 echo $BUILD_TOOLS_CMD
 
 
-exit 9
 
 
 
