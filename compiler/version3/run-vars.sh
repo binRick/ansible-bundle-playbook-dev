@@ -61,7 +61,7 @@ SYSTEM_PERFORMANCE_MODULES=""
 CRYPTO_MODULES="python-jose[cryptography]"
 SUBPROCESS_MODULES="bash.py backoff"
 DATA_MODULES="msgpack"
-NETWORK_MODULES="urllib3 websocket-client python-socketio"
+NETWORK_MODULES="urllib3 websocket-client python-socketio tcconfig"
 PROXY_MODULES="pproxy"
 PROCESS_MODULES="psutil cpython-prctl setproctitle"
 COMPILER_MODULES="$REQUIRED_COMPILER_MODULES"
@@ -72,9 +72,11 @@ ANSIBLE_MODULES="ara simplejson jmespath terminaltables netaddr configparser par
 #ARA_MODULES="Django==2.1.* ara[server]"
 
 BASE_MODS="psutil paramiko speedtest-cli $BORG_MODULES"
+TMUX_MODS="libtmux tmuxp"
+TERMINAL_MODS="pexpect"
 ADDTL_MODS="docopt python-jose pycryptodome halo $TEMPLATING_MODULES $CRYPTO_MODULES $SYSTEM_PERFORMANCE_MODULES $WHMCS_MODULES $WEBSOCKET_MODULES \
     loguru pyyaml pyaml requests $ANSIBLE_MODULES $JSON_MODULES $NETWORK_MODULES $PROXY_MODULES"
-OPTIONAL_MODULES="tcconfig pexpect libtmux tmuxp tcconfig $NIFTY_MODULES $TMUX_MODULES"
+OPTIONAL_MODULES="$NIFTY_MODULES $TMUX_MODULES $TMUX_MODS $TERMINAL_MODS"
 
 
 ALL_MODULES="$BASE_MODS $ADDTL_MODS $OPTIONAL_MODULES"
@@ -104,21 +106,22 @@ if [[ "$SCRIPTS_BUILD_MODE" == "ANSIBLE+BORGS+TOOLS" ]]; then
       ansible-doc \
     _pproxy.py \
     remote_execution_monitor.py \
-    "
-    export BUILD_SCRIPTS="\
     __ara-manage.py \
     pstree.py \
     paramiko_test.py \
     netstat.py \
-    _ansible \
     speedtest-cli.py \
+    "
+    export BUILD_SCRIPTS="\
+    _ansible \
       ansible-playbook \
     __borg.py \
     ${_BORG_BUILD_NAME}.py \
 "
     echo "$BUILD_SCRIPTS"|grep -iq borg && export BUILD_BORG=1
     echo "$BUILD_SCRIPTS"|grep -iq ansible && export BUILD_ANSIBLE=1
-    export MODULES="$ALL_MODULES Django==2.1.* ara[server] toml"
+    export MODULES="$ALL_MODULES"
+# Django==2.1.* ara[server] toml"
 
 ############################################################
 ############################################################
