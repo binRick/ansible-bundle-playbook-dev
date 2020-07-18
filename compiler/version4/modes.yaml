@@ -1,0 +1,115 @@
+---
+SkipModuleImports:
+  - json2yaml
+  - cpython-prctl
+
+Translations:
+ modules:
+    python-jose: jose
+    ansible-runner: ansible_runner
+    ansible-vault: ansible_vault
+    bash.py: bash
+ scripts: {}
+
+CommonModules:
+  - paramiko
+  - python-jose[cryptography]
+  - simplejson
+  - ansible==2.8.12
+  - ansible-runner
+  - ansible-vault
+  - tqdm
+  - bash.py
+  - jinja2
+  - j2cli 
+  - jinja2
+  - humanize
+  - pyinotify
+  - blessings
+  - paramiko_expect
+  - json2yaml
+  - urllib3
+  - psutil
+  - setproctitle
+  - cpython-prctl
+  - jmespath
+
+CommonHiddenImports:
+  - configparser
+  - ansible.*
+
+CommonExcludedModuleFiles:
+  - ../EXCLUDED_ANSIBLE_MODULES.txt
+
+CommonExcludedModules:
+  - simplejson.tests.test_separators
+
+__CommonExcludedModules:
+  - ansible.modules.cloud.google.*
+  - ansible.modules.cloud.azure
+  - ansible.modules.network.radware.vdirect_file
+  - ansible.modules.cloud.vmware.*
+  - ansible.modules.cloud.google.*
+  - ansible.modules.network.*
+  - ansible.modules.network.fortios.*
+  - ansible.modules.remote_management.ipmi
+
+Modes:
+ ansible:
+   modules:
+     - jinja2
+     - jsondiff
+     - netaddr
+
+   scripts: 
+     - __ansible-playbook.py
+
+   _d:
+     - ansible/config/module_defaults.yml:ansible/config
+     - ansible/executor/discovery/python_target.py:ansible/executor/discovery
+     - ansible/modules:ansible/modules
+     - ansible/module_utils:ansible/module_utils
+     - ansible/plugins:ansible/plugins
+     - ansible/plugins/cache:ansible/plugins/cache
+     - ansible/plugins/inventory:ansible/plugins/inventory
+     - ansible/utils/shlex.py:ansible/utils
+
+   data_files:
+
+
+     - ansible/config/base.yml
+     - ansible/config/module_defaults.yml
+     - ansible/plugins/cache/memory.py
+     - ansible/plugins/inventory/host_list.py
+     - ansible/plugins/inventory/yaml.py
+     - ansible/modules/commands/__init__.py
+     - ansible/modules/commands/command.py
+     - ansible/plugins/action/*
+     - ansible/plugins/callback/yaml.py
+     - ansible/plugins/callback/debug.py
+#     - ansible/modules/utilities/logic/debug.py
+
+   hidden_imports: 
+     - ansible.modules.*
+
+   __hidden_imports: 
+     - ansible.modules.utilities.*
+     - ansible.modules.commands.*
+     - ansible.modules.system.*
+     - ansible.modules.files.*
+     - ansible.cli.playbook
+     - ansible.plugins.inventory
+     - ansible.plugins.connection
+     - ansible.plugins.shell
+     - ansible.plugins.become
+     - ansible.plugins.cache.memory
+     - ansible.plugins.cache.jsonfile
+     - ansible.plugins.inventory.*
+    
+ test:
+   modules:
+     - paramiko_expect
+   scripts: 
+     - __tester.py
+   data_files: []
+   hidden_imports: []

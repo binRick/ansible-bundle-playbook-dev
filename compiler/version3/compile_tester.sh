@@ -14,12 +14,15 @@ export ANSIBLE_MODE=0
 export BUILD_BORG=0
 export SCRIPTS_BUILD_MODE=tester
 
+set -e
 if [[ "$__DEBUG_MODE" == "1" ]]; then
     STDOUT_FILE=$(pwd)/.o
 else
     source compile_common_run.sh | tee $STDOUT_FILE
 fi
-set -e
+
+exit
+
 
 COMBINED_TS="$(cat $STDOUT_FILE|  sed 's/\x1b\[[0-9;]*m//g'| tail -n1| cut -d'=' -f2| sed 's/-/\n/g'| tail -n1)"
 
@@ -37,6 +40,9 @@ if [[ "$__BUILT_ID" == "" || "$ec" != "0" ]]; then
     ansi --red Invalid built
     exit 666
 fi
+
+exit
+
 _POST_CMD="(time ~/vpntech-ioncube-encoder/ADD_TOOLS.sh  -a .COMBINED-$COMBINED_TS -t $BUILT_DIR/$__BUILT_ID)"
 echo _POST_CMD=$_POST_CMD
 

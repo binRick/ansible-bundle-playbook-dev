@@ -1,0 +1,5 @@
+altgraph==0.17
+click==7.1.2
+pyarmor==6.3.3
+PyInstaller==3.6
+PyYAML==5.3.1

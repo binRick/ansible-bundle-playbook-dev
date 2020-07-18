@@ -26,7 +26,7 @@ customize_ansible_environment
 
 m_o=$_combined_stdout
 m_e=$_combined_stderr
-set +e
+#set +e
 ./combineSpecFiles.sh |tee $m_o
 exit_code=$?
 if [[ "$exit_code" != "0" ]]; then echo combineSpecFiles.sh failed $exit_code; ansi --red $(cat $m_e); ansi --yellow $(cat $m_o); exit $exit_code; fi
@@ -52,13 +52,23 @@ retry_nuked_venv(){
 
 combined_stdout=~/.combined-compile.stdout
 combined_stderr=~/.combined-compile.stderr
+set -e
 
+set +x
 ansi --yellow "Compiling spec file $COMBINED_SPEC_FILE"
+#source $VENV_DIR/bin/activate
+which python
+which pip
+pwd
 
 
 cmd="pyinstaller \
   $PYINSTALLER_ARGS -y \
     $COMBINED_SPEC_FILE"
+ansi --cyan --bg-black --bold --underline "COMBINED_SPEC_FILE='$COMBINED_SPEC_FILE'"
+ansi --cyan --bg-black --bold --underline "PYINSTALLER_ARGS='$PYINSTALLER_ARGS'"
+ansi --yellow --bg-black --bold --underline "$cmd"
+exit
 echo "$cmd" > $combined_cmd
 
 __x=$(mktemp)
@@ -67,7 +77,7 @@ cat $__x > $combined_cmd
 chmod +x $combined_cmd
 
 
-#>&2 ansi --yellow "$cmd"
+>&2 ansi --yellow "$cmd"
 #exit 123
 
 watch_cmd="tail -f $combined_stdout $combined_stderr"
@@ -78,6 +88,7 @@ set +e
 #./$combined_cmd > $combined_stdout 2> $combined_stderr
 ./$combined_cmd | tee $combined_stdout
 exit_code=$?
+set -e
 if [[ "$exit_code" != "0" ]]; then
     ansi --red "    Command \"$cmd\" failed to compile $COMBINED_SPEC_FILE (exited $exit_code). stdout=$combined_stdout, stderr=$combined_stderr"
     cat $combined_stdout

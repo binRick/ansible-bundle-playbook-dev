@@ -22,12 +22,12 @@ BUILD_SCRIPT_REPLACEMENTS="\
     __tester.py|tester.py \
 "
 
+#    netstat.py \
 [[ "$BUILD_SCRIPTS" == "" ]] && export BUILD_SCRIPTS="\
-    netstat.py \
-    pstree.py \
     __tester.py \
-    remote_execution_monitor.py \
 "
+#    pstree.py \
+#    remote_execution_monitor.py \
 export _BUILD_SCRIPTS="\
     __test_tmux.py
     speedtest-cli.py \
@@ -46,7 +46,7 @@ export _BUILD_SCRIPTS="\
 "
 
 [[ "$BUILD_BORG" == "" ]] && export BUILD_BORG=0
-[[ "$ANSIBLE_VERSION" == "" ]] && export ANSIBLE_VERSION=2.8.12
+[[ "$ANSIBLE_VERSION" == "" ]] && export ANSIBLE_VERSION=2.8.13
 [[ "$BUILD_ANSIBLE" == "" ]] && export BUILD_ANSIBLE=0
 
 REQUIRED_COMPILER_MODULES="Cython pyinstaller"
@@ -98,30 +98,30 @@ export _MODULES="\
 ############################################################
 if [[ "$SCRIPTS_BUILD_MODE" == "ANSIBLE+BORGS+TOOLS" ]]; then
 ############################################################
+#    netstat.py \
     export __BUILD_SCRIPTS="\
-      ansible-config \
-      ansible-vault \
+    __ara-manage.py \
       ansible-pull \
       ansible-console \
       ansible-doc \
     remote_execution_monitor.py \
     pstree.py \
     paramiko_test.py \
-    netstat.py \
-    __ara-manage.py \
-    "
-    export BUILD_SCRIPTS="\
-      ansible-playbook \
     speedtest-cli.py \
     _pproxy.py \
-    __borg.py \
-    ${_BORG_BUILD_NAME}.py \
+    "
+    export BUILD_SCRIPTS="\
     _ansible \
+    ${_BORG_BUILD_NAME}.py \
+    __borg.py \
+      ansible-config \
+      ansible-playbook \
+      ansible-vault \
 "
     echo "$BUILD_SCRIPTS"|grep -iq borg && export BUILD_BORG=1
     echo "$BUILD_SCRIPTS"|grep -iq ansible && export BUILD_ANSIBLE=1
     export MODULES="$BASE_MODS $ADDTL_MODS"
-    export SPECIFIED_MODULE_NAMES="'ara[server]' 'Django==2.1.*' pytz"
+    export SPECIFIED_MODULE_NAMES="" #'ara[server]' 'Django==2.1.*' pytz"
 
     export MODULES="$ALL_MODULES"
     export SPECIFIED_MODULE_NAMES=""
@@ -129,10 +129,10 @@ if [[ "$SCRIPTS_BUILD_MODE" == "ANSIBLE+BORGS+TOOLS" ]]; then
 ############################################################
 ############################################################
 elif [[ "$SCRIPTS_BUILD_MODE" == "ARA" ]]; then
-    export BUILD_SCRIPTS="__ara-manage.py ansible-playbook"
-    export BUILD_ANSIBLE=1
+    export BUILD_SCRIPTS="__ara-manage.py"
+    export BUILD_ANSIBLE=0
     export BUILD_BORG=0
-    export MODULES="Django==2.1.* ara[server] toml"
+    export MODULES="Django==2.1.* ara[server] toml pytz"
 elif [[ "$SCRIPTS_BUILD_MODE" == "ANSIBLE-PLAYBOOK" ]]; then
 ############################################################
     export BUILD_SCRIPTS="ansible-playbook"

@@ -40,11 +40,6 @@ COMBINED_TS=$(cd ~/vpntech-ioncube-encoder/ansible-bundle-playbook-dev/compiler/
 BUILD_TOOLS_CMD="(cd ~/vpntech-ioncube-encoder && ./BUILD_TOOLS.sh -d $BUILT_DIR/$__BUILT_ID -m all)"
 echo $BUILD_TOOLS_CMD
 
-
-
-
-
-
 set +e
 eval $BUILD_TOOLS_CMD
 ec=$?
@@ -59,10 +54,10 @@ if [[ "$__BUILT_ID" == "" || "$ec" != "0" ]]; then
     ansi --red Invalid built
     exit 666
 fi
-_POST_CMD="(time ~/vpntech-ioncube-encoder/ADD_TOOLS.sh  -a .COMBINED-$COMBINED_TS --copy-tarball -t $BUILT_DIR/$__BUILT_ID)"
-echo _POST_CMD=$_POST_CMD
+_POST_CMD="(cd ~/vpntech-ioncube-encoder/vpntech_tools_automation && [[ -d .tools-$COMBINED_TS ]] && rm -rf .tools-$COMBINED_TS; mkdir .tools-$COMBINED_TS && ./add_python_tools.sh -t .tools-$COMBINED_TS -a .COMBINED-$COMBINED_TS --copy-tarball -t $BUILT_DIR/$__BUILT_ID)"
 
-exit
+ansi --yellow --underline --bold "$_POST_CMD"
+
 set +e
 eval $_POST_CMD
 ec=$?

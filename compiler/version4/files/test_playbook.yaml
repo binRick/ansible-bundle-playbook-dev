@@ -1,0 +1,12 @@
+---
+- name: test playbook
+  hosts: all
+  gather_facts: no
+  connection: local
+  become: no
+  tasks:
+   - name: debug test
+     debug: 
+      msg: ok
+   - name: id test
+     command: id

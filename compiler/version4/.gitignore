@@ -1,0 +1,6 @@
+dist
+.venv-1
+.specs
+.build*
+.specs*
+.dist*

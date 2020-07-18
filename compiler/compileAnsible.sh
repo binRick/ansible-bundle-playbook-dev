@@ -898,7 +898,7 @@ doMain(){
     pb_duration=$(($(date +%s)-$pb_start_ts))
 
     set -e
-    find $DIST_PATH -type d|grep __pycache__$|xargs -I % rm -rf %
+[[ "$SKIP_RM_PYCACHE" != "1" ]] &&    find $DIST_PATH -type d|grep __pycache__$|xargs -I % rm -rf %
 #    find $DIST_PATH -type f -name detailed.py|xargs -I %  unlink %
     $PLAYBOOK_BINARY_PATH --version | grep '^ansible-playbook $ANSIBLE_VERSION' && >&2 echo Valid Version
     file $PLAYBOOK_BINARY_PATH | grep '^ansible-playbook' | grep ': ELF 64-bit LSB executable, x86-64' && >&2 echo Valid File

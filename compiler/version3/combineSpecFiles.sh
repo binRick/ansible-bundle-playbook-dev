@@ -22,6 +22,8 @@ combined_stderr=~/.combined-compile.stderr
 MODULES="$(echo pyinstaller $MODULES|sed 's/[[:space:]]/ /'|tr ' ' '\n'|grep -v '^$'|tr '\n' ' ')"
 MODULES="$(echo $MODULES|tr ' ' '\n'|grep -v '^$'|sort -u|tr '\n' ' ')"
 
+#echo -e "modules=$MODULES"
+#exit 99
 
 retry_nuked_venv(){
     cmd="RETRIED=1 NUKE_VENV=1 exec ${BASH_SOURCE[0]} $@"
@@ -77,8 +79,15 @@ for x in $BUILD_SCRIPTS; do
     _cached_build_script=$(get_cached_build_script $_BS_ORIG 2>/dev/null)
     ansi --yellow cache_build_script_repo_name=$cache_build_script_repo_name
     ansi --yellow _cached_build_script=$_cached_build_script
+    echo -e "$_cached_build_script"
 
-    set +e
+#echo -e get_cached_build_script START
+#set +x
+#echo -e "_BS_ORIG=$_BS_ORIG"
+#get_cached_build_script "$_BS_ORIG"
+#set -x
+#echo -e get_cached_build_script end
+    #set +e
 
     CACHED_FOUND=0
     >&2 ansi --cyan "     [SPEC_FILE_CACHING]     START"
@@ -106,12 +115,16 @@ for x in $BUILD_SCRIPTS; do
     else
         ansi --yellow "     [CACHED_FOUND] NON-CACHED MODE"
         ansi --yellow "  Creating Spec from file \"$x_orig\""
-
         gm_o=$(mktemp)
         gm_e=$(mktemp)
+        set +x
+        set +e
         getModules >$gm_o 2>$gm_e
+        exit_code=$?
+        set -e
+        if [[ "$exit_code" != "0" ]]; then cat $gm_o; >&2 ansi --red "$(cat $gm_e)  getModules.sh failed"; exit $exit_code; fi
 
-        >&2 ansi --green "     $(wc -l $gm_o) Hidden Imports"
+        >&2 ansi --green "getModules.sh exited $exit_code ::   $(wc -l $gm_o) Hidden Imports"
         if [[ -f scripts/${_BS}.py ]]; then
             _BS_PREFIX=scripts/
         fi                

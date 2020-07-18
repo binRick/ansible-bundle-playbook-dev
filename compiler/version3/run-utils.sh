@@ -176,6 +176,7 @@ save_build_to_borg(){
       ansi -n --yellow "   Creating Borg $___REPO_NAME"
       (set +e; eval $cmd >/dev/null 2>&1 &)
    fi
+    set -e
 }
 get_pkg_path(){
   echo -e "$(command pip show "$1"|grep '^Location: '|cut -d' ' -f2-999)/$1"
@@ -430,7 +431,7 @@ run_build(){
     [[ -f .stdout ]] && ansi --yellow "Starting build" > .stdout
     [[ -f .stderr ]] && ansi --yellow "Starting build" > .stderr
     [[ -f .exit_code ]] && echo "" > .exit_code
-    set +e
+#    set +e
 #    xpanes -x --stay -l ev -e "tail -n0 -f .*stdout*"
 #    xpanes -x --stay -l ev -e "tail -n0 -f .*stderr*"
     bash ./build.sh |tee .stdout
@@ -465,7 +466,7 @@ run_build(){
     rm_cmd="(cd $DIST_PATH && find . -type d -name \"__pycache__\" -delete)"
     qty=$(eval $find_cmd)
     ansi --yellow --bg-black -n "   Removing $qty __pycache__ files from $DIST_PATH"
-    $(eval $rm_cmd)
+[[ "$SKIP_RM_PYCACHE" != "1" ]] &&    $(eval $rm_cmd)
     ansi --green --bg-black "    OK"
 
 
