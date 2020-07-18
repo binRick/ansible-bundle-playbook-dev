@@ -1,6 +1,6 @@
 ---
 - name: test playbook
-  hosts: all
+  hosts: localhost
   gather_facts: no
   connection: local
   become: no

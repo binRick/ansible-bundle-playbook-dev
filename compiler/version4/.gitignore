@@ -4,3 +4,8 @@ dist
 .build*
 .specs*
 .dist*
+files/EXCLUDED_ANSIBLE_MODULES.txt
+rich
+files/_rich_overflow.py
+af.txt
+files/EXCLUDED_ANSIBLE_MODULES.txt*

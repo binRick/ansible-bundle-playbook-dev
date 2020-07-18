@@ -3,9 +3,9 @@ set +e
 cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 
-MODULES="click pyyaml blessed json2yaml"
+MODULES="click pyyaml blessed json2yaml click_threading ansible_runner jinja2 paramiko paramiko_expect jsondiff netaddr rich"
 
-
+set +x
 
 
 

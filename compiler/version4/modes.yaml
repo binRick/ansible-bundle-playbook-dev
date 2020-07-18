@@ -13,33 +13,20 @@ Translations:
 
 CommonModules:
   - paramiko
+  - click_threading
+  - click
+  - jinja2
+  - jsondiff
+  - netaddr
   - python-jose[cryptography]
   - simplejson
-  - ansible==2.8.12
-  - ansible-runner
-  - ansible-vault
-  - tqdm
-  - bash.py
-  - jinja2
-  - j2cli 
-  - jinja2
-  - humanize
-  - pyinotify
-  - blessings
-  - paramiko_expect
-  - json2yaml
-  - urllib3
-  - psutil
-  - setproctitle
-  - cpython-prctl
-  - jmespath
+#  - shutil
 
 CommonHiddenImports:
   - configparser
-  - ansible.*
 
 CommonExcludedModuleFiles:
-  - ../EXCLUDED_ANSIBLE_MODULES.txt
+  - ./files/EXCLUDED_ANSIBLE_MODULES.txt
 
 CommonExcludedModules:
   - simplejson.tests.test_separators
@@ -55,11 +42,41 @@ __CommonExcludedModules:
   - ansible.modules.remote_management.ipmi
 
 Modes:
+ rich:
+   modules: [rich]
+   scripts: [_rich_overflow.py]
+   data_files: []
+   hidden_imports:
+     - rich.*
+
+ paramiko:
+   modules: [paramiko]
+   scripts: [__paramiko_test.py]
+   data_files: []
+#     - paramiko/kex*.py
+   hidden_imports: []
+
+
  ansible:
    modules:
-     - jinja2
-     - jsondiff
-     - netaddr
+      - ansible==2.8.12
+      - ansible-runner
+      - ansible-vault
+      - tqdm
+      - bash.py
+      - jinja2
+      - j2cli 
+      - jinja2
+      - humanize
+      - pyinotify
+      - blessings
+      - paramiko_expect
+      - json2yaml
+      - urllib3
+      - psutil
+      - setproctitle
+#      - cpython-prctl
+      - jmespath
 
    scripts: 
      - __ansible-playbook.py
@@ -75,36 +92,66 @@ Modes:
      - ansible/utils/shlex.py:ansible/utils
 
    data_files:
-
-
-     - ansible/config/base.yml
-     - ansible/config/module_defaults.yml
-     - ansible/plugins/cache/memory.py
-     - ansible/plugins/inventory/host_list.py
-     - ansible/plugins/inventory/yaml.py
-     - ansible/modules/commands/__init__.py
-     - ansible/modules/commands/command.py
-     - ansible/plugins/action/*
+     - '@af.txt'
+     - ansible/executor/*.py
+     - ansible/executor/*/*.py
+     - ansible/utils/*.py
+     - ansible/utils/*/*.py
+     - ansible/config/*.py
+     - ansible/config/*/*.py
+     - ansible/plugins/*.py
+     - ansible/plugins/*/*.py
+     - ansible/modules/*.py
+     - ansible/modules/*/*.py
+     - ansible/errors/yaml_strings.py
+     - ansible/parsing/utils/yaml.py
+     - ansible/parsing/yaml/constructor.py
+     - ansible/parsing/yaml/dumper.py
+     - ansible/parsing/yaml/__init__.py
+     - ansible/parsing/yaml/loader.py
+     - ansible/parsing/yaml/objects.py
+     - ansible/plugins/cache/yaml.py
      - ansible/plugins/callback/yaml.py
-     - ansible/plugins/callback/debug.py
+     - ansible/plugins/inventory/yaml.py
+#     - ansible/module_utils/*
+#     - ansible/modules
+#     - ansible/plugins/inventory/*
+#     - ansible/plugins/*
+#     - ansible/plugins/callback/*
+#     - ansible/modules/commands/*
+#     - ansible/plugins/action/*
+#     - ansible/*.py
+#     - ansible/plugins/inventory/*.py
+#     - ansible/plugins/callback/debug.py
 #     - ansible/modules/utilities/logic/debug.py
-
+   xssd:
+     - { name: 'ansible.modules.utilities.logic.*', recurse: yes }
    hidden_imports: 
+     - ansible.modules.utilities.logic.*
      - ansible.modules.*
+     - ansible.cli.*
+     - ansible.plugins.action.*
+     - ansible.plugins.*
+     - ansible.cli.playbook
+     - ansible.plugins.action.*
+#     - ansible.*
 
-   __hidden_imports: 
+#   __hidden_imports: 
+     - ansible.modules.parsing.*
      - ansible.modules.utilities.*
      - ansible.modules.commands.*
      - ansible.modules.system.*
      - ansible.modules.files.*
-     - ansible.cli.playbook
      - ansible.plugins.inventory
+     - ansible.plugins.callback
      - ansible.plugins.connection
      - ansible.plugins.shell
      - ansible.plugins.become
      - ansible.plugins.cache.memory
      - ansible.plugins.cache.jsonfile
      - ansible.plugins.inventory.*
+     - ansible.plugins.callback.*
+     - ansible.*
     
  test:
    modules:
